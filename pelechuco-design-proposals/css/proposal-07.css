@@ -1,0 +1,516 @@
+/* ============================================================
+   PROPUESTA 07 — ANDES NEO-DIGITAL / ALTIPLANO FUTURISTA
+   Vanguardista, Glassmorphism, Dark Obsidian, Glaciar & Neón Cívico
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg-dark: #070D18;
+  --bg-surface: #0E1726;
+  --bg-card: rgba(18, 28, 45, 0.75);
+  --bg-card-hover: rgba(24, 38, 62, 0.85);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(6, 182, 212, 0.4);
+  --primary: #06B6D4;         /* Turquesa glaciar Apolobamba */
+  --primary-glow: rgba(6, 182, 212, 0.25);
+  --secondary: #10B981;       /* Verde esmeralda */
+  --accent: #8B5CF6;          /* Violeta andino */
+  --text-main: #F1F5F9;
+  --text-muted: #94A3B8;
+  --text-dim: #64748B;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-tech {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* ── ANIMACIONES Y EFECTOS TECH ── */
+@keyframes neonPulse {
+  0%, 100% { border-color: rgba(6, 182, 212, 0.3); box-shadow: 0 0 15px rgba(6, 182, 212, 0.15); }
+  50% { border-color: rgba(6, 182, 212, 0.8); box-shadow: 0 0 25px rgba(6, 182, 212, 0.35); }
+}
+
+@keyframes floatOrbs {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(25px, -30px) scale(1.08); }
+}
+
+.glow-border {
+  border: 1px solid var(--border-glow);
+  box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.reveal-init {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: all 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── HEADER GLASSMORPHIC ── */
+.p07-header {
+  position: sticky;
+  top: 40px;
+  z-index: 100;
+  background: rgba(7, 13, 24, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: all 0.3s ease;
+}
+.p07-header.scrolled {
+  background: rgba(7, 13, 24, 0.96);
+  border-bottom-color: rgba(6, 182, 212, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.p07-header-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.p07-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+  color: #fff;
+}
+.p07-logo-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  box-shadow: 0 0 16px var(--primary-glow);
+}
+.p07-logo-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.p07-logo-text span {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--primary);
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.p07-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.p07-nav-link {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.p07-nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+.p07-nav-link.active {
+  color: var(--primary);
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+/* ── HERO NEO-DIGITAL ── */
+.p07-hero {
+  position: relative;
+  padding: clamp(4rem, 8vw, 7rem) 1.5rem 5rem;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.15) 0%, transparent 60%),
+              radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+              var(--bg-dark);
+}
+
+.p07-hero-orb {
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  animation: floatOrbs 12s ease-in-out infinite;
+}
+.p07-hero-orb-1 { top: -100px; right: 10%; background: rgba(6, 182, 212, 0.2); }
+.p07-hero-orb-2 { bottom: -150px; left: 5%; background: rgba(16, 185, 129, 0.15); }
+
+.p07-hero-content {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.p07-hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 100px;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+}
+
+.p07-hero-title {
+  font-size: clamp(2.4rem, 5vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1.08;
+  margin-bottom: 1.25rem;
+  color: #fff;
+}
+.p07-hero-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.p07-hero-sub {
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: var(--text-muted);
+  max-width: 650px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.6;
+}
+
+/* Buscador Tech con Tecla de Acceso Rápido */
+.p07-search-wrap {
+  max-width: 680px;
+  margin: 0 auto 2.5rem;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.6rem 0.5rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+}
+.p07-search-wrap:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 25px var(--primary-glow);
+  transform: translateY(-2px);
+}
+.p07-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 1rem;
+}
+.p07-search-input::placeholder { color: var(--text-dim); }
+.p07-kbd-tag {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.p07-search-btn {
+  background: var(--primary);
+  color: var(--bg-dark);
+  font-weight: 700;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.p07-search-btn:hover {
+  background: #22d3ee;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+}
+
+/* Métricas / Stats Cívicos */
+.p07-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.p07-stat-box {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+.p07-stat-box:hover {
+  border-color: var(--border-glow);
+  transform: translateY(-3px);
+}
+.p07-stat-num {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: 'Space Grotesk', sans-serif;
+}
+.p07-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.25rem;
+}
+
+/* ── SECCIONES Y BENTO GRID ── */
+.p07-section {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: clamp(4rem, 7vw, 6rem) 1.5rem;
+}
+.p07-section-header {
+  margin-bottom: 3rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+.p07-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.p07-title {
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  color: #fff;
+}
+.p07-desc {
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: 580px;
+  margin-top: 0.5rem;
+}
+
+/* Tarjetas Bento Tech */
+.p07-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+.p07-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-glow);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 20px rgba(6, 182, 212, 0.15);
+}
+
+/* ── NOTICIAS EN CUADRÍCULA HIGH-TECH Y CARRUSEL ── */
+.p07-carousel-wrap {
+  position: relative;
+  overflow: hidden;
+  padding: 0.5rem 0;
+}
+.p07-news-track {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding-bottom: 1rem;
+}
+.p07-news-track::-webkit-scrollbar { display: none; }
+.p07-news-track .noticia-card,
+.p07-news-card-slide {
+  min-width: 340px;
+  max-width: 340px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.p07-news-track .noticia-card:hover,
+.p07-news-card-slide:hover {
+  border-color: var(--primary);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(6, 182, 212, 0.25);
+}
+.p07-news-track .noticia-card .noticia-imagen {
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+.p07-news-track .noticia-card .noticia-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.p07-news-track .noticia-card:hover .noticia-imagen img {
+  transform: scale(1.08);
+}
+.p07-news-track .noticia-card .noticia-contenido {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.p07-news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.75rem;
+}
+.p07-news-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.p07-news-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(6, 182, 212, 0.15);
+}
+.p07-news-img-box {
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+.p07-news-img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.p07-news-card:hover .p07-news-img-box img {
+  transform: scale(1.08);
+}
+.p07-news-pill {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(7, 13, 24, 0.85);
+  backdrop-filter: blur(8px);
+  color: var(--primary);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 100px;
+}
+.p07-news-content {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TRÁMITES Y LISTA TECH ── */
+.p07-tramite-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  transition: all 0.25s ease;
+}
+.p07-tramite-row:hover {
+  border-color: var(--primary);
+  background: var(--bg-card-hover);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
+  transform: translateX(4px);
+}
+
+/* ── CONTACTO Y MAPA GLOW ── */
+.p07-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.25rem;
+  color: #fff;
+  font: inherit;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+.p07-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(6, 182, 212, 0.05);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+}
+
+/* ── FOOTER HIGH TECH ── */
+.p07-footer {
+  border-top: 1px solid var(--border-subtle);
+  background: #040810;
+  padding: 5rem 1.5rem 2rem;
+  color: var(--text-dim);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .p07-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .p07-nav-links { display: none; }
+  .p07-tramite-row { flex-direction: column; align-items: flex-start; }
+}

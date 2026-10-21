@@ -1,0 +1,546 @@
+/* ============================================================
+   PROPUESTA 06 — CIUDAD VIVA & GESTIÓN MUNICIPAL (RÉPLICA FIEL A LAPAZ.BO)
+   Basado en la estructura real de lapaz.bo:
+   - Barra dorada institucional
+   - Carrusel de tarjetas verticales escalonadas (IGOB 24/7, Trámites, Turismo, etc.)
+   - Grilla Bento de Noticias con tarjetas de imagen completa, badge "Prensa" y fecha
+   - Widget flotante interactivo "AMI" (Asistente Municipal Inteligente) y botón scroll-to-top
+   - Animaciones fluidas, elevaciones 3D, micro-interacciones
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Cabinet+Grotesk:wght@700;800;900&display=swap');
+
+:root {
+  --lp-gold: #C59A3F;         /* Línea dorada institucional lapaz.bo */
+  --lp-gold-light: #FDE047;
+  --lp-blue: #0284C7;         /* Azul cívico */
+  --lp-blue-dark: #0369A1;
+  --lp-dark: #0F172A;
+  --lp-purple: #3B3878;       /* Púrpura característico tarjeta iGob */
+  --lp-cyan: #0D7A82;         /* Turquesa tarjeta Chukuta */
+  --lp-orange: #C2410C;       /* Terracota / prensa */
+  --lp-bg: #FFFFFF;
+  --lp-bg-soft: #F8FAFC;
+  --lp-text: #0F172A;
+  --lp-muted: #64748B;
+  --lp-border: #E2E8F0;
+  --radius-card: 24px;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: #FFFFFF;
+  color: var(--lp-text);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Cabinet Grotesk', 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* ── ANIMACIONES Y KEYFRAMES FLUIDOS ── */
+@keyframes floatSoft {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulseBot {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(234, 179, 8, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 8px 24px rgba(234, 179, 8, 0.65); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float-soft {
+  animation: floatSoft 4s ease-in-out infinite;
+}
+
+.reveal-init {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── 1. BARRA DORADA SUPERIOR INSTITUCIONAL (LAPAZ.BO) ── */
+.p06-gold-bar {
+  height: 6px;
+  background: linear-gradient(90deg, #B48C36 0%, #EAB308 35%, #FDE047 60%, #B48C36 100%);
+  width: 100%;
+}
+
+/* ── 2. HEADER BLANCO LIMPIO Y ELEGANTE ── */
+.p06-header {
+  position: sticky;
+  top: 40px; /* Debajo de proposal-bar */
+  z-index: 90;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #E2E8F0;
+  transition: all 0.3s ease;
+}
+.p06-header.scrolled {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+.p06-header-inner {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.p06-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+}
+.p06-brand-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0284C7, #0369A1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.6rem;
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.25);
+}
+.p06-brand-text h1 {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0F172A;
+  line-height: 1.1;
+  margin: 0;
+}
+.p06-brand-text span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0284C7;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.p06-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.p06-nav-link {
+  padding: 0.65rem 1.15rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #475569;
+  border-radius: 100px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.p06-nav-link:hover {
+  color: #0284C7;
+  background: #F1F5F9;
+}
+.p06-nav-link.active {
+  color: #0F172A;
+  font-weight: 800;
+  border-bottom: 2px solid #EAB308;
+  border-radius: 0;
+}
+
+/* ── 3. EL ICÓNICO CARRUSEL DE TARJETAS VERTICALES ESCALONADAS (IMAGEN 1 DE LAPAZ.BO) ── */
+.p06-cards-hero-section {
+  padding: 3.5rem 1.5rem 5rem;
+  background: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+}
+
+.p06-cards-container-wrap {
+  max-width: 1380px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.p06-cards-slider {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: 2.5rem 0.5rem 3rem;
+  align-items: center;
+}
+.p06-cards-slider::-webkit-scrollbar { display: none; }
+
+/* Tarjetas Verticales Escalonadas */
+.p06-vert-card {
+  min-width: 230px;
+  max-width: 230px;
+  height: 480px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  position: relative;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 2rem 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Escalonamiento vertical de alturas (exacto a la captura de lapaz.bo) */
+.p06-vert-card:nth-child(1) { transform: translateY(-16px); }
+.p06-vert-card:nth-child(2) { transform: translateY(20px); }
+.p06-vert-card:nth-child(3) { transform: translateY(-8px); }
+.p06-vert-card:nth-child(4) { transform: translateY(24px); }
+.p06-vert-card:nth-child(5) { transform: translateY(-12px); }
+
+.p06-vert-card:hover {
+  transform: translateY(-26px) scale(1.04) !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.22);
+}
+
+.p06-vert-card-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.p06-vert-card:hover .p06-vert-card-bg {
+  transform: scale(1.12);
+}
+
+.p06-vert-card-overlay {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Temas de color de overlays según la captura */
+.overlay-igob {
+  background: linear-gradient(180deg, rgba(59, 56, 120, 0.4) 0%, rgba(59, 56, 120, 0.88) 60%, rgba(41, 38, 90, 0.98) 100%);
+}
+.overlay-chukuta {
+  background: linear-gradient(180deg, rgba(13, 122, 130, 0.35) 0%, rgba(13, 122, 130, 0.85) 60%, rgba(8, 80, 85, 0.98) 100%);
+}
+.overlay-tramites {
+  background: linear-gradient(180deg, rgba(40, 25, 15, 0.3) 0%, rgba(50, 30, 20, 0.75) 60%, rgba(30, 18, 10, 0.95) 100%);
+}
+.overlay-info {
+  background: linear-gradient(180deg, rgba(20, 50, 35, 0.3) 0%, rgba(20, 50, 35, 0.8) 60%, rgba(10, 30, 20, 0.96) 100%);
+}
+.overlay-turismo {
+  background: linear-gradient(180deg, rgba(2, 132, 199, 0.3) 0%, rgba(3, 105, 161, 0.8) 60%, rgba(12, 74, 110, 0.96) 100%);
+}
+
+.p06-vert-card-title {
+  position: relative;
+  z-index: 2;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Controles de navegación del carrusel */
+.p06-slider-control-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  color: #0F172A;
+  font-size: 1.25rem;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.p06-slider-control-btn:hover {
+  background: #EAB308;
+  color: #000;
+  transform: translateY(-50%) scale(1.1);
+}
+.p06-slider-control-btn.prev { left: -1rem; }
+.p06-slider-control-btn.next { right: -1rem; }
+
+/* ── 4. LA ICÓNICA SECCIÓN DE NOTICIAS DE LAPAZ.BO (IMAGEN 2) ── */
+.p06-news-bento-section {
+  padding: 4rem 1.5rem 6rem;
+  background: #FFFFFF;
+  max-width: 1380px;
+  margin: 0 auto;
+}
+
+.p06-bento-news-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+/* Tarjeta Bento con fondo de imagen y gradiente oscuro */
+.p06-bento-card {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  position: relative;
+  background: #0F172A;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 2rem 1.75rem;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 230px;
+}
+.p06-bento-card.tall {
+  min-height: 490px;
+}
+.p06-bento-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.p06-bento-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.p06-bento-card:hover .p06-bento-bg {
+  transform: scale(1.08);
+}
+
+.p06-bento-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(15, 23, 42, 0.6) 40%, rgba(15, 23, 42, 0.95) 100%);
+  z-index: 1;
+}
+
+.p06-bento-badge-prensa {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: #B45309; /* Ocre cálido característico */
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  z-index: 2;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.p06-bento-content {
+  position: relative;
+  z-index: 2;
+  color: #FFFFFF;
+}
+
+.p06-bento-date {
+  font-size: 0.82rem;
+  color: #E2E8F0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+}
+
+.p06-bento-headline {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #FFFFFF;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 0.2s;
+}
+.p06-bento-card.tall .p06-bento-headline {
+  font-size: 1.55rem;
+}
+.p06-bento-card:hover .p06-bento-headline {
+  color: #FDE047;
+}
+
+/* Columna central apilada */
+.p06-bento-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── 5. EL ICÓNICO WIDGET FLOTANTE "AMI" (ROBOT LAPAZ.BO) ── */
+.p06-ami-floating-widget {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.p06-ami-bubble {
+  background: #EAB308; /* Amarillo oro lapaz.bo */
+  color: #0F172A;
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 0.65rem 1.15rem;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(234, 179, 8, 0.4);
+  white-space: nowrap;
+  animation: floatSoft 3s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.p06-ami-avatar-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 3px solid #EAB308;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: pulseBot 2.5s infinite;
+  transition: transform 0.25s ease;
+}
+.p06-ami-floating-widget:hover .p06-ami-avatar-btn {
+  transform: scale(1.12);
+}
+
+.p06-scroll-top-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #854D0E;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+.p06-scroll-top-btn:hover {
+  background: #A16207;
+  transform: translateY(-3px);
+}
+
+/* Modal del Chat AMI */
+.p06-ami-chat-modal {
+  position: fixed;
+  bottom: 6rem;
+  right: 2rem;
+  width: 360px;
+  max-width: calc(100vw - 4rem);
+  background: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+  animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.p06-ami-chat-modal.open {
+  display: flex;
+}
+.p06-ami-chat-header {
+  background: #EAB308;
+  color: #0F172A;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 800;
+}
+.p06-ami-chat-body {
+  padding: 1.25rem;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #F8FAFC;
+  font-size: 0.88rem;
+}
+
+/* ── 6. SECCIÓN TRÁMITES Y BUSCADOR INTERACTIVO ── */
+.p06-tramites-card-box {
+  background: #FFFFFF;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--lp-border);
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  transition: all 0.25s ease;
+}
+.p06-tramites-card-box:hover {
+  transform: translateX(6px);
+  border-color: #0284C7;
+  box-shadow: 0 8px 25px rgba(2, 132, 199, 0.12);
+}
+
+/* ── 7. FOOTER MUNICIPAL LAPAZ.BO ── */
+.p06-footer {
+  background: #0F172A;
+  color: #94A3B8;
+  padding: 5rem 1.5rem 2.5rem;
+  border-top: 4px solid #EAB308;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .p06-bento-news-grid { grid-template-columns: 1fr; }
+  .p06-nav-links { display: none; }
+}
+@media (max-width: 768px) {
+  .p06-ami-bubble { display: none; }
+  .p06-vert-card { min-width: 200px; height: 420px; }
+}

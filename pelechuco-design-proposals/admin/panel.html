@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel administrativo conceptual — Demostración visual del sistema de gestión del portal municipal de Pelechuco">
+  <title>Panel Administrativo — DEMO — GAM Pelechuco</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    
+    /* Login screen */
+    .login-screen {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e2d40 0%, #0f1923 60%, #1a3a2a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    .login-card {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+    
+    .login-logo {
+      width: 60px;
+      height: 60px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: rgba(255,255,255,0.6);
+    }
+    
+    .login-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.375rem;
+    }
+    
+    .login-subtitle {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+    
+    .login-demo-notice {
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 10px;
+      padding: 0.875rem 1rem;
+      font-size: 0.8rem;
+      color: #fbbf24;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      text-align: left;
+      line-height: 1.6;
+    }
+    
+    .login-field {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    
+    .login-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    
+    .login-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      color: #fff;
+      font: inherit;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+    
+    .login-input:focus {
+      outline: none;
+      border-color: rgba(74,158,255,0.5);
+      background: rgba(255,255,255,0.08);
+    }
+    
+    .login-input::placeholder { color: rgba(255,255,255,0.2); }
+    
+    .login-btn {
+      width: 100%;
+      padding: 0.875rem;
+      background: #4a9eff;
+      color: #fff;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    
+    .login-btn:hover { background: #6ab0ff; }
+    
+    .login-back {
+      display: block;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .login-back:hover { color: rgba(255,255,255,0.7); }
+
+    /* Panel layout */
+    #admin-panel {
+      display: none;
+    }
+    
+    /* Mobile sidebar toggle */
+    .sidebar-toggle {
+      display: none;
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1000;
+      background: #1e2d40;
+      color: #fff;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 1.25rem;
+    }
+    
+    @media (max-width: 900px) {
+      .sidebar-toggle { display: block; }
+      .admin-sidebar { 
+        position: fixed; 
+        left: -280px;
+        height: 100vh;
+        z-index: 500;
+        transition: left 0.3s ease;
+      }
+      .admin-sidebar.open { left: 0; }
+      .admin-content { padding-top: 4rem; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#admin-main" class="skip-link">Ir al contenido principal</a>
+
+  <!-- PANTALLA DE LOGIN -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card" role="main">
+      <img src="../assets/images/escudo-pelechuco.svg" alt="Escudo Oficial de Pelechuco" style="width:58px;height:68px;margin:0 auto 1.25rem;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.5));">
+      <h1 class="login-title">Panel Administrativo</h1>
+      <p class="login-subtitle">
+        Gobierno Autónomo Municipal de Pelechuco<br>
+        Sistema de Gestión de Contenidos
+      </p>
+      
+      <div class="login-demo-notice" role="alert">
+        <strong>⚠️ Demostración visual de Gestión Municipal</strong><br>
+        Este panel es un prototipo conceptual para evaluar cómo las autoridades administrarán comunicados, trámites y servidores públicos.
+      </div>
+
+      <div style="background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.35);border-radius:10px;padding:0.9rem 1.2rem;margin-bottom:1.5rem;font-size:0.88rem;color:#e0f2fe;text-align:left;">
+        <div style="font-weight:700;color:#38bdf8;margin-bottom:0.35rem;display:flex;align-items:center;gap:0.4rem;">
+          🔑 Credenciales para demostración:
+        </div>
+        <div style="font-family:monospace;font-size:0.9rem;line-height:1.6;">
+          • Usuario: <strong style="color:#fff;background:rgba(0,0,0,0.3);padding:0.1rem 0.4rem;border-radius:4px;">admin</strong><br>
+          • Contraseña: <strong style="color:#fff;background:rgba(0,0,0,0.3);padding:0.1rem 0.4rem;border-radius:4px;">admin123</strong>
+        </div>
+        <div style="font-size:0.75rem;opacity:0.75;margin-top:0.4rem;">
+          (Los campos ya están completados. Puedes pulsar directamente el botón de acceso).
+        </div>
+      </div>
+
+      <form id="login-form" onsubmit="handleLogin(event)" novalidate>
+        <div class="login-field">
+          <label for="login-user">Usuario institucional</label>
+          <input 
+            id="login-user" 
+            type="text" 
+            class="login-input" 
+            placeholder="usuario@municipio.bo"
+            value="admin"
+            autocomplete="username"
+            required
+          >
+        </div>
+        <div class="login-field">
+          <label for="login-pass">Contraseña</label>
+          <input 
+            id="login-pass" 
+            type="password" 
+            class="login-input" 
+            placeholder="••••••••"
+            value="admin123"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+        <button type="submit" class="login-btn" style="background:linear-gradient(135deg,#0284C7,#1B3A6B);box-shadow:0 6px 18px rgba(2,132,199,0.35);">
+          ⚡ Acceder al Panel de Control (1 Clic)
+        </button>
+      </form>
+      
+      <a href="../index.html" class="login-back">← Volver a la galería de propuestas</a>
+    </div>
+  </div>
+
+  <!-- PANEL ADMINISTRATIVO -->
+  <div id="admin-panel">
+    <!-- Barra de propuesta -->
+    <div class="proposal-bar">
+      <div class="proposal-bar-label">
+        <span>PANEL ADMIN</span>
+        Sistema de gestión — <em>Demostración conceptual</em>
+      </div>
+      <nav class="proposal-bar-nav" aria-label="Navegación entre propuestas">
+        <div id="proposal-switcher" class="flex gap-1"></div>
+        <a href="../index.html" class="back-to-gallery">← Galería</a>
+      </nav>
+    </div>
+
+    <!-- Mobile sidebar toggle -->
+    <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Abrir menú lateral" aria-expanded="false">☰</button>
+
+    <div class="admin-layout">
+      <!-- SIDEBAR -->
+      <aside class="admin-sidebar" id="admin-sidebar" aria-label="Menú de administración">
+        <div class="admin-sidebar-header">
+          <div class="admin-logo" style="display:flex;align-items:center;gap:0.75rem;">
+            <img src="../assets/images/escudo-pelechuco.svg" alt="Escudo Pelechuco" style="width:28px;height:34px;object-fit:contain;">
+            <div>
+              PANEL ADMINISTRATIVO
+              <small>GAM Pelechuco</small>
+            </div>
+          </div>
+        </div>
+
+        <nav class="admin-nav" aria-label="Navegación administrativa">
+          <div class="admin-nav-section">Principal</div>
+          <button class="admin-nav-item" data-admin-nav="dashboard" aria-label="Dashboard">
+            <span class="nav-icon">🏠</span> Dashboard
+          </button>
+          
+          <div class="admin-nav-section">Contenido</div>
+          <button class="admin-nav-item" data-admin-nav="noticias" aria-label="Noticias y comunicados">
+            <span class="nav-icon">📰</span> Noticias y Comunicados
+          </button>
+          <button class="admin-nav-item" data-admin-nav="nueva-noticia" aria-label="Nueva publicación">
+            <span class="nav-icon">✏️</span> Nueva publicación
+          </button>
+          
+          <div class="admin-nav-section">Institución</div>
+          <button class="admin-nav-item" data-admin-nav="autoridades" aria-label="Gestionar autoridades">
+            <span class="nav-icon">👤</span> Autoridades
+          </button>
+          <button class="admin-nav-item" data-admin-nav="tramites" aria-label="Gestionar trámites">
+            <span class="nav-icon">📋</span> Trámites
+          </button>
+          <button class="admin-nav-item" data-admin-nav="institucion" aria-label="Información institucional">
+            <span class="nav-icon">🏛</span> Información institucional
+          </button>
+          
+          <div class="admin-nav-section">Configuración</div>
+          <button class="admin-nav-item" data-admin-nav="contacto" aria-label="Datos de contacto">
+            <span class="nav-icon">📞</span> Contacto
+          </button>
+          <button class="admin-nav-item" data-admin-nav="ajustes" aria-label="Ajustes generales">
+            <span class="nav-icon">⚙️</span> Ajustes
+          </button>
+        </nav>
+
+        <div class="admin-sidebar-footer">
+          <button id="btn-logout" class="admin-nav-item" style="width:100%;border-top:1px solid rgba(255,255,255,0.08);padding-top:1rem;" aria-label="Cerrar sesión">
+            <span class="nav-icon">🚪</span> Cerrar sesión
+          </button>
+        </div>
+      </aside>
+
+      <!-- CONTENIDO PRINCIPAL -->
+      <main class="admin-content" id="admin-main" aria-live="polite">
+        <!-- Renderizado dinámicamente por admin.js -->
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/proposals.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    // Manejo del login de demostración
+    function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('login-user').value.trim();
+      const pass = document.getElementById('login-pass').value.trim();
+      
+      if (!user || !pass) {
+        alert('Por favor ingrese usuario y contraseña para la demostración.');
+        return;
+      }
+      
+      // Mostrar panel (solo demostración visual)
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+      
+      // Inicializar App con propuesta de la URL
+      const params = new URLSearchParams(window.location.search);
+      const propId = params.get('propuesta');
+      if (propId) {
+        App.setPropuesta(propId);
+        App.renderSwitcher();
+      }
+      
+      // Inicializar panel admin
+      Admin.init();
+    }
+
+    // Mobile sidebar
+    document.getElementById('sidebar-toggle-btn')?.addEventListener('click', () => {
+      const sidebar = document.getElementById('admin-sidebar');
+      const btn = document.getElementById('sidebar-toggle-btn');
+      const isOpen = sidebar.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Año dinámico
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[data-year]').forEach(el => {
+        el.textContent = new Date().getFullYear();
+      });
+    });
+  </script>
+</body>
+</html>

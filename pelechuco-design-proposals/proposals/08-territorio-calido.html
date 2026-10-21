@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Propuesta 08: Territorio Cálido & Raíces Vivas — Portal acogedor, humano y comunitario del GAM Pelechuco">
+  <title>P08 Territorio Cálido — GAM Pelechuco</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/proposal-08.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+  <!-- BARRA DE SELECCIÓN DE PROPUESTAS -->
+  <div class="proposal-bar" role="region" aria-label="Navegación entre propuestas">
+    <div class="proposal-bar-label">
+      <span>PROPUESTA 08</span>
+      Territorio Cálido & Raíces — <em>Humana & Comunitaria</em>
+    </div>
+    <nav class="proposal-bar-nav" aria-label="Cambiar propuesta">
+      <div id="proposal-switcher" class="flex gap-1"></div>
+      <a href="../index.html" class="back-to-gallery">← Galería</a>
+    </nav>
+  </div>
+
+  <!-- HEADER CÁLIDO -->
+  <header class="p08-header" id="site-header" role="banner">
+    <div class="p08-header-inner">
+      <a href="#inicio" class="p08-brand" aria-label="Inicio - GAM Pelechuco">
+        <div class="p08-brand-badge" aria-hidden="true">☀️</div>
+        <div class="p08-brand-text">
+          <h1>GAM PELECHUCO</h1>
+          <span>Tierra de Encuentro y Raíces</span>
+        </div>
+      </a>
+
+      <nav class="p08-nav-links" aria-label="Menú principal">
+        <a href="#inicio" class="p08-nav-link active">Inicio</a>
+        <a href="#conoce" class="p08-nav-link">Nuestro Municipio</a>
+        <a href="#tramites" class="p08-nav-link">Trámites Paso a Paso</a>
+        <a href="#noticias" class="p08-nav-link">Comunicados</a>
+        <a href="#autoridades" class="p08-nav-link">Autoridades</a>
+        <a href="#contacto" class="p08-nav-link">Contacto</a>
+      </nav>
+
+      <a href="#contacto" class="p08-btn-atencion">
+        🤝 Atención al Vecino
+      </a>
+    </div>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ========== HERO CÁLIDO Y ACOGEDOR ========== -->
+    <section id="inicio" class="p08-hero" aria-label="Bienvenida al municipio">
+      <div class="p08-hero-container">
+        <div>
+          <div class="p08-hero-tag">
+            <span>🌿</span> Gobierno Autónomo Municipal · Provincia Franz Tamayo
+          </div>
+
+          <h2 class="p08-hero-title">
+            Bienvenidos a Pelechuco,<br><em>nuestra casa común</em>
+          </h2>
+
+          <p class="p08-hero-sub">
+            Trabajamos con el corazón en nuestras raíces andinas y la mirada en el porvenir de nuestras familias, ayllus y comunidades.
+          </p>
+
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+            <a href="#tramites" class="p08-btn-atencion" style="padding:0.9rem 1.8rem;font-size:0.95rem;">
+              📋 Realizar un Trámite
+            </a>
+            <a href="#conoce" class="p08-btn-atencion" style="background:#fff;color:var(--text-dark);border:1px solid var(--border-warm);box-shadow:none;padding:0.9rem 1.8rem;font-size:0.95rem;">
+              🏔️ Conocer Nuestro Territorio
+            </a>
+          </div>
+        </div>
+
+        <!-- Tarjeta Visual del Municipio -->
+        <div class="p08-hero-img-card reveal-init">
+          <img
+            src="https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=900&q=85"
+            alt="Comunidades y paisaje del municipio de Pelechuco"
+            fetchpriority="high"
+          >
+          <div class="p08-hero-floating-card">
+            <span style="font-size:1.8rem;" aria-hidden="true">🌾</span>
+            <div>
+              <div style="font-weight:700;font-size:0.95rem;color:var(--text-dark);">Pelechuco es Comunidad</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">Unión, trabajo colectivo y preservación de nuestras costumbres.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TRÁMITES PASO A PASO (STEPPER CÁLIDO) ========== -->
+    <section class="p08-section" aria-label="Cómo realizar tu trámite">
+      <div class="p08-section-header reveal-init">
+        <span class="p08-badge-tag">Atención Ciudadana Fácil</span>
+        <h3 class="p08-title">¿Cómo realizar tus gestiones municipales?</h3>
+        <p class="p08-desc">Diseñamos un proceso claro y transparente para que tus trámites sean ágiles y sin complicaciones.</p>
+      </div>
+
+      <div class="p08-stepper-grid reveal-init">
+        <div class="p08-step-box">
+          <div class="p08-step-num">1</div>
+          <h4 style="font-size:1.15rem;font-weight:700;margin-bottom:0.5rem;">Consulta Requisitos</h4>
+          <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.6;">Revisa en nuestro catálogo digital los documentos específicos para tu gestión.</p>
+        </div>
+
+        <div class="p08-step-box">
+          <div class="p08-step-num">2</div>
+          <h4 style="font-size:1.15rem;font-weight:700;margin-bottom:0.5rem;">Reúne la Información</h4>
+          <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.6;">Prepara cédula de identidad, formularios municipales y certificados pertinentes.</p>
+        </div>
+
+        <div class="p08-step-box">
+          <div class="p08-step-num">3</div>
+          <h4 style="font-size:1.15rem;font-weight:700;margin-bottom:0.5rem;">Presenta en Ventanilla</h4>
+          <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.6;">Acércate a Mesa de Partes en la Alcaldía Central o durante jornadas en comunidades.</p>
+        </div>
+
+        <div class="p08-step-box">
+          <div class="p08-step-num">4</div>
+          <h4 style="font-size:1.15rem;font-weight:700;margin-bottom:0.5rem;">Respuesta Oportuna</h4>
+          <p style="font-size:0.88rem;color:var(--text-muted);line-height:1.6;">Recibe tu certificación o resolución en los plazos fijados por la normativa vigente.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== CONOCE PELECHUCO ========== -->
+    <section id="conoce" class="p08-section-surface" aria-labelledby="conoce-warm-h2">
+      <div class="p08-section">
+        <div class="p08-section-header reveal-init">
+          <span class="p08-badge-tag" style="background:var(--green-light);color:var(--green);">Identidad Andina</span>
+          <h2 id="conoce-warm-h2" class="p08-title">Tierra de Belleza, Cultura y Memoria</h2>
+          <p class="p08-desc">Descubre el encanto de un municipio que respira historia en cada una de sus cordilleras y valles.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2.5rem;align-items:center;" class="reveal-init">
+          <div>
+            <h3 style="font-size:1.5rem;font-weight:700;color:var(--text-dark);margin-bottom:1rem;">Ubicación en Franz Tamayo</h3>
+            <p style="color:var(--text-muted);line-height:1.7;margin-bottom:1.25rem;">
+              Pelechuco es un municipio emblemático ubicado en la <strong>provincia Franz Tamayo</strong>, en el departamento de La Paz, Bolivia. Sus senderos han sido recorridos por generaciones de arrieros, comunarios y tejedoras tradicionales.
+            </p>
+            <p style="color:var(--text-dark);font-size:0.9rem;line-height:1.7;margin-bottom:1.5rem;">
+              Altitud de 3.600 m s. n. m. (cabecera municipal), superficie de 2.714 km², enclavado entre la Reserva Nacional Ulla Ulla y los picos nevados de Apolobamba.
+            </p>
+
+            <h3 style="font-size:1.5rem;font-weight:700;color:var(--text-dark);margin-bottom:1rem;">Patrimonio Textil y Comunidades</h3>
+            <p style="color:var(--text-muted);line-height:1.7;margin-bottom:1.25rem;">
+              El tejido en fibra de alpaca, los tintes naturales y la solidaridad comunitaria (ayni y minka) son valores vivos que enriquecen a todo el pueblo boliviano.
+            </p>
+            <p style="color:var(--text-dark);font-size:0.9rem;line-height:1.7;">
+              Más de 40 comunidades originarias y 9 cantones celebran anualmente la festividad patronal de la Virgen de la Asunción (15 de agosto) con música autóctona de sikuris.
+            </p>
+          </div>
+
+          <div style="border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-warm);">
+            <img
+              src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=900&q=85"
+              alt="Cordillera y valles andinos en Pelechuco"
+              style="width:100%;height:380px;object-fit:cover;"
+              loading="lazy"
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== GUÍA COMPLETA DE TRÁMITES ========== -->
+    <section id="tramites" class="p08-section" aria-labelledby="tramites-warm-h2">
+      <div class="p08-section-header reveal-init">
+        <span class="p08-badge-tag">Ventanilla Única</span>
+        <h2 id="tramites-warm-h2" class="p08-title">Catálogo Oficial de Trámites</h2>
+        <p class="p08-desc">Encuentra los requisitos y dependencias para gestionar licencias, certificados, catastro y obras.</p>
+      </div>
+
+      <!-- Buscador y Filtros -->
+      <div class="reveal-init" style="background:#FFFFFF;border:1px solid var(--border-warm);border-radius:var(--radius-md);padding:1.5rem;margin-bottom:2.5rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+        <input
+          type="search"
+          id="busqueda-tramites"
+          class="p08-form-input"
+          style="max-width:380px;"
+          placeholder="🔍 Buscar trámite por nombre..."
+          aria-label="Buscar trámites"
+        >
+        <div class="filtros-wrap" id="filtros-tramites" role="group" aria-label="Categorías de trámites"></div>
+      </div>
+
+      <div id="lista-tramites" class="reveal-init"></div>
+    </section>
+
+    <!-- ========== NOTICIAS Y COMUNICADOS ========== -->
+    <section id="noticias" class="p08-section-surface" aria-labelledby="noticias-warm-h2">
+      <div class="p08-section">
+        <div class="p08-section-header reveal-init" style="display:flex;align-items:flex-end;justify-content:space-between;max-width:none;text-align:left;flex-wrap:wrap;gap:1.5rem;">
+          <div>
+            <span class="p08-badge-tag">Noticias y Avisos</span>
+            <h2 id="noticias-warm-h2" class="p08-title">Comunicados a las Comunidades</h2>
+            <p class="p08-desc">Novedades de la alcaldía, obras públicas, salud comunitaria y convocatorias abiertas.</p>
+          </div>
+          <div style="display:flex;gap:0.75rem;">
+            <button id="p08-news-prev" class="p08-btn-atencion" style="padding:0.6rem 1.1rem;background:#FFFFFF;color:var(--text-dark);border:1px solid var(--border-warm);box-shadow:none;" aria-label="Noticias anteriores">❮</button>
+            <button id="p08-news-next" class="p08-btn-atencion" style="padding:0.6rem 1.1rem;" aria-label="Noticias siguientes">❯</button>
+          </div>
+        </div>
+
+        <div class="reveal-init" style="margin-bottom:2rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+          <input
+            type="search"
+            id="busqueda-noticias"
+            class="p08-form-input"
+            style="max-width:380px;"
+            placeholder="🔍 Buscar comunicados..."
+            aria-label="Buscar noticias"
+          >
+          <div class="filtros-wrap" id="filtros-categorias" role="group" aria-label="Categorías"></div>
+        </div>
+
+        <div class="p08-carousel-track" id="lista-noticias"></div>
+        <div class="paginacion-wrap" id="paginacion-noticias"></div>
+      </div>
+    </section>
+
+    <!-- ========== AUTORIDADES Y EQUIPO ========== -->
+    <section id="autoridades" class="p08-section" aria-labelledby="autoridades-warm-h2">
+      <div class="p08-section-header reveal-init">
+        <span class="p08-badge-tag">Servicio Público</span>
+        <h2 id="autoridades-warm-h2" class="p08-title">Nuestras Autoridades</h2>
+        <p class="p08-desc">Hombres y mujeres al servicio del progreso de Pelechuco.</p>
+      </div>
+
+      <div class="p08-aut-grid" id="lista-autoridades"></div>
+
+      <div class="reveal-init" style="margin-top:3rem;background:#FFFFFF;border:1px solid var(--border-warm);border-radius:var(--radius-lg);padding:2.5rem 1.5rem;box-shadow:var(--shadow-warm);">
+        <div style="font-size:2rem;margin-bottom:0.5rem;text-align:center;">🏛️</div>
+        <h3 style="font-size:1.35rem;font-weight:700;color:var(--text-dark);margin-bottom:1.5rem;text-align:center;">Estructura Orgánica Institucional</h3>
+        <div class="organigrama-tree">
+          <div class="org-level">
+            <div class="org-node org-node-lead">
+              <span class="org-badge">Órgano Ejecutivo</span>
+              <h5 class="org-name">Lic. Pedro Mamani Huanca</h5>
+              <p class="org-role">Alcalde Municipal de Pelechuco</p>
+            </div>
+            <div class="org-node org-node-legislative">
+              <span class="org-badge">Órgano Legislativo</span>
+              <h5 class="org-name">Concejo Municipal</h5>
+              <p class="org-role">Sra. Martha Condori Ticona · Presidenta</p>
+            </div>
+          </div>
+          <div class="org-level">
+            <div class="org-node org-node-sub">
+              <span class="org-badge">Asesoramiento y Apoyo</span>
+              <h6 class="org-name">Secretaría General y Asesoría Jurídica</h6>
+              <p class="org-role">Relacionamiento con Ayllus, Centrales Agrarias y Control Social</p>
+            </div>
+          </div>
+          <div class="org-grid-direcciones">
+            <div class="org-node">
+              <span class="org-icon">🏗️</span>
+              <h6 class="org-name">Obras Públicas y Catastro</h6>
+              <p class="org-role">Arq. Marcelo Ramos Flores</p>
+              <small>Mantenimiento vial, obras cantonales y catastro rural</small>
+            </div>
+            <div class="org-node">
+              <span class="org-icon">🩺</span>
+              <h6 class="org-name">Desarrollo Humano y Salud</h6>
+              <p class="org-role">Dra. Elena Vargas Colque</p>
+              <small>Red de postas sanitarias, educación y programas sociales</small>
+            </div>
+            <div class="org-node">
+              <span class="org-icon">💰</span>
+              <h6 class="org-name">Administración Tributaria (ATM)</h6>
+              <p class="org-role">Lic. Javier Mendoza Poma</p>
+              <small>Recaudación impositiva, finanzas y transparencia municipal</small>
+            </div>
+            <div class="org-node">
+              <span class="org-icon">🦙</span>
+              <h6 class="org-name">Desarrollo Productivo y Camélidos</h6>
+              <p class="org-role">Unidad de Camélidos y Medio Ambiente</p>
+              <small>Cadena de fibra de alpaca, sanidad animal y áreas protegidas</small>
+            </div>
+          </div>
+          <div class="org-subalcaldias">
+            <span class="org-sub-title">Subalcaldías y Delegaciones Cantonales</span>
+            <div class="org-sub-tags">
+              <span>📍 Subalcaldía Ulla Ulla</span>
+              <span>📍 Subalcaldía Antaquilla</span>
+              <span>📍 Subalcaldía Hichocollo</span>
+              <span>📍 Subalcaldía Queara - Puina</span>
+              <span>📍 Subalcaldía Suches - Katantika</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== ATENCIÓN CIUDADANA Y CONTACTO ========== -->
+    <section id="contacto" class="p08-section-surface" aria-labelledby="contacto-warm-h2">
+      <div class="p08-section">
+        <div class="p08-section-header reveal-init">
+          <span class="p08-badge-tag">Cercanía y Diálogo</span>
+          <h2 id="contacto-warm-h2" class="p08-title">Estamos para Servirte</h2>
+          <p class="p08-desc">Comunícate directamente con la alcaldía o visítanos en nuestras oficinas.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2.5rem;" class="reveal-init">
+          <!-- Información y Mapa -->
+          <div style="background:var(--bg-warm);padding:2.5rem;border-radius:var(--radius-lg);border:1px solid var(--border-warm);">
+            <h3 style="font-size:1.35rem;font-weight:700;color:var(--text-dark);margin-bottom:1.5rem;">Edificio de la Alcaldía</h3>
+
+            <div class="mapa-card-completo" style="margin-bottom:1.5rem;">
+              <div class="mapa-card-header">
+                <div class="mapa-badge">📍 Georreferenciación Municipal</div>
+                <div class="mapa-coords">14°48′55″ S · 69°03′02″ O | 3.600 m s. n. m.</div>
+              </div>
+              <div class="mapa-visual-preview">
+                <div class="mapa-pin-pulse">
+                  <div class="pin-dot"></div>
+                  <div class="pin-ring"></div>
+                </div>
+                <div class="mapa-overlay-info">
+                  <h4>Pelechuco · Edificio Consistorial</h4>
+                  <p>Plaza Principal 25 de Mayo s/n · Acera Norte</p>
+                  <span class="mapa-ruta-tag">Ruta La Paz – Achacachi – Escoma – Charazani – Pelechuco (360 km)</span>
+                </div>
+              </div>
+              <div class="mapa-card-footer">
+                <a href="https://maps.google.com/?q=-14.815278,-69.050556" target="_blank" rel="noopener" class="mapa-btn-link">
+                  <span>Ver en Google Maps</span>
+                  <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:1.25rem;font-size:0.92rem;">
+              <div>
+                <div style="font-size:0.72rem;text-transform:uppercase;color:var(--terracotta);font-weight:800;margin-bottom:0.2rem;">Dirección Oficial</div>
+                <div style="color:var(--text-dark);font-weight:600;">Plaza Principal 25 de Mayo s/n, Acera Norte, Pelechuco</div>
+              </div>
+              <div>
+                <div style="font-size:0.72rem;text-transform:uppercase;color:var(--terracotta);font-weight:800;margin-bottom:0.2rem;">Líneas Telefónicas</div>
+                <div style="color:var(--text-dark);font-weight:600;">(+591) 2 214-5890 · WhatsApp: (+591) 715-84210 · Red 114</div>
+              </div>
+              <div>
+                <div style="font-size:0.72rem;text-transform:uppercase;color:var(--terracotta);font-weight:800;margin-bottom:0.2rem;">Horarios de Atención</div>
+                <div style="color:var(--text-dark);font-weight:600;">Lunes a Viernes de 08:30 a 16:30 (Horario continuo)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario Ciudadano -->
+          <div style="background:#FFFFFF;padding:2.5rem;border-radius:var(--radius-lg);border:1px solid var(--border-warm);box-shadow:var(--shadow-warm);">
+            <h3 style="font-size:1.35rem;font-weight:700;color:var(--text-dark);margin-bottom:0.5rem;">Buzón Comunitario</h3>
+            <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1.5rem;">
+              Escribe tus dudas, sugerencias o inquietudes ciudadanas.
+            </p>
+
+            <form id="form-contacto" class="space-y-4" novalidate>
+              <div>
+                <label for="ct-nombre" class="block text-xs font-bold uppercase text-stone-500 mb-1">Tu Nombre Completo *</label>
+                <input type="text" id="ct-nombre" class="p08-form-input" placeholder="Ej. Juana Mamani" required>
+              </div>
+              <div>
+                <label for="ct-correo" class="block text-xs font-bold uppercase text-stone-500 mb-1">Celular o Correo *</label>
+                <input type="text" id="ct-correo" class="p08-form-input" placeholder="Ej. 71234567 o correo@ejemplo.com" required>
+              </div>
+              <div>
+                <label for="ct-asunto" class="block text-xs font-bold uppercase text-stone-500 mb-1">Comunidad o Asunto</label>
+                <input type="text" id="ct-asunto" class="p08-form-input" placeholder="Tu comunidad o motivo de consulta">
+              </div>
+              <div>
+                <label for="ct-mensaje" class="block text-xs font-bold uppercase text-stone-500 mb-1">Mensaje o Consulta *</label>
+                <textarea id="ct-mensaje" class="p08-form-input" rows="4" placeholder="Explícanos tu consulta..." required></textarea>
+              </div>
+              <button type="submit" class="p08-btn-atencion" style="width:100%;justify-content:center;padding:1rem;font-size:1rem;border:none;cursor:pointer;">
+                ☀️ Enviar Mensaje a la Alcaldía (Demo)
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER CÁLIDO -->
+  <footer class="p08-footer" role="contentinfo">
+    <div style="max-width:1320px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:3rem;padding-bottom:3rem;border-bottom:1px solid rgba(255,255,255,0.1);">
+      <div>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+          <img src="../assets/images/escudo-pelechuco.svg" alt="Escudo Pelechuco" style="width:36px;height:42px;object-fit:contain;">
+          <span style="font-size:1.15rem;font-weight:700;color:#fff;">GAM PELECHUCO</span>
+        </div>
+        <p style="font-size:0.85rem;line-height:1.6;margin-bottom:1.5rem;">
+          Gobierno Autónomo Municipal de Pelechuco, provincia Franz Tamayo, La Paz, Bolivia. Construyendo comunidad con identidad, transparencia y respeto.
+        </p>
+      </div>
+
+      <div>
+        <h4 style="color:#fff;font-size:0.95rem;font-weight:700;margin-bottom:1.25rem;">Navegación</h4>
+        <ul style="display:flex;flex-direction:column;gap:0.6rem;font-size:0.88rem;">
+          <li><a href="#inicio" style="color:#A8A29E;text-decoration:none;">Inicio</a></li>
+          <li><a href="#conoce" style="color:#A8A29E;text-decoration:none;">Nuestro Municipio</a></li>
+          <li><a href="#tramites" style="color:#A8A29E;text-decoration:none;">Trámites Paso a Paso</a></li>
+          <li><a href="#noticias" style="color:#A8A29E;text-decoration:none;">Comunicados</a></li>
+          <li><a href="#autoridades" style="color:#A8A29E;text-decoration:none;">Autoridades</a></li>
+          <li><a href="#contacto" style="color:#A8A29E;text-decoration:none;">Atención al Vecino</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="color:#fff;font-size:0.95rem;font-weight:700;margin-bottom:1.25rem;">Transparencia</h4>
+        <ul style="display:flex;flex-direction:column;gap:0.6rem;font-size:0.88rem;">
+          <li><a href="#noticias" style="color:#A8A29E;text-decoration:none;">Rendición Pública de Cuentas</a></li>
+          <li><a href="#noticias" style="color:#A8A29E;text-decoration:none;">Gaceta Municipal Oficial</a></li>
+          <li><a href="#tramites" style="color:#A8A29E;text-decoration:none;">Convocatorias Públicas SICOES</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="color:#fff;font-size:0.95rem;font-weight:700;margin-bottom:1.25rem;">Administración</h4>
+        <p style="font-size:0.82rem;margin-bottom:1rem;">
+          Panel conceptual para administración de contenidos y comunicados.
+        </p>
+        <a href="../admin/panel.html?propuesta=08" class="p08-btn-atencion" style="display:inline-block;background:rgba(255,255,255,0.1);box-shadow:none;border:1px solid rgba(255,255,255,0.2);">
+          ⚙️ Panel de Contenidos
+        </a>
+      </div>
+    </div>
+
+    <div style="max-width:1320px;margin:2rem auto 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:0.8rem;color:#78716C;">
+      <div>
+        © <span data-year>2026</span> Gobierno Autónomo Municipal de Pelechuco — <em>Propuesta 08 (Territorio Cálido & Raíces)</em>
+      </div>
+      <div>
+        Prototipo de diseño frontend sin backend
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPTS COMPARTIDOS -->
+  <script src="../js/proposals.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/interactions.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Activar propuesta 08
+      App.setPropuesta('08');
+      App.renderSwitcher();
+
+      // Inicializar noticias y trámites
+      if (typeof PELECHUCO_DATA !== 'undefined' && typeof Interactions !== 'undefined') {
+        Interactions.noticias.init(PELECHUCO_DATA.noticias);
+        Interactions.tramites.init(PELECHUCO_DATA.tramites);
+      }
+
+      // Año dinámico
+      document.querySelectorAll('[data-year]').forEach(el => el.textContent = new Date().getFullYear());
+
+      // Scroll Reveal con IntersectionObserver
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal-visible');
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal-init').forEach(el => observer.observe(el));
+
+      // Header scroll shadow
+      window.addEventListener('scroll', () => {
+        document.getElementById('site-header')?.classList.toggle('scrolled', window.scrollY > 40);
+      }, { passive: true });
+
+      // Controles del carrusel de noticias
+      const newsSlider = document.getElementById('lista-noticias');
+      document.getElementById('p08-news-next')?.addEventListener('click', () => {
+        newsSlider?.scrollBy({ left: 360, behavior: 'smooth' });
+      });
+      document.getElementById('p08-news-prev')?.addEventListener('click', () => {
+        newsSlider?.scrollBy({ left: -360, behavior: 'smooth' });
+      });
+
+      // Renderizar autoridades con calidez
+      const listaAut = document.getElementById('lista-autoridades');
+      if (listaAut && typeof PELECHUCO_DATA !== 'undefined') {
+        PELECHUCO_DATA.autoridades.forEach(a => {
+          const card = document.createElement('div');
+          card.className = 'p08-aut-card reveal-init';
+          card.innerHTML = `
+            <div class="p08-aut-photo" aria-hidden="true">👤</div>
+            <h4 style="font-size:1.15rem;font-weight:700;color:var(--text-dark);margin-bottom:0.25rem;">${a.nombre}</h4>
+            <div style="font-size:0.85rem;font-weight:700;color:var(--terracotta);margin-bottom:0.25rem;">${a.cargo}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">${a.area}</div>
+            <div style="font-size:0.75rem;color:var(--text-dim);font-style:italic;">${a.contactoInstitucional}</div>
+          `;
+          listaAut.appendChild(card);
+          observer.observe(card);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

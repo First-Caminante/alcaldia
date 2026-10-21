@@ -1,0 +1,518 @@
+/* ============================================================
+   PROPUESTA 01 — ANDES INSTITUCIONAL
+   Formal, sobria, moderna, confiable y gubernamental
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary: #1B3A6B;
+  --primary-dark: #0f2454;
+  --primary-light: #2a5599;
+  --secondary: #2E7D32;
+  --bg: #ffffff;
+  --bg-alt: #F4F2EF;
+  --text: #1a2332;
+  --text-muted: #5a6a7a;
+  --border: #dce3ed;
+  --accent: #2E7D32;
+  --shadow: 0 2px 8px rgba(27,58,107,0.1);
+}
+
+body { font-family: 'Source Sans 3', 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+h1,h2,h3,h4,h5 { font-family: 'Inter', system-ui, sans-serif; }
+
+/* ── HEADER ── */
+.p01-header {
+  position: sticky;
+  top: 40px; /* debajo de la proposal-bar */
+  z-index: 100;
+  background: var(--primary);
+  box-shadow: 0 2px 12px rgba(15,36,84,0.25);
+  transition: box-shadow 0.3s;
+}
+.p01-header.scrolled { box-shadow: 0 4px 20px rgba(15,36,84,0.35); }
+.p01-header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: 72px;
+}
+.p01-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.p01-logo-box {
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+  padding: 4px;
+}
+.p01-logo-text { color: #fff; }
+.p01-logo-title { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.03em; line-height: 1.3; }
+.p01-logo-sub { font-size: 0.65rem; opacity: 0.65; font-weight: 400; }
+
+.p01-nav { display: flex; align-items: center; gap: 0; }
+.p01-nav a {
+  display: block;
+  padding: 0 1rem;
+  height: 72px;
+  line-height: 72px;
+  color: rgba(255,255,255,0.82);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.p01-nav a:hover, .p01-nav a.active {
+  color: #fff;
+  border-bottom-color: #4ade80;
+}
+.p01-nav a:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+
+.p01-menu-btn {
+  display: none;
+  background: none;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.p01-mobile-nav {
+  display: none;
+  flex-direction: column;
+  background: var(--primary-dark);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.p01-mobile-nav.open { display: flex; }
+.p01-mobile-nav a {
+  padding: 1rem 1.5rem;
+  color: rgba(255,255,255,0.85);
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.p01-mobile-nav a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+@media (max-width: 900px) {
+  .p01-nav { display: none; }
+  .p01-menu-btn { display: block; }
+}
+
+/* ── HERO ── */
+.p01-hero {
+  position: relative;
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #0f2454 0%, #1B3A6B 60%, #1a4a2e 100%);
+  overflow: hidden;
+}
+.p01-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.p01-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15,36,84,0.78);
+}
+.p01-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 4rem;
+  max-width: 780px;
+  padding-left: max(1.5rem, 5vw);
+}
+.p01-hero-pretitle {
+  display: inline-block;
+  padding: 0.3rem 0.875rem;
+  background: rgba(46,125,50,0.3);
+  border: 1px solid rgba(46,125,50,0.5);
+  border-radius: 4px;
+  color: #86efac;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+.p01-hero h1 {
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 1.25rem;
+}
+.p01-hero-sub {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: rgba(255,255,255,0.78);
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+  max-width: 580px;
+}
+.p01-hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+.p01-btn-primary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  background: var(--secondary);
+  color: #fff;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.p01-btn-primary:hover { background: #3a9e40; transform: translateY(-2px); }
+.p01-btn-outline {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.45);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.p01-btn-outline:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.7); }
+
+/* ── ACCESOS RÁPIDOS ── */
+.p01-accesos {
+  background: var(--bg);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  position: relative;
+  z-index: 2;
+}
+.p01-accesos-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.p01-acceso-item {
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  padding: 1.75rem 1rem;
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-right: 1px solid var(--border);
+  transition: background 0.2s, color 0.2s;
+  text-align: center;
+}
+.p01-acceso-item:last-child { border-right: none; }
+.p01-acceso-item:hover { background: var(--bg-alt); color: var(--secondary); }
+.p01-acceso-icon { font-size: 1.5rem; }
+
+/* ── SECCIONES GENERALES ── */
+.p01-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(3rem, 6vw, 5rem) 1.5rem;
+}
+.p01-section-alt { background: var(--bg-alt); }
+.p01-section-alt .p01-section { padding-top: clamp(3rem, 6vw, 5rem); padding-bottom: clamp(3rem, 6vw, 5rem); }
+
+.p01-section-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+.p01-section-title-line {
+  width: 48px; height: 4px;
+  background: var(--secondary);
+  border-radius: 2px;
+  margin-bottom: 2rem;
+}
+.p01-section-intro {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  max-width: 680px;
+  line-height: 1.7;
+}
+
+/* ── NOTICIAS ── */
+.p01-noticias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+.noticia-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.noticia-card:hover { box-shadow: var(--shadow); transform: translateY(-3px); }
+.noticia-card:focus-visible { outline: 2px solid var(--primary); }
+.noticia-imagen { position: relative; height: 180px; overflow: hidden; background: var(--bg-alt); }
+.noticia-imagen img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+.noticia-card:hover .noticia-imagen img { transform: scale(1.05); }
+.noticia-contenido { padding: 1.25rem; }
+.noticia-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.625rem; flex-wrap: wrap; }
+.noticia-categoria {
+  display: inline-block; padding: 0.2rem 0.625rem;
+  background: rgba(27,58,107,0.08); color: var(--primary);
+  border-radius: 4px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.noticia-fecha { font-size: 0.78rem; color: var(--text-muted); }
+.noticia-titulo { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; line-height: 1.4; }
+.noticia-resumen { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; }
+.noticia-leer { font-size: 0.8rem; color: var(--primary); font-weight: 600; background: none; border: none; cursor: pointer; padding: 0; }
+.noticia-leer:hover { text-decoration: underline; color: var(--secondary); }
+
+/* Filtros */
+.filtros-wrap { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.filtro-btn { 
+  padding: 0.4rem 1rem; border-radius: 100px;
+  font-size: 0.8rem; font-weight: 500;
+  border: 1px solid var(--border); color: var(--text-muted);
+  background: transparent; cursor: pointer; transition: all 0.2s;
+}
+.filtro-btn.active, .filtro-btn:hover {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+.busqueda-wrap { margin-bottom: 1.5rem; }
+.busqueda-input {
+  width: 100%; max-width: 420px;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--border); border-radius: 6px;
+  font: inherit; font-size: 0.9rem; color: var(--text);
+}
+.busqueda-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(27,58,107,0.1); }
+
+.paginacion-wrap { display: flex; align-items: center; gap: 1rem; margin-top: 2rem; justify-content: center; }
+
+/* ── AUTORIDADES ── */
+.p01-autoridades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+.p01-autoridad-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.75rem 1.25rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.p01-autoridad-foto {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--bg-alt);
+  border: 3px dashed var(--border);
+  margin: 0 auto 1rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 1.75rem; color: var(--text-muted);
+}
+.p01-autoridad-foto small { font-size: 0.55rem; line-height: 1.2; color: var(--text-muted); margin-top: 2px; }
+.p01-autoridad-nombre { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
+.p01-autoridad-cargo { font-size: 0.8rem; color: var(--primary); font-weight: 600; margin-bottom: 0.25rem; }
+.p01-autoridad-area { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.p01-autoridad-contacto { font-size: 0.72rem; color: var(--text-muted); font-style: italic; }
+
+/* ── TRÁMITES ── */
+.tramite-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: 0 8px 8px 0;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.tramite-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.625rem; flex-wrap: wrap; }
+.tramite-categoria {
+  display: inline-block; padding: 0.2rem 0.625rem;
+  background: rgba(27,58,107,0.08); color: var(--primary);
+  border-radius: 4px; font-size: 0.72rem; font-weight: 700;
+}
+.tramite-nombre { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 0.375rem; }
+.tramite-descripcion { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6; }
+.tramite-info { display: grid; grid-template-columns: 1fr 1fr; gap: 0.375rem; margin-bottom: 1rem; font-size: 0.82rem; color: var(--text-muted); }
+.tramite-ver {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 1.125rem;
+  background: var(--primary); color: #fff;
+  border-radius: 5px; font-weight: 600; font-size: 0.82rem;
+  border: none; cursor: pointer; text-decoration: none;
+  transition: background 0.2s;
+}
+.tramite-ver:hover { background: var(--primary-light); }
+
+/* ── CONTACTO ── */
+.p01-contacto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+.p01-contacto-info h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--primary); }
+.p01-contacto-item {
+  display: flex; gap: 1rem; margin-bottom: 1.25rem; align-items: flex-start;
+}
+.p01-contacto-icon { font-size: 1.25rem; flex-shrink: 0; margin-top: 2px; }
+.p01-contacto-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
+.p01-contacto-value { font-size: 0.9rem; color: var(--text); }
+
+.p01-mapa-placeholder {
+  height: 220px; border-radius: 8px;
+  background: linear-gradient(135deg, #dce8f8 0%, #bfcfe8 100%);
+  border: 1px dashed #94a8c8;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: var(--primary); font-size: 0.875rem; margin-bottom: 1.5rem; text-align: center; padding: 1rem;
+}
+
+.p01-form { display: flex; flex-direction: column; gap: 1rem; }
+.p01-form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+.p01-form-group label { font-size: 0.8rem; font-weight: 700; color: var(--text); letter-spacing: 0.03em; }
+.p01-form-input, .p01-form-textarea, .p01-form-select {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border); border-radius: 6px;
+  font: inherit; font-size: 0.9rem; color: var(--text); background: var(--bg);
+  transition: border-color 0.2s;
+}
+.p01-form-input:focus, .p01-form-textarea:focus, .p01-form-select:focus {
+  outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(27,58,107,0.1);
+}
+.p01-form-textarea { resize: vertical; min-height: 110px; }
+.p01-form-submit {
+  padding: 0.875rem 2rem; background: var(--primary); color: #fff;
+  border: none; border-radius: 6px; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+  align-self: flex-start; transition: background 0.2s;
+}
+.p01-form-submit:hover { background: var(--primary-light); }
+
+/* ── CONOCE ── */
+.p01-conoce-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; margin-bottom: 3rem;
+}
+.p01-conoce-img { border-radius: 10px; overflow: hidden; aspect-ratio: 4/3; }
+.p01-conoce-img img { width: 100%; height: 100%; object-fit: cover; }
+.p01-pendiente {
+  padding: 0.875rem 1rem;
+  background: rgba(245,158,11,0.06);
+  border: 1px dashed rgba(245,158,11,0.4);
+  border-radius: 6px; margin-bottom: 1.25rem;
+  color: #92400e; font-size: 0.85rem; font-style: italic; line-height: 1.6;
+}
+.p01-galeria {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+}
+.p01-galeria-item { aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; }
+.p01-galeria-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+.p01-galeria-item:hover img { transform: scale(1.06); }
+
+/* ── ORGANIGRAMA PLACEHOLDER ── */
+.p01-organigrama {
+  margin-top: 2rem; padding: 2rem;
+  background: var(--bg-alt);
+  border: 1px dashed var(--border);
+  border-radius: 10px; text-align: center; color: var(--text-muted);
+}
+.p01-organigrama h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+
+/* ── FOOTER ── */
+.p01-footer { background: var(--primary-dark); color: rgba(255,255,255,0.7); }
+.p01-footer-main {
+  max-width: 1280px; margin: 0 auto;
+  padding: 4rem 1.5rem 2rem;
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+}
+.p01-footer-brand { }
+.p01-footer-logo-box {
+  width: 48px; height: 48px;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 6px; margin-bottom: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.55rem; font-weight: 700; color: rgba(255,255,255,0.4);
+  text-align: center; line-height: 1.3; padding: 4px;
+}
+.p01-footer-inst { font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 0.375rem; }
+.p01-footer-sub { font-size: 0.78rem; opacity: 0.5; margin-bottom: 1rem; }
+.p01-footer-desc { font-size: 0.82rem; line-height: 1.7; opacity: 0.6; }
+
+.p01-footer-col h4 { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 1rem; }
+.p01-footer-col ul { display: flex; flex-direction: column; gap: 0.625rem; }
+.p01-footer-col a { font-size: 0.85rem; color: rgba(255,255,255,0.65); text-decoration: none; transition: color 0.2s; }
+.p01-footer-col a:hover { color: #fff; }
+.p01-footer-col li { font-size: 0.82rem; line-height: 1.5; }
+
+.p01-footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 1.5rem 1.5rem;
+  max-width: 1280px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+  font-size: 0.78rem;
+}
+.p01-footer-admin-link {
+  display: inline-flex; align-items: center; gap: 0.375rem;
+  padding: 0.35rem 0.875rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px; color: rgba(255,255,255,0.45);
+  font-size: 0.72rem; font-weight: 600; text-decoration: none;
+  transition: all 0.2s;
+}
+.p01-footer-admin-link:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+
+/* ── BANDA DE INFO INSTITUCIONAL ── */
+.p01-info-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+.p01-info-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1.75rem;
+  box-shadow: var(--shadow);
+}
+.p01-info-card h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 0.75rem; }
+.p01-info-card p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.7; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .p01-footer-main { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .p01-accesos-inner { grid-template-columns: 1fr 1fr; }
+  .p01-conoce-grid { grid-template-columns: 1fr; }
+  .p01-contacto-grid { grid-template-columns: 1fr; }
+  .p01-galeria { grid-template-columns: 1fr 1fr; }
+  .p01-info-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .p01-footer-main { grid-template-columns: 1fr; gap: 2rem; }
+  .p01-galeria { grid-template-columns: 1fr 1fr; }
+  .p01-accesos-inner { grid-template-columns: 1fr 1fr; }
+  .tramite-info { grid-template-columns: 1fr; }
+}

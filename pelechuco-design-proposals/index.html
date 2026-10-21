@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ocho propuestas de diseño institucional para el portal del Gobierno Autónomo Municipal de Pelechuco, La Paz, Bolivia.">
+  <meta property="og:title" content="Pelechuco Digital — Ocho propuestas de diseño institucional">
+  <title>Pelechuco Digital — Galería de propuestas de diseño</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Estilos adicionales inline para la galería */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 1rem;
+      background: #4a9eff;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 0 0 6px 6px;
+      font-weight: 600;
+      z-index: 9999;
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    .proposal-card-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+    .noticia-card {
+      border-left: 4px solid transparent;
+    }
+    .btn-primary {
+      display: inline-block;
+      padding: 0.6rem 1.25rem;
+      background: var(--primary, #1B3A6B);
+      color: #fff;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .pending-field {
+      color: rgba(255,255,255,0.3);
+      font-style: italic;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body class="gallery-page">
+  <a href="#main-content" class="skip-link">Saltar al contenido</a>
+
+  <!-- Barra navegación superior -->
+  <nav class="proposals-nav" aria-label="Navegación entre propuestas">
+    <a href="index.html" class="nav-brand">PELECHUCO DIGITAL</a>
+    <div class="nav-proposals-btns">
+      <a href="proposals/01-andes-institucional.html" class="nav-prop-btn">01 Andes Institucional</a>
+      <a href="proposals/02-territorio-naturaleza.html" class="nav-prop-btn">02 Territorio y Naturaleza</a>
+      <a href="proposals/03-gobierno-abierto.html" class="nav-prop-btn">03 Gobierno Abierto</a>
+      <a href="proposals/04-pelechuco-contemporaneo.html" class="nav-prop-btn">04 Pelechuco Contemporáneo</a>
+      <a href="proposals/05-comunidad-servicio.html" class="nav-prop-btn">05 Comunidad y Servicio</a>
+      <a href="proposals/06-metropoli-ciudad-viva.html" class="nav-prop-btn" style="border-color:rgba(2,132,199,0.5);color:#38bdf8;">06 Ciudad Viva (lapaz.bo)</a>
+      <a href="proposals/07-andes-neo-digital.html" class="nav-prop-btn" style="border-color:rgba(6,182,212,0.5);color:#22d3ee;">07 Andes Neo-Digital</a>
+      <a href="proposals/08-territorio-calido.html" class="nav-prop-btn" style="border-color:rgba(217,119,6,0.5);color:#fbbf24;">08 Territorio Cálido</a>
+    </div>
+  </nav>
+
+  <!-- Hero de galería -->
+  <header class="gallery-hero">
+    <div style="display:flex;justify-content:center;margin-bottom:1.25rem;">
+      <img src="assets/images/escudo-pelechuco.svg" alt="Escudo Oficial del Gobierno Autónomo Municipal de Pelechuco" style="width:72px;height:84px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5));">
+    </div>
+    <div class="gallery-badge">Propuestas de diseño institucional</div>
+    <h1 class="gallery-title">Pelechuco Digital</h1>
+    <p class="gallery-subtitle">Ocho conceptos visuales para la futura presencia digital del Gobierno Autónomo Municipal de Pelechuco</p>
+    <p class="gallery-client">Gobierno Autónomo Municipal de Pelechuco · Provincia Franz Tamayo · La Paz, Bolivia</p>
+    <div class="gallery-disclaimer">
+      ⚠️ Propuestas conceptuales de diseño frontend — No es el sitio institucional oficial publicado
+    </div>
+  </header>
+
+  <!-- Grid de propuestas -->
+  <main id="main-content">
+    <section class="proposals-section" aria-label="Cinco propuestas de diseño">
+      <div class="proposals-grid">
+
+        <!-- PROPUESTA 01 -->
+        <article class="proposal-card">
+          <div class="proposal-preview">
+            <img
+              src="https://images.unsplash.com/photo-1531804065854-c7b4f00e6b82?w=800&q=80"
+              alt="Paisaje andino — Propuesta 01 Andes Institucional"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            >
+            <div class="proposal-preview-overlay"></div>
+            <div class="proposal-number" aria-hidden="true">01</div>
+          </div>
+          <div class="proposal-body">
+            <h2 class="proposal-name">Andes Institucional</h2>
+            <p class="proposal-personality">Formal, sobria, moderna, confiable y gubernamental</p>
+            <div class="proposal-palette" aria-label="Paleta de colores">
+              <div class="palette-swatch" style="background:#1B3A6B" title="Azul profundo #1B3A6B"></div>
+              <div class="palette-swatch" style="background:#F4F2EF;border-color:rgba(0,0,0,0.15)" title="Gris cálido #F4F2EF"></div>
+              <div class="palette-swatch" style="background:#2E7D32" title="Verde andino #2E7D32"></div>
+              <div class="palette-swatch" style="background:#94A3B8" title="Gris azulado #94A3B8"></div>
+              <span class="palette-label">P01</span>
+            </div>
+            <div class="proposal-actions">
+              <a href="proposals/01-andes-institucional.html" class="btn-explore" aria-label="Explorar propuesta 01: Andes Institucional">
+                Explorar propuesta →
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROPUESTA 02 -->
+        <article class="proposal-card">
+          <div class="proposal-preview">
+            <img
+              src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80"
+              alt="Paisaje natural — Propuesta 02 Territorio y Naturaleza"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            >
+            <div class="proposal-preview-overlay"></div>
+            <div class="proposal-number" aria-hidden="true">02</div>
+          </div>
+          <div class="proposal-body">
+            <h2 class="proposal-name">Territorio y Naturaleza</h2>
+            <p class="proposal-personality">Visual, territorial, turística, cultural y contemporánea</p>
+            <div class="proposal-palette" aria-label="Paleta de colores">
+              <div class="palette-swatch" style="background:#2D5016" title="Verde bosque #2D5016"></div>
+              <div class="palette-swatch" style="background:#C4A882" title="Arena #C4A882"></div>
+              <div class="palette-swatch" style="background:#FAF7F2;border-color:rgba(0,0,0,0.12)" title="Crema #FAF7F2"></div>
+              <div class="palette-swatch" style="background:#4A7FA5" title="Azul lago #4A7FA5"></div>
+              <span class="palette-label">P02</span>
+            </div>
+            <div class="proposal-actions">
+              <a href="proposals/02-territorio-naturaleza.html" class="btn-explore" aria-label="Explorar propuesta 02: Territorio y Naturaleza">
+                Explorar propuesta →
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROPUESTA 03 -->
+        <article class="proposal-card">
+          <div class="proposal-preview">
+            <img
+              src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80"
+              alt="Edificio institucional — Propuesta 03 Gobierno Abierto"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            >
+            <div class="proposal-preview-overlay"></div>
+            <div class="proposal-number" aria-hidden="true">03</div>
+          </div>
+          <div class="proposal-body">
+            <h2 class="proposal-name">Gobierno Abierto</h2>
+            <p class="proposal-personality">Transparencia, claridad, información y servicio al ciudadano</p>
+            <div class="proposal-palette" aria-label="Paleta de colores">
+              <div class="palette-swatch" style="background:#0D5FA3" title="Azul gobierno #0D5FA3"></div>
+              <div class="palette-swatch" style="background:#FFFFFF;border-color:rgba(0,0,0,0.15)" title="Blanco #FFFFFF"></div>
+              <div class="palette-swatch" style="background:#6B7280" title="Gris neutro #6B7280"></div>
+              <div class="palette-swatch" style="background:#E67E22" title="Naranja acento #E67E22"></div>
+              <span class="palette-label">P03</span>
+            </div>
+            <div class="proposal-actions">
+              <a href="proposals/03-gobierno-abierto.html" class="btn-explore" aria-label="Explorar propuesta 03: Gobierno Abierto">
+                Explorar propuesta →
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROPUESTA 04 -->
+        <article class="proposal-card">
+          <div class="proposal-preview">
+            <img
+              src="https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80"
+              alt="Paisaje limpio contemporáneo — Propuesta 04 Pelechuco Contemporáneo"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            >
+            <div class="proposal-preview-overlay"></div>
+            <div class="proposal-number" aria-hidden="true">04</div>
+          </div>
+          <div class="proposal-body">
+            <h2 class="proposal-name">Pelechuco Contemporáneo</h2>
+            <p class="proposal-personality">Minimalista, elegante, digital, moderna y profesional</p>
+            <div class="proposal-palette" aria-label="Paleta de colores">
+              <div class="palette-swatch" style="background:#F9F6F0;border-color:rgba(0,0,0,0.12)" title="Crema clara #F9F6F0"></div>
+              <div class="palette-swatch" style="background:#1A1A1A" title="Negro profundo #1A1A1A"></div>
+              <div class="palette-swatch" style="background:#4A4A4A" title="Gris oscuro #4A4A4A"></div>
+              <div class="palette-swatch" style="background:#1B5E20" title="Verde acento #1B5E20"></div>
+              <span class="palette-label">P04</span>
+            </div>
+            <div class="proposal-actions">
+              <a href="proposals/04-pelechuco-contemporaneo.html" class="btn-explore" aria-label="Explorar propuesta 04: Pelechuco Contemporáneo">
+                Explorar propuesta →
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROPUESTA 05 -->
+        <article class="proposal-card">
+          <div class="proposal-preview">
+            <img
+              src="https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=800&q=80"
+              alt="Comunidad andina — Propuesta 05 Comunidad y Servicio"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            >
+            <div class="proposal-preview-overlay"></div>
+            <div class="proposal-number" aria-hidden="true">05</div>
+          </div>
+          <div class="proposal-body">
+            <h2 class="proposal-name">Comunidad y Servicio</h2>
+            <p class="proposal-personality">Cercana, accesible, humana, comunitaria y orientada a las personas</p>
+            <div class="proposal-palette" aria-label="Paleta de colores">
+              <div class="palette-swatch" style="background:#4CAF50" title="Verde comunidad #4CAF50"></div>
+              <div class="palette-swatch" style="background:#1976D2" title="Azul servicio #1976D2"></div>
+              <div class="palette-swatch" style="background:#8D6E63" title="Marrón tierra #8D6E63"></div>
+              <div class="palette-swatch" style="background:#F1F8E9;border-color:rgba(0,0,0,0.12)" title="Verde claro #F1F8E9"></div>
+              <span class="palette-label">P05</span>
+            </div>
+            <div class="proposal-actions">
+              <a href="proposals/05-comunidad-servicio.html" class="btn-explore" aria-label="Explorar propuesta 05: Comunidad y Servicio">
+                Explorar propuesta →
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROPUESTA 06: CIUDAD VIVA (INSPIRACIÓN LAPAZ.BO) -->
+        <article class="proposal-card" style="border-top:3px solid #0284C7;">
+          <div class="proposal-preview">
+            <img
+              src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80"
+              alt="Ciudad andina viva — Propuesta 06"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            >
+            <div class="proposal-preview-overlay" style="background:linear-gradient(to top, rgba(15,23,42,0.95) 0%, rgba(2,132,199,0.2) 100%);"></div>
+            <div class="proposal-number" style="background:#0284C7;box-shadow:0 0 15px rgba(2,132,199,0.5);" aria-hidden="true">06</div>
+            <span style="position:absolute;top:1rem;right:1rem;background:#F59E0B;color:#0F172A;font-weight:800;font-size:0.68rem;padding:0.25rem 0.65rem;border-radius:100px;text-transform:uppercase;">
+              ⭐ Inspiración lapaz.bo
+            </span>
+          </div>
+          <div class="proposal-body">
+            <h2 class="proposal-name">Ciudad Viva & Gestión (lapaz.bo)</h2>
+            <p class="proposal-personality">Réplica fiel a lapaz.bo: carrusel de tarjetas verticales escalonadas (IGOB 24/7, Trámites en Línea, Turismo), grilla Bento de prensa y widget interactivo AMI</p>
+            <div class="proposal-palette" aria-label="Paleta de colores">
+              <div class="palette-swatch" style="background:#0284C7" title="Azul cielo andino #0284C7"></div>
+              <div class="palette-swatch" style="background:#F59E0B" title="Amarillo sol #F59E0B"></div>
+              <div class="palette-swatch" style="background:#10B981" title="Verde valles #10B981"></div>
+              <div class="palette-swatch" style="background:#0F172A" title="Pizarra noche #0F172A"></div>
+              <span class="palette-label">P06</span>
+            </div>
+            <div class="proposal-actions">
+              <a href="proposals/06-metropoli-ciudad-viva.html" class="btn-explore" style="background:linear-gradient(135deg,#0284C7,#0369A1);" aria-label="Explorar propuesta 06: Ciudad Viva">
+                Explorar propuesta →
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROPUESTA 07: ANDES NEO-DIGITAL -->
+        <article class="proposal-card" style="border-top:3px solid #06B6D4;">
+          <div class="proposal-preview">
+            <img
+              src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80"
+              alt="Cumbres andinas nocturnas — Propuesta 07"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            >
+            <div class="proposal-preview-overlay" style="background:linear-gradient(to top, rgba(7,13,24,0.95) 0%, rgba(6,182,212,0.15) 100%);"></div>
+            <div class="proposal-number" style="background:#06B6D4;color:#070D18;box-shadow:0 0 15px rgba(6,182,212,0.6);" aria-hidden="true">07</div>
+            <span style="position:absolute;top:1rem;right:1rem;background:rgba(6,182,212,0.2);color:#22d3ee;border:1px solid rgba(6,182,212,0.4);font-weight:700;font-size:0.68rem;padding:0.25rem 0.65rem;border-radius:100px;text-transform:uppercase;">
+              ❄️ Neo-Digital
+            </span>
+          </div>
+          <div class="proposal-body">
+            <h2 class="proposal-name">Andes Neo-Digital</h2>
+            <p class="proposal-personality">Vanguardista, glassmorphism, modo oscuro con neón glaciar y bento grid tech de alta fidelidad</p>
+            <div class="proposal-palette" aria-label="Paleta de colores">
+              <div class="palette-swatch" style="background:#070D18;border-color:rgba(255,255,255,0.2)" title="Obsidiana noche #070D18"></div>
+              <div class="palette-swatch" style="background:#06B6D4" title="Turquesa glaciar #06B6D4"></div>
+              <div class="palette-swatch" style="background:#10B981" title="Esmeralda #10B981"></div>
+              <div class="palette-swatch" style="background:#8B5CF6" title="Violeta andino #8B5CF6"></div>
+              <span class="palette-label">P07</span>
+            </div>
+            <div class="proposal-actions">
+              <a href="proposals/07-andes-neo-digital.html" class="btn-explore" style="background:#06B6D4;color:#070D18;" aria-label="Explorar propuesta 07: Andes Neo-Digital">
+                Explorar propuesta →
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROPUESTA 08: TERRITORIO CÁLIDO & RAÍCES -->
+        <article class="proposal-card" style="border-top:3px solid #C2410C;">
+          <div class="proposal-preview">
+            <img
+              src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80"
+              alt="Paisaje cálido andino — Propuesta 08"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            >
+            <div class="proposal-preview-overlay" style="background:linear-gradient(to top, rgba(28,25,23,0.95) 0%, rgba(194,65,12,0.2) 100%);"></div>
+            <div class="proposal-number" style="background:#C2410C;box-shadow:0 0 15px rgba(194,65,12,0.5);" aria-hidden="true">08</div>
+            <span style="position:absolute;top:1rem;right:1rem;background:#FEF3C7;color:#92400E;font-weight:800;font-size:0.68rem;padding:0.25rem 0.65rem;border-radius:100px;text-transform:uppercase;">
+              ☀️ Raíces Vivas
+            </span>
+          </div>
+          <div class="proposal-body">
+            <h2 class="proposal-name">Territorio Cálido & Raíces</h2>
+            <p class="proposal-personality">Cálida, humana, comunitaria. Paleta en terracota, ocre y queñua con stepper paso a paso para trámites</p>
+            <div class="proposal-palette" aria-label="Paleta de colores">
+              <div class="palette-swatch" style="background:#C2410C" title="Terracota #C2410C"></div>
+              <div class="palette-swatch" style="background:#D97706" title="Ocre sol #D97706"></div>
+              <div class="palette-swatch" style="background:#15803D" title="Verde queñua #15803D"></div>
+              <div class="palette-swatch" style="background:#FAF7F2;border-color:rgba(0,0,0,0.12)" title="Crema arena #FAF7F2"></div>
+              <span class="palette-label">P08</span>
+            </div>
+            <div class="proposal-actions">
+              <a href="proposals/08-territorio-calido.html" class="btn-explore" style="background:linear-gradient(135deg,#C2410C,#EA580C);" aria-label="Explorar propuesta 08: Territorio Cálido">
+                Explorar propuesta →
+              </a>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer de la galería -->
+  <footer style="background:#0a1220;border-top:1px solid rgba(255,255,255,0.06);padding:2rem;text-align:center;color:rgba(255,255,255,0.3);font-size:0.8rem;">
+    <p>PELECHUCO DIGITAL — Propuestas de Diseño Institucional</p>
+    <p style="margin-top:0.5rem;">© <span data-year></span> — Prototipo de diseño. No es el sitio oficial del Gobierno Autónomo Municipal de Pelechuco.</p>
+  </footer>
+
+  <script src="js/proposals.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.querySelectorAll('[data-year]').forEach(el => {
+      el.textContent = new Date().getFullYear();
+    });
+  </script>
+</body>
+</html>

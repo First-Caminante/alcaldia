@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Propuesta 04: Pelechuco Contemporáneo — Portal del Gobierno Autónomo Municipal de Pelechuco">
+  <title>P04 Pelechuco Contemporáneo — GAM Pelechuco</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/proposal-04.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+  <!-- BARRA DE PROPUESTA -->
+  <div class="proposal-bar" role="region" aria-label="Navegación entre propuestas">
+    <div class="proposal-bar-label">
+      <span>PROPUESTA 04</span>
+      Pelechuco Contemporáneo — <em>Diseño conceptual</em>
+    </div>
+    <nav class="proposal-bar-nav" aria-label="Cambiar propuesta">
+      <div id="proposal-switcher" class="flex gap-1"></div>
+      <a href="../index.html" class="back-to-gallery">← Galería</a>
+    </nav>
+  </div>
+
+  <!-- HEADER MINIMALISTA -->
+  <header class="p04-header" id="site-header" role="banner">
+    <div class="p04-header-inner">
+      <a href="#inicio" class="p04-logo" aria-label="Gobierno Autónomo Municipal de Pelechuco — Inicio" style="display:flex;align-items:center;gap:0.75rem;">
+        <img src="../assets/images/escudo-pelechuco.svg" alt="Escudo Pelechuco" style="width:32px;height:38px;object-fit:contain;">
+        <div>
+          <div class="p04-logo-title">GAM PELECHUCO</div>
+          <div class="p04-logo-sub">Gobierno Autónomo Municipal · La Paz, Bolivia</div>
+        </div>
+      </a>
+      <nav class="p04-nav" aria-label="Menú principal">
+        <a href="#inicio">Inicio</a>
+        <a href="#conoce">El Municipio</a>
+        <a href="#noticias">Noticias</a>
+        <a href="#autoridades">Autoridades</a>
+        <a href="#tramites">Trámites</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+      <button class="p04-menu-btn" id="mobile-menu-btn" aria-expanded="false" aria-controls="mobile-menu" aria-label="Abrir menú">☰</button>
+    </div>
+    <nav class="p04-mobile-nav" id="mobile-menu" aria-label="Menú móvil">
+      <a href="#inicio">Inicio</a>
+      <a href="#conoce">El Municipio</a>
+      <a href="#noticias">Noticias</a>
+      <a href="#autoridades">Autoridades</a>
+      <a href="#tramites">Trámites</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ========== INICIO — HERO ASIMÉTRICO ========== -->
+    <section id="inicio" aria-label="Inicio">
+      <div class="p04-hero">
+        <div class="p04-hero-text">
+          <div class="p04-hero-pretitle">Gobierno Autónomo Municipal · La Paz, Bolivia</div>
+          <h1>Municipio de<br><em>Pelechuco</em></h1>
+          <p class="p04-hero-sub">Al servicio de las comunidades de la provincia Franz Tamayo. Administración transparente, cercana y comprometida con el desarrollo del territorio.</p>
+          <div class="p04-hero-btns">
+            <a href="#conoce" class="p04-btn-solid">El municipio</a>
+            <a href="#tramites" class="p04-btn-outline">Trámites</a>
+          </div>
+        </div>
+        <div class="p04-hero-image">
+          <img
+            src="https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1000&q=85"
+            alt="Paisaje andino — imagen de referencia del municipio de Pelechuco"
+            fetchpriority="high"
+            onerror="this.style.background='linear-gradient(135deg,#1B5E20,#0a0a0a)';this.style.display='block'"
+          >
+        </div>
+      </div>
+      <div class="p04-sep"></div>
+
+      <!-- Noticias destacadas en inicio -->
+      <div class="p04-section">
+        <div class="p04-section-pretitle">Comunicados recientes</div>
+        <h2>Noticias del municipio</h2>
+        <div class="p04-noticias-featured" id="inicio-noticias-featured">
+          <!-- Renderizado por JS -->
+        </div>
+        <div style="margin-top:3rem;text-align:center;">
+          <a href="#noticias" class="p04-btn-outline" style="display:inline-flex;">Ver todos los comunicados →</a>
+        </div>
+      </div>
+      <div class="p04-sep"></div>
+
+      <!-- Info institucional en grid asimétrico -->
+      <div class="p04-section-alt">
+        <div class="p04-section">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3rem;">
+            <div>
+              <div class="p04-section-pretitle">El territorio</div>
+              <h3 style="font-family:'DM Serif Display',serif;font-size:1.25rem;margin-bottom:1rem;">Pelechuco, Franz Tamayo</h3>
+              <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.8;">Municipio en el norte de La Paz, a 3.600 m s. n. m. y 2.714 km² de extensión, hogar de la Reserva Nacional Ulla Ulla y la Cordillera de Apolobamba.</p>
+              <a href="#conoce" class="p04-btn-outline" style="display:inline-flex;margin-top:1.5rem;font-size:0.7rem;padding:0.625rem 1.5rem;">Conocer más</a>
+            </div>
+            <div>
+              <div class="p04-section-pretitle">Trámites</div>
+              <h3 style="font-family:'DM Serif Display',serif;font-size:1.25rem;margin-bottom:1rem;">Gestiones ciudadanas</h3>
+              <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.8;">Consulte el catálogo de trámites, requisitos, costos y oficinas responsables de la administración municipal.</p>
+              <a href="#tramites" class="p04-btn-outline" style="display:inline-flex;margin-top:1.5rem;font-size:0.7rem;padding:0.625rem 1.5rem;">Ver trámites</a>
+            </div>
+            <div>
+              <div class="p04-section-pretitle">Autoridades</div>
+              <h3 style="font-family:'DM Serif Display',serif;font-size:1.25rem;margin-bottom:1rem;">Gobierno municipal</h3>
+              <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.8;">Liderado por el Alcalde Municipal Lic. Pedro Mamani Huanca y el Concejo Municipal en constante coordinación comunal.</p>
+              <a href="#autoridades" class="p04-btn-outline" style="display:inline-flex;margin-top:1.5rem;font-size:0.7rem;padding:0.625rem 1.5rem;">Ver autoridades</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== CONOCE PELECHUCO ========== -->
+    <section id="conoce" aria-labelledby="conoce-h2">
+      <div class="p04-sep"></div>
+      <div class="p04-section">
+        <div class="p04-section-pretitle">El territorio</div>
+        <h2 id="conoce-h2">El municipio de Pelechuco</h2>
+        <div class="p04-conoce-grid">
+          <div>
+            <p style="font-size:0.95rem;color:var(--text);line-height:1.8;margin-bottom:1.5rem;">Pelechuco es un territorio andino de alta montaña, historia minera colonial y profundas tradiciones comunitarias. Situado en la provincia Franz Tamayo, conecta las alturas de Apolobamba con los valles subtropicales.</p>
+            
+            <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin:1.5rem 0 0.5rem;">Ubicación geográfica</h3>
+            <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.8;">14°48′55″ S, 69°03′02″ O · Altitud: 3.600 m s. n. m. · Superficie: 2.714 km² · Límites: República del Perú al norte y oeste, municipios de Charazani, Curva y Apolo.</p>
+
+            <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin:1.5rem 0 0.5rem;">Historia</h3>
+            <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.8;">Enclave virreinal clave del tráfico comercial y aurífero de Apolobamba. Destaca por sus casonas solariegas de piedra canteada y templos coloniales.</p>
+
+            <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin:1.5rem 0 0.5rem;">Comunidades</h3>
+            <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.8;">Conformado por 9 cantones: Pelechuco Central, Ulla Ulla, Antaquilla, Hichocollo, Queara, Puina, Suches, Katantika y Agua Blanca, habitados por hábiles familias tejedoras.</p>
+          </div>
+          <div>
+            <div class="p04-conoce-imgs">
+              <div class="p04-conoce-img-main">
+                <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900&q=80" alt="Cordillera andina en Pelechuco" loading="lazy" onerror="this.parentElement.style.background='linear-gradient(135deg,#c8d8e8,#8aaBb8)'">
+              </div>
+              <div class="p04-conoce-img-sm">
+                <img src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=500&q=80" alt="Paisaje de montaña" loading="lazy" onerror="this.parentElement.style.background='#e0e8d8'">
+              </div>
+              <div class="p04-conoce-img-sm">
+                <img src="https://images.unsplash.com/photo-1531804065854-c7b4f00e6b82?w=500&q=80" alt="Paisaje andino en Ulla Ulla" loading="lazy" onerror="this.parentElement.style.background='#d8e0e8'">
+              </div>
+            </div>
+            <p style="font-size:0.75rem;color:var(--text-light);margin-top:0.75rem;">Fotografías territoriales de la Cordillera de Apolobamba y valles de Pelechuco.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== NOTICIAS ========== -->
+    <section id="noticias" aria-labelledby="noticias-h2">
+      <div class="p04-sep"></div>
+      <div class="p04-section">
+        <div class="p04-section-pretitle">Comunicados oficiales</div>
+        <h2 id="noticias-h2">Noticias y comunicados</h2>
+        <div class="aviso-demo" style="margin-bottom:1.5rem;">⚠️ Contenido de demostración — Los comunicados oficiales serán añadidos por la institución</div>
+        <div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;align-items:center;flex-wrap:wrap;">
+          <input type="search" id="busqueda-noticias" style="padding:0.5rem 1rem;border:1px solid var(--border);font:inherit;font-size:0.82rem;color:var(--text);background:var(--bg);max-width:320px;" placeholder="Buscar comunicados..." aria-label="Buscar noticias">
+        </div>
+        <div class="filtros-wrap" id="filtros-categorias" role="group" aria-label="Filtrar por categoría"></div>
+        <div class="p04-noticias-full" id="lista-noticias"></div>
+        <div class="paginacion-wrap" id="paginacion-noticias"></div>
+      </div>
+    </section>
+
+    <!-- ========== AUTORIDADES ========== -->
+    <section id="autoridades" aria-labelledby="autoridades-h2">
+      <div class="p04-sep"></div>
+      <div class="p04-section-alt">
+        <div class="p04-section">
+          <div class="p04-section-pretitle">Gobierno municipal</div>
+          <h2 id="autoridades-h2">Autoridades</h2>
+          <div class="p04-autoridades-grid" id="lista-autoridades"></div>
+          
+          <div style="margin-top:3rem;padding:2.5rem 1.5rem;border:1px solid var(--border);border-radius:12px;background:var(--bg);">
+            <h3 style="font-family:'DM Serif Display',serif;font-size:1.35rem;margin-bottom:1.5rem;color:var(--text);text-align:center;">Organigrama Estructural Municipal</h3>
+            <div class="organigrama-tree">
+              <div class="org-level">
+                <div class="org-node org-node-lead">
+                  <span class="org-badge">Órgano Ejecutivo</span>
+                  <h5 class="org-name">Lic. Pedro Mamani Huanca</h5>
+                  <p class="org-role">Alcalde Municipal de Pelechuco</p>
+                </div>
+                <div class="org-node org-node-legislative">
+                  <span class="org-badge">Órgano Legislativo</span>
+                  <h5 class="org-name">Concejo Municipal</h5>
+                  <p class="org-role">Sra. Martha Condori Ticona · Presidenta</p>
+                </div>
+              </div>
+              <div class="org-level">
+                <div class="org-node org-node-sub">
+                  <span class="org-badge">Asesoramiento y Apoyo</span>
+                  <h6 class="org-name">Secretaría General y Asesoría Jurídica</h6>
+                  <p class="org-role">Relacionamiento con Ayllus, Centrales Agrarias y Control Social</p>
+                </div>
+              </div>
+              <div class="org-grid-direcciones">
+                <div class="org-node">
+                  <span class="org-icon">🏗️</span>
+                  <h6 class="org-name">Obras Públicas y Catastro</h6>
+                  <p class="org-role">Arq. Marcelo Ramos Flores</p>
+                  <small>Mantenimiento vial, obras cantonales y catastro rural</small>
+                </div>
+                <div class="org-node">
+                  <span class="org-icon">🩺</span>
+                  <h6 class="org-name">Desarrollo Humano y Salud</h6>
+                  <p class="org-role">Dra. Elena Vargas Colque</p>
+                  <small>Red de postas sanitarias, educación y programas sociales</small>
+                </div>
+                <div class="org-node">
+                  <span class="org-icon">💰</span>
+                  <h6 class="org-name">Administración Tributaria (ATM)</h6>
+                  <p class="org-role">Lic. Javier Mendoza Poma</p>
+                  <small>Recaudación impositiva, finanzas y transparencia municipal</small>
+                </div>
+                <div class="org-node">
+                  <span class="org-icon">🦙</span>
+                  <h6 class="org-name">Desarrollo Productivo y Camélidos</h6>
+                  <p class="org-role">Unidad de Camélidos y Medio Ambiente</p>
+                  <small>Cadena de fibra de alpaca, sanidad animal y áreas protegidas</small>
+                </div>
+              </div>
+              <div class="org-subalcaldias">
+                <span class="org-sub-title">Subalcaldías y Delegaciones Cantonales</span>
+                <div class="org-sub-tags">
+                  <span>📍 Subalcaldía Ulla Ulla</span>
+                  <span>📍 Subalcaldía Antaquilla</span>
+                  <span>📍 Subalcaldía Hichocollo</span>
+                  <span>📍 Subalcaldía Queara - Puina</span>
+                  <span>📍 Subalcaldía Suches - Katantika</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TRÁMITES ========== -->
+    <section id="tramites" aria-labelledby="tramites-h2">
+      <div class="p04-sep"></div>
+      <div class="p04-section">
+        <div class="p04-section-pretitle">Gestiones ciudadanas</div>
+        <h2 id="tramites-h2">Trámites y requisitos</h2>
+        <p style="font-size:1rem;color:var(--text-muted);max-width:560px;line-height:1.7;margin-bottom:2rem;">Consulte los trámites disponibles ante el Gobierno Autónomo Municipal de Pelechuco y los requisitos oficiales requeridos.</p>
+        <div style="margin-bottom:1.5rem;">
+          <input type="search" id="busqueda-tramites" style="padding:0.5rem 1rem;border:1px solid var(--border);font:inherit;font-size:0.82rem;color:var(--text);background:var(--bg);max-width:320px;" placeholder="Buscar trámite..." aria-label="Buscar trámite">
+        </div>
+        <div class="filtros-wrap" id="filtros-tramites" role="group" aria-label="Filtrar por categoría"></div>
+        <div id="lista-tramites"></div>
+      </div>
+    </section>
+
+    <!-- ========== CONTACTO ========== -->
+    <section id="contacto" aria-labelledby="contacto-h2">
+      <div class="p04-sep"></div>
+      <div class="p04-section-alt">
+        <div class="p04-section">
+          <div class="p04-section-pretitle">Atención ciudadana</div>
+          <h2 id="contacto-h2">Contacto institucional</h2>
+          <div class="p04-contacto-grid">
+            <div>
+              <h3 style="font-family:'DM Serif Display',serif;font-size:1.25rem;font-weight:400;margin-bottom:2rem;">Información de contacto</h3>
+              <div class="mapa-card-completo">
+                <div class="mapa-card-header">
+                  <div class="mapa-badge">📍 Georreferenciación Municipal</div>
+                  <div class="mapa-coords">14°48′55″ S · 69°03′02″ O | 3.600 m s. n. m.</div>
+                </div>
+                <div class="mapa-visual-preview">
+                  <div class="mapa-pin-pulse">
+                    <div class="pin-dot"></div>
+                    <div class="pin-ring"></div>
+                  </div>
+                  <div class="mapa-overlay-info">
+                    <h4>Pelechuco · Edificio Consistorial</h4>
+                    <p>Plaza Principal 25 de Mayo s/n · Acera Norte</p>
+                    <span class="mapa-ruta-tag">Ruta La Paz – Achacachi – Escoma – Charazani – Pelechuco (360 km)</span>
+                  </div>
+                </div>
+                <div class="mapa-card-footer">
+                  <a href="https://maps.google.com/?q=-14.815278,-69.050556" target="_blank" rel="noopener" class="mapa-btn-link">
+                    <span>Ver ubicación en Google Maps</span>
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  </a>
+                </div>
+              </div>
+              <div class="p04-contacto-item">
+                <div class="p04-contacto-label">Dirección</div>
+                <div class="p04-contacto-value">Plaza Principal 25 de Mayo s/n, Acera Norte, Edificio Consistorial, Pelechuco</div>
+              </div>
+              <div class="p04-contacto-item">
+                <div class="p04-contacto-label">Teléfono</div>
+                <div class="p04-contacto-value">(+591) 2 214-5890 · WhatsApp: (+591) 715-84210 · Línea 114</div>
+              </div>
+              <div class="p04-contacto-item">
+                <div class="p04-contacto-label">Correo electrónico</div>
+                <div class="p04-contacto-value">contacto@pelechuco.gob.bo · alcaldia@pelechuco.gob.bo</div>
+              </div>
+              <div class="p04-contacto-item">
+                <div class="p04-contacto-label">Horario de atención</div>
+                <div class="p04-contacto-value">Lunes a Viernes de 08:30 a 16:30 (Horario continuo)</div>
+              </div>
+            </div>
+            <div>
+              <h3 style="font-family:'DM Serif Display',serif;font-size:1.25rem;font-weight:400;margin-bottom:1.5rem;">Escríbanos</h3>
+              <form class="p04-form" id="form-contacto" novalidate>
+                <div class="p04-form-group">
+                  <label for="ct-nombre">Nombre completo <span style="color:#ef4444">*</span></label>
+                  <input id="ct-nombre" type="text" class="p04-form-input" placeholder="Su nombre" required>
+                </div>
+                <div class="p04-form-group">
+                  <label for="ct-correo">Correo electrónico <span style="color:#ef4444">*</span></label>
+                  <input id="ct-correo" type="email" class="p04-form-input" placeholder="su@correo.com" required>
+                </div>
+                <div class="p04-form-group">
+                  <label for="ct-asunto">Asunto</label>
+                  <input id="ct-asunto" type="text" class="p04-form-input" placeholder="Asunto del mensaje">
+                </div>
+                <div class="p04-form-group">
+                  <label for="ct-mensaje">Mensaje <span style="color:#ef4444">*</span></label>
+                  <textarea id="ct-mensaje" class="p04-form-textarea" placeholder="Escriba su mensaje..." required></textarea>
+                </div>
+                <button type="submit" class="p04-form-submit">Enviar mensaje (demo)</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER NEGRO -->
+  <footer class="p04-footer" role="contentinfo">
+    <div class="p04-sep" style="background:rgba(255,255,255,0.05);"></div>
+    <div class="p04-footer-main">
+      <div>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+          <img src="../assets/images/escudo-pelechuco.svg" alt="Escudo Pelechuco" style="width:36px;height:42px;object-fit:contain;">
+          <div>
+            <div class="p04-footer-brand-name">Gobierno Autónomo Municipal de Pelechuco</div>
+            <div class="p04-footer-brand-sub">Provincia Franz Tamayo · La Paz · Bolivia</div>
+          </div>
+        </div>
+        <p class="p04-footer-brand-desc">Administración transparente, comprometida con el desarrollo, la preservación ecológica y el bienestar de las comunidades andinas del municipio.</p>
+      </div>
+      <div class="p04-footer-col">
+        <h4>Navegación</h4>
+        <a href="#inicio">Inicio</a>
+        <a href="#conoce">El municipio</a>
+        <a href="#noticias">Noticias y Comunicados</a>
+        <a href="#autoridades">Autoridades</a>
+        <a href="#tramites">Trámites y Requisitos</a>
+        <a href="#contacto">Contacto Institucional</a>
+      </div>
+      <div class="p04-footer-col">
+        <h4>Atención Municipal</h4>
+        <div style="color:rgba(255,255,255,0.6);font-size:0.8rem;line-height:1.8;">
+          <div>📍 Plaza Principal 25 de Mayo s/n</div>
+          <div>📞 Central: (+591) 2 214-5890</div>
+          <div>📱 WhatsApp: (+591) 715-84210</div>
+          <div>✉️ contacto@pelechuco.gob.bo</div>
+          <div>🕒 Lun a Vie: 08:30 - 16:30</div>
+        </div>
+      </div>
+      <div class="p04-footer-col">
+        <h4>Transparencia</h4>
+        <a href="#noticias">Gaceta Municipal</a>
+        <a href="#tramites">Contrataciones SICOES</a>
+        <a href="#contacto">Rendición de Cuentas</a>
+        <a href="../admin/panel.html?propuesta=04">Gestión de Contenido</a>
+      </div>
+    </div>
+    <div class="p04-footer-bottom">
+      <span>© <span data-year>2026</span> Gobierno Autónomo Municipal de Pelechuco</span>
+      <span style="opacity:0.4;font-style:italic;">Propuesta 04 — Pelechuco Contemporáneo</span>
+      <a href="../admin/panel.html?propuesta=04" class="p04-footer-admin">⚙️ Administración</a>
+    </div>
+  </footer>
+
+  <script src="../js/proposals.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/interactions.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      App.setPropuesta('04');
+      App.renderSwitcher();
+      Interactions.noticias.init(PELECHUCO_DATA.noticias);
+      Interactions.tramites.init(PELECHUCO_DATA.tramites);
+      document.querySelectorAll('[data-year]').forEach(el => el.textContent = new Date().getFullYear());
+
+      // Menú móvil
+      const menuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      menuBtn?.addEventListener('click', () => {
+        const isOpen = mobileMenu.classList.toggle('open');
+        menuBtn.setAttribute('aria-expanded', isOpen);
+      });
+      mobileMenu?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+      }));
+
+      // Header scroll
+      window.addEventListener('scroll', () => {
+        document.getElementById('site-header').classList.toggle('scrolled', window.scrollY > 60);
+      }, { passive: true });
+
+      // Noticias destacadas en inicio (1 grande + 3 en lista)
+      const featured = document.getElementById('inicio-noticias-featured');
+      if (featured && typeof PELECHUCO_DATA !== 'undefined') {
+        const noticias = PELECHUCO_DATA.noticias;
+        const main = noticias[0];
+        const rest = noticias.slice(1, 4);
+        const fechaMain = new Date(main.fecha).toLocaleDateString('es-BO', { year:'numeric', month:'long', day:'numeric' });
+        featured.innerHTML = `
+          <div class="p04-noticia-main" role="button" tabindex="0" aria-label="Leer: ${main.titulo}" onclick="Interactions.noticias.abrirDetalle(${main.id})">
+            <div class="noticia-imagen">${main.imagen ? `<img src="${main.imagen}" alt="${main.imagenAlt}" loading="lazy" onerror="this.style.display='none'">` : ''}</div>
+            <div class="noticia-meta" style="margin-top:1rem;">
+              <span class="noticia-categoria">${main.categoria}</span>
+              <time class="noticia-fecha" datetime="${main.fecha}">${fechaMain}</time>
+              <span class="badge-oficial" style="background:#1B5E20;color:#fff;font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:2px;font-weight:700;">OFICIAL</span>
+            </div>
+            <div class="noticia-titulo p04-noticia-main .noticia-titulo">${main.titulo}</div>
+            <p class="noticia-resumen">${main.resumen}</p>
+          </div>
+          <div class="p04-noticias-list">
+            ${rest.map(n => {
+              const f = new Date(n.fecha).toLocaleDateString('es-BO', { month:'short', day:'numeric', year:'numeric' });
+              return `<div class="p04-noticia-item" role="button" tabindex="0" onclick="Interactions.noticias.abrirDetalle(${n.id})">
+                <div class="noticia-meta"><span class="noticia-categoria">${n.categoria}</span><time class="noticia-fecha" datetime="${n.fecha}">${f}</time><span class="badge-oficial" style="background:#1B5E20;color:#fff;font-size:0.62rem;padding:0.1rem 0.4rem;border-radius:2px;font-weight:700;">OFICIAL</span></div>
+                <div class="noticia-titulo">${n.titulo}</div>
+                <p class="noticia-resumen" style="font-size:0.8rem;">${n.resumen}</p>
+              </div>`;
+            }).join('')}
+          </div>
+        `;
+      }
+
+      // Renderizar autoridades
+      const listaAut = document.getElementById('lista-autoridades');
+      if (listaAut && typeof PELECHUCO_DATA !== 'undefined') {
+        PELECHUCO_DATA.autoridades.forEach(a => {
+          const card = document.createElement('div');
+          card.className = 'p04-autoridad-card';
+          card.innerHTML = `
+            <div class="p04-autoridad-foto" style="overflow:hidden;display:flex;align-items:center;justify-content:center;background:#e5e7eb;width:80px;height:80px;border-radius:50%;margin-bottom:1rem;">
+              ${a.foto ? `<img src="${a.foto}" alt="${a.nombre}" style="width:100%;height:100%;object-fit:cover;" onerror="this.outerHTML='<span style=\\'font-size:2rem;\\'>👤</span>'">` : `<span style="font-size:2rem;">👤</span>`}
+            </div>
+            <div class="p04-autoridad-nombre">${a.nombre}</div>
+            <div class="p04-autoridad-cargo">${a.cargo}</div>
+            <div class="p04-autoridad-area">${a.area}</div>
+          `;
+          listaAut.appendChild(card);
+        });
+      }
+
+      // Trámites con estilo P04
+      const overrideRender = () => {
+        const container = document.getElementById('lista-tramites');
+        if (!container) return;
+        const datos = typeof Interactions !== 'undefined' ? Interactions.tramites.filtrados() : [];
+        if (datos.length === 0) return;
+        container.innerHTML = datos.map(t => `
+          <div class="p04-tramite-item">
+            <div>
+              <div class="p04-tramite-categoria">${t.categoria}</div>
+              <div class="p04-tramite-nombre">${t.nombre}</div>
+              <div class="p04-tramite-desc">${t.descripcion}</div>
+              <div style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-muted);">
+                <strong>Oficina:</strong> ${t.oficina} &nbsp;·&nbsp; <strong>Horario:</strong> ${t.horario}
+              </div>
+            </div>
+            <button onclick="Interactions.tramites.abrirDetalle(${t.id})" class="p04-btn-outline" style="font-size:0.7rem;padding:0.5rem 1.25rem;white-space:nowrap;">Ver requisitos →</button>
+          </div>
+        `).join('');
+      };
+      setTimeout(overrideRender, 100);
+    });
+  </script>
+</body>
+</html>
