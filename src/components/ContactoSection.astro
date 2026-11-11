@@ -1,0 +1,367 @@
+---
+import type { ContactoConfig } from '../types/database';
+
+interface Props {
+  contacto?: Partial<ContactoConfig>;
+}
+
+const { contacto = {} } = Astro.props;
+
+const addressPrimary = contacto.address_primary || 'Plaza Principal 25 de Mayo s/n, Acera Norte, Pelechuco';
+const addressSecondary = contacto.address_secondary || 'Municipio de Pelechuco · Provincia Franz Tamayo, Parque Nacional Apolobamba';
+const phone = contacto.phone_central || '(+591) 2 214-5890';
+const whatsapp = contacto.phone_whatsapp || '(+591) 715-84210';
+const emergency = contacto.emergency_line || 'Línea 114 Pelechuco (Atención 24 Horas)';
+const emailGeneral = contacto.email_general || 'contacto@pelechuco.gob.bo';
+const emailDispatch = contacto.email_dispatch || 'alcaldia@pelechuco.gob.bo';
+const schedule = contacto.schedule_weekdays || 'Lunes a Viernes de 08:30 a 16:30 (Horario continuo)';
+
+let mapAlcaldia = 'https://maps.google.com/maps?q=-14.816667,-69.050000&hl=es&z=17&output=embed';
+let mapComunidad = 'https://maps.google.com/maps?q=Pelechuco+Franz+Tamayo+Bolivia&hl=es&z=11&output=embed';
+
+if (contacto.map_embed_url) {
+  try {
+    const parsed = JSON.parse(contacto.map_embed_url);
+    if (parsed.alcaldia) mapAlcaldia = parsed.alcaldia;
+    if (parsed.comunidad) mapComunidad = parsed.comunidad;
+  } catch {
+    mapAlcaldia = contacto.map_embed_url;
+  }
+}
+---
+
+<section id="contacto" aria-labelledby="contacto-titulo">
+  <div class="p02-section">
+    <p class="p02-section-label">Comunicación y Ubicación</p>
+    <h2 class="p02-section-title" id="contacto-titulo">Contacto y Georreferenciación</h2>
+    <div class="p02-section-title-deco" aria-hidden="true"></div>
+
+    <div class="p02-contacto-grid">
+      <!-- Columna izquierda: Información institucional y doble mapa -->
+      <div>
+        <!-- Tarjeta de Doble Mapa Interactivo (Alcaldía y Comunidad) -->
+        <div class="mapa-card-completo" style="margin-bottom:1.75rem;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.06);">
+          <!-- Pestañas para alternar entre el mapa de la Alcaldía y de la Comunidad -->
+          <div style="display:flex;background:var(--bg-alt);border-bottom:1px solid var(--border);padding:0.35rem 0.5rem;gap:0.35rem;">
+            <button
+              id="tab-mapa-alcaldia"
+              class="map-tab-btn active"
+              type="button"
+              style="flex:1;padding:0.6rem 0.75rem;border:none;border-radius:6px;font-weight:700;font-size:0.85rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;transition:all 0.2s ease;background:var(--card-bg);color:var(--text);border:1px solid var(--border);"
+            >
+              <span>🏛️ Mapa Alcaldía</span>
+            </button>
+            <button
+              id="tab-mapa-comunidad"
+              class="map-tab-btn"
+              type="button"
+              style="flex:1;padding:0.6rem 0.75rem;border:none;border-radius:6px;font-weight:600;font-size:0.85rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;transition:all 0.2s ease;background:transparent;color:var(--text-muted);border:1px solid transparent;"
+            >
+              <span>🏔️ Mapa Comunidad</span>
+            </button>
+          </div>
+
+          <!-- Panel 1: Mapa de la Alcaldía (Casa Consistorial) -->
+          <div id="panel-mapa-alcaldia" class="mapa-panel" style="display:block;">
+            <div class="mapa-card-header" style="padding:0.75rem 1rem;background:var(--card-bg);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+              <div class="mapa-badge" style="font-weight:700;color:var(--primary);font-size:0.8rem;display:inline-flex;align-items:center;gap:0.3rem;">
+                <span class="pulse-dot-green">●</span> Edificio Central · Casa Consistorial
+              </div>
+              <div class="mapa-coords" style="font-size:0.75rem;color:var(--text-muted);">
+                14°48′55″ S · 69°03′02″ O | 3.600 m s. n. m.
+              </div>
+            </div>
+            <div style="position:relative;height:240px;background:#1e293b;overflow:hidden;">
+              <iframe
+                id="iframe-alcaldia"
+                src={mapAlcaldia}
+                width="100%"
+                height="100%"
+                style="border:0;"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="Mapa oficial de la Alcaldía Municipal de Pelechuco"
+              ></iframe>
+            </div>
+            <div class="mapa-card-footer" style="padding:0.75rem 1rem;background:var(--bg-alt);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+              <span style="font-size:0.775rem;color:var(--text-muted);">
+                Plaza Principal 25 de Mayo · Acera Norte
+              </span>
+              <a
+                href="https://maps.google.com/?q=-14.816667,-69.050000"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mapa-btn-link"
+                style="color:var(--primary);font-weight:700;font-size:0.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;"
+              >
+                <span>Abrir en Google Maps ↗</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Panel 2: Mapa de la Comunidad y Territorio -->
+          <div id="panel-mapa-comunidad" class="mapa-panel" style="display:none;">
+            <div class="mapa-card-header" style="padding:0.75rem 1rem;background:var(--card-bg);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+              <div class="mapa-badge" style="font-weight:700;color:var(--secondary);font-size:0.8rem;display:inline-flex;align-items:center;gap:0.3rem;">
+                <span class="pulse-dot-blue">●</span> Municipio de Pelechuco y Ayllus
+              </div>
+              <div class="mapa-coords" style="font-size:0.75rem;color:var(--text-muted);">
+                Provincia Franz Tamayo · 2.714 km² · Apolobamba
+              </div>
+            </div>
+            <div style="position:relative;height:240px;background:#1e293b;overflow:hidden;">
+              <iframe
+                id="iframe-comunidad"
+                src={mapComunidad}
+                width="100%"
+                height="100%"
+                style="border:0;"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="Mapa del Territorio Comunal de Pelechuco"
+              ></iframe>
+            </div>
+            <div class="mapa-card-footer" style="padding:0.75rem 1rem;background:var(--bg-alt);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+              <span style="font-size:0.775rem;color:var(--text-muted);">
+                9 Cantones y Parque Nacional Apolobamba
+              </span>
+              <a
+                href="https://maps.google.com/?q=Pelechuco+Bolivia"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mapa-btn-link"
+                style="color:var(--secondary);font-weight:700;font-size:0.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;"
+              >
+                <span>Explorar Territorio ↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direcciones e Información Institucional Detallada -->
+        <div class="p02-info-item">
+          <div class="p02-info-icon" aria-hidden="true">🏛️</div>
+          <div>
+            <div class="p02-info-label">Dirección Alcaldía (Despacho Central)</div>
+            <div class="p02-info-value">{addressPrimary}</div>
+          </div>
+        </div>
+
+        <div class="p02-info-item">
+          <div class="p02-info-icon" aria-hidden="true">🏔️</div>
+          <div>
+            <div class="p02-info-label">Comunidad y Territorio Municipal</div>
+            <div class="p02-info-value">{addressSecondary}</div>
+          </div>
+        </div>
+
+        <div class="p02-info-item">
+          <div class="p02-info-icon" aria-hidden="true">📞</div>
+          <div>
+            <div class="p02-info-label">Teléfonos institucionales</div>
+            <div class="p02-info-value">{phone} · WhatsApp: {whatsapp} · {emergency}</div>
+          </div>
+        </div>
+
+        <div class="p02-info-item">
+          <div class="p02-info-icon" aria-hidden="true">📧</div>
+          <div>
+            <div class="p02-info-label">Correo electrónico</div>
+            <div class="p02-info-value">{emailGeneral} · {emailDispatch}</div>
+          </div>
+        </div>
+
+        <div class="p02-info-item">
+          <div class="p02-info-icon" aria-hidden="true">🕐</div>
+          <div>
+            <div class="p02-info-label">Horario de atención</div>
+            <div class="p02-info-value">{schedule}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna derecha: Formulario del buzón ciudadano -->
+      <div>
+        <h3 style="font-family:'Playfair Display',serif;color:var(--primary);margin-bottom:1.5rem;">Envíenos su consulta o solicitud</h3>
+        
+        <form class="p02-form" id="form-contacto-ciudadano" novalidate aria-label="Formulario de contacto">
+          <div class="p02-form-group">
+            <label for="contacto-nombre">Nombre completo *</label>
+            <input
+              type="text"
+              id="contacto-nombre"
+              name="full_name"
+              class="p02-form-input"
+              placeholder="Ej. Juan Mamani Quispe"
+              autocomplete="name"
+              required
+            />
+          </div>
+
+          <div class="p02-form-group">
+            <label for="contacto-email">Correo electrónico *</label>
+            <input
+              type="email"
+              id="contacto-email"
+              name="email"
+              class="p02-form-input"
+              placeholder="su@correo.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="p02-form-group">
+            <label for="contacto-telefono">Teléfono / WhatsApp (Opcional)</label>
+            <input
+              type="tel"
+              id="contacto-telefono"
+              name="phone"
+              class="p02-form-input"
+              placeholder="Ej. 71584210"
+              autocomplete="tel"
+            />
+          </div>
+
+          <div class="p02-form-group">
+            <label for="contacto-asunto">Asunto *</label>
+            <input
+              type="text"
+              id="contacto-asunto"
+              name="subject"
+              class="p02-form-input"
+              placeholder="Motivo de su consulta o solicitud ciudadana"
+              required
+            />
+          </div>
+
+          <div class="p02-form-group">
+            <label for="contacto-mensaje">Mensaje *</label>
+            <textarea
+              id="contacto-mensaje"
+              name="message"
+              class="p02-form-textarea"
+              placeholder="Detalle los antecedentes o requerimiento..."
+              rows="5"
+              required
+            ></textarea>
+          </div>
+
+          <div id="form-feedback" style="display:none;margin-bottom:1rem;padding:0.75rem 1rem;border-radius:6px;font-size:0.875rem;"></div>
+
+          <button type="submit" id="submit-btn" class="p02-form-submit">
+            Enviar mensaje al GAM Pelechuco
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Switcher de pestañas para el doble mapa (Alcaldía y Comunidad)
+    const tabAlcaldia = document.getElementById('tab-mapa-alcaldia');
+    const tabComunidad = document.getElementById('tab-mapa-comunidad');
+    const panelAlcaldia = document.getElementById('panel-mapa-alcaldia');
+    const panelComunidad = document.getElementById('panel-mapa-comunidad');
+
+    function selectTab(showAlcaldia: boolean) {
+      if (!tabAlcaldia || !tabComunidad || !panelAlcaldia || !panelComunidad) return;
+
+      if (showAlcaldia) {
+        panelAlcaldia.style.display = 'block';
+        panelComunidad.style.display = 'none';
+
+        tabAlcaldia.style.background = 'var(--card-bg)';
+        tabAlcaldia.style.color = 'var(--text)';
+        tabAlcaldia.style.borderColor = 'var(--border)';
+        tabAlcaldia.style.fontWeight = '700';
+
+        tabComunidad.style.background = 'transparent';
+        tabComunidad.style.color = 'var(--text-muted)';
+        tabComunidad.style.borderColor = 'transparent';
+        tabComunidad.style.fontWeight = '600';
+      } else {
+        panelAlcaldia.style.display = 'none';
+        panelComunidad.style.display = 'block';
+
+        tabComunidad.style.background = 'var(--card-bg)';
+        tabComunidad.style.color = 'var(--text)';
+        tabComunidad.style.borderColor = 'var(--border)';
+        tabComunidad.style.fontWeight = '700';
+
+        tabAlcaldia.style.background = 'transparent';
+        tabAlcaldia.style.color = 'var(--text-muted)';
+        tabAlcaldia.style.borderColor = 'transparent';
+        tabAlcaldia.style.fontWeight = '600';
+      }
+    }
+
+    tabAlcaldia?.addEventListener('click', () => selectTab(true));
+    tabComunidad?.addEventListener('click', () => selectTab(false));
+
+    const form = document.getElementById('form-contacto-ciudadano') as HTMLFormElement | null;
+    const feedback = document.getElementById('form-feedback');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form || !submitBtn || !feedback) return;
+
+      const formData = new FormData(form);
+      const payload = {
+        full_name: formData.get('full_name')?.toString().trim(),
+        email: formData.get('email')?.toString().trim(),
+        phone: formData.get('phone')?.toString().trim(),
+        subject: formData.get('subject')?.toString().trim(),
+        message: formData.get('message')?.toString().trim(),
+      };
+
+      if (!payload.full_name || !payload.email || !payload.subject || !payload.message) {
+        feedback.style.display = 'block';
+        feedback.style.background = '#fee2e2';
+        feedback.style.color = '#991b1b';
+        feedback.textContent = 'Por favor complete todos los campos obligatorios (*).';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Enviando mensaje...';
+
+      try {
+        const res = await fetch('/api/contacto', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          feedback.style.display = 'block';
+          feedback.style.background = '#dcfce7';
+          feedback.style.color = '#166534';
+          feedback.textContent = data.message || 'Mensaje enviado exitosamente.';
+          form.reset();
+        } else {
+          feedback.style.display = 'block';
+          feedback.style.background = '#fee2e2';
+          feedback.style.color = '#991b1b';
+          feedback.textContent = data.error || 'Ocurrió un error al enviar el mensaje.';
+        }
+      } catch (err: any) {
+        feedback.style.display = 'block';
+        feedback.style.background = '#fee2e2';
+        feedback.style.color = '#991b1b';
+        feedback.textContent = 'Error de conexión. Intente nuevamente más tarde.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    });
+  });
+</script>

@@ -4,16 +4,9 @@
  */
 
 const App = {
-  propuestaActual: null,
+  propuestaActual: '02',
   propuestas: [
-    { id: '01', nombre: 'Andes Institucional', archivo: 'proposals/01-andes-institucional.html' },
     { id: '02', nombre: 'Territorio y Naturaleza', archivo: 'proposals/02-territorio-naturaleza.html' },
-    { id: '03', nombre: 'Gobierno Abierto', archivo: 'proposals/03-gobierno-abierto.html' },
-    { id: '04', nombre: 'Pelechuco Contemporáneo', archivo: 'proposals/04-pelechuco-contemporaneo.html' },
-    { id: '05', nombre: 'Comunidad y Servicio', archivo: 'proposals/05-comunidad-servicio.html' },
-    { id: '06', nombre: 'Ciudad Viva (lapaz.bo)', archivo: 'proposals/06-metropoli-ciudad-viva.html' },
-    { id: '07', nombre: 'Andes Neo-Digital', archivo: 'proposals/07-andes-neo-digital.html' },
-    { id: '08', nombre: 'Territorio Cálido & Raíces', archivo: 'proposals/08-territorio-calido.html' },
   ],
 
   init() {

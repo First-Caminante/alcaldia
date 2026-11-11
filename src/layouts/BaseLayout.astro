@@ -1,0 +1,112 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title = "Gobierno Autónomo Municipal de Pelechuco — La Paz, Bolivia",
+  description = "Portal oficial del Gobierno Autónomo Municipal de Pelechuco, Provincia Franz Tamayo, Departamento de La Paz, Bolivia. Servicios ciudadanos, trámites, noticias y transparencia.",
+  ogImage = "/assets/images/escudo-pelechuco.svg"
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <title>{title}</title>
+
+  <!-- Open Graph / Meta Social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Declaración de esquemas de color para evitar FOUC y adaptar scrollbars / UI nativa -->
+  <meta name="color-scheme" content="light dark" />
+  <script is:inline>
+    (function() {
+      try {
+        const stored = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (systemDark ? 'dark' : 'light');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+          const meta = document.querySelector('meta[name="color-scheme"]');
+          if (meta) meta.content = 'dark';
+        } else {
+          document.documentElement.classList.remove('dark');
+          const meta = document.querySelector('meta[name="color-scheme"]');
+          if (meta) meta.content = 'light';
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Estilos Globales Oficiales (Propuesta 02: Territorio y Naturaleza) -->
+  <link rel="stylesheet" href="/src/styles/global.css" />
+</head>
+<body>
+  <slot />
+
+  <script>
+    // Header scrolled state and mobile drawer management
+    document.addEventListener('DOMContentLoaded', () => {
+      const header = document.getElementById('site-header');
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      if (header) {
+        window.addEventListener('scroll', () => {
+          header.classList.toggle('scrolled', window.scrollY > 50);
+        }, { passive: true });
+      }
+
+      if (mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener('click', () => {
+          const isOpen = mobileMenu.classList.toggle('open');
+          mobileBtn.setAttribute('aria-expanded', String(isOpen));
+          mobileBtn.textContent = isOpen ? '✕' : '☰';
+          document.body.style.overflow = isOpen ? 'hidden' : '';
+        });
+
+        mobileMenu.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', () => {
+            mobileMenu.classList.remove('open');
+            mobileBtn.setAttribute('aria-expanded', 'false');
+            mobileBtn.textContent = '☰';
+            document.body.style.overflow = '';
+          });
+        });
+      }
+
+      // Animaciones suaves al hacer scroll (Progressive Enhancement)
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, {
+          threshold: 0.12,
+          rootMargin: '0px 0px -40px 0px'
+        });
+
+        // Observar secciones y tarjetas principales
+        document.querySelectorAll('section, .noticia-card, .p02-autoridad-card, .tramite-card, .p02-conoce-alternado').forEach(el => {
+          el.classList.add('reveal-on-scroll');
+          revealObserver.observe(el);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

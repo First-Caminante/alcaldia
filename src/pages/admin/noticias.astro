@@ -1,0 +1,734 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { DEFAULT_NOTICIAS, DEFAULT_CATEGORIAS_NOTICIAS } from '../../lib/data-defaults';
+import type { Noticia, NoticiaCategoria } from '../../types/database';
+
+export const prerender = false;
+
+let noticias: Noticia[] = DEFAULT_NOTICIAS;
+let categorias: NoticiaCategoria[] = DEFAULT_CATEGORIAS_NOTICIAS;
+
+if (isSupabaseConfigured()) {
+  try {
+    const { data: nData } = await supabase
+      .from('noticias')
+      .select('*, category:noticias_categorias(*)')
+      .order('published_at', { ascending: false });
+
+    if (nData && nData.length > 0) {
+      noticias = nData;
+    }
+
+    const { data: cData } = await supabase
+      .from('noticias_categorias')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order');
+
+    if (cData && cData.length > 0) {
+      categorias = cData;
+    }
+  } catch (err) {
+    console.warn('Usando defaults en admin noticias:', err);
+  }
+}
+---
+
+<AdminLayout title="Gestión de Noticias — Panel GAM Pelechuco" activeNav="noticias">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;">
+    <div>
+      <h1 style="font-size:1.6rem;font-weight:700;color:#1e293b;margin:0 0 0.25rem 0;">Noticias y Comunicados Oficiales</h1>
+      <p style="color:#64748b;font-size:0.875rem;margin:0;">Publicaciones oficiales, videos de YouTube, galerías de fotos y gacetas del municipio</p>
+    </div>
+    <button id="btn-nueva-noticia" type="button" class="btn-primary" style="background:#2D5016;color:#FAF7F2;padding:0.6rem 1.2rem;border-radius:6px;border:none;font-weight:600;font-size:0.875rem;cursor:pointer;">
+      + Redactar Comunicado
+    </button>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow-x:auto;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+    <table style="width:100%;border-collapse:collapse;text-align:left;font-size:0.875rem;min-width:600px;">
+      <thead style="background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:0.75rem;text-transform:uppercase;">
+        <tr>
+          <th style="padding:0.75rem 1rem;">Título y Medios</th>
+          <th style="padding:0.75rem 1rem;">Categoría</th>
+          <th style="padding:0.75rem 1rem;">Estado</th>
+          <th style="padding:0.75rem 1rem;">Fecha</th>
+          <th style="padding:0.75rem 1rem;text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-noticias-body">
+        {noticias.map(n => {
+          const extraFotosCount = Array.isArray(n.gallery_images) ? n.gallery_images.length : 0;
+          return (
+            <tr style="border-bottom:1px solid #f1f5f9;" id={`noticia-row-${n.id}`}>
+              <td style="padding:0.85rem 1rem;font-weight:600;color:#0f172a;max-width:340px;">
+                <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                  <a href={`/noticias/${n.slug}`} target="_blank" style="color:inherit;text-decoration:none;">
+                    {n.title}
+                  </a>
+                  {n.video_url && (
+                    <span style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:0.15rem 0.45rem;border-radius:4px;font-size:0.7rem;font-weight:700;">
+                      🎬 YouTube
+                    </span>
+                  )}
+                  {extraFotosCount > 0 && (
+                    <span style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;padding:0.15rem 0.45rem;border-radius:4px;font-size:0.7rem;font-weight:700;">
+                      📸 +{extraFotosCount} fotos
+                    </span>
+                  )}
+                </div>
+              </td>
+              <td style="padding:0.85rem 1rem;">
+                <span style="background:rgba(45,80,22,0.1);color:#2D5016;padding:0.2rem 0.5rem;border-radius:12px;font-size:0.75rem;font-weight:600;">
+                  {n.category?.name || 'General'}
+                </span>
+              </td>
+              <td style="padding:0.85rem 1rem;">
+                <span style="background:#dcfce7;color:#166534;padding:0.2rem 0.5rem;border-radius:12px;font-size:0.75rem;font-weight:600;">
+                  {n.status || 'publicado'}
+                </span>
+              </td>
+              <td style="padding:0.85rem 1rem;color:#64748b;font-size:0.8rem;">
+                {new Date(n.published_at).toLocaleDateString('es-BO')}
+              </td>
+              <td style="padding:0.85rem 1rem;text-align:right;white-space:nowrap;">
+                <a href={`/noticias/${n.slug}`} target="_blank" style="color:#4A7FA5;font-weight:600;font-size:0.8rem;text-decoration:none;margin-right:0.75rem;">
+                  Ver
+                </a>
+                <button
+                  type="button"
+                  class="btn-editar-noticia"
+                  data-id={n.id}
+                  style="background:none;border:none;color:#2D5016;font-weight:600;font-size:0.8rem;cursor:pointer;margin-right:0.75rem;"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="btn-eliminar-noticia"
+                  data-id={n.id}
+                  data-title={n.title}
+                  style="background:none;border:none;color:#ef4444;font-size:0.8rem;cursor:pointer;"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal para Redactar / Editar Noticia -->
+  <div id="modal-noticia" class="admin-modal-backdrop" style="display:none;">
+    <div class="admin-modal-card" style="max-width:720px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.75rem;">
+        <h3 id="modal-noticia-titulo" style="font-size:1.2rem;font-weight:700;color:#0f172a;margin:0;">
+          Nueva Publicación
+        </h3>
+        <button type="button" id="modal-noticia-cerrar" style="background:none;border:none;font-size:1.25rem;cursor:pointer;color:#64748b;">✕</button>
+      </div>
+
+      <form id="form-noticia" style="display:flex;flex-direction:column;gap:1.1rem;">
+        <input type="hidden" id="noticia-id" />
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Título de la noticia *</label>
+          <input type="text" id="noticia-title" required style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="Ej. Inicio del mejoramiento del tramo vial..." />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Categoría *</label>
+            <select id="noticia-category" style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;">
+              {categorias.map(cat => (
+                <option value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Estado</label>
+            <select id="noticia-status" style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;">
+              <option value="publicado">Publicado</option>
+              <option value="borrador">Borrador</option>
+              <option value="archivado">Archivado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 1. VIDEO DE YOUTUBE -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.9rem;">
+          <div style="display:flex;align-items:center;gap:0.4rem;font-weight:700;font-size:0.85rem;color:#dc2626;margin-bottom:0.35rem;">
+            <span>🎬</span> Video Oficial de YouTube (Opcional — No consume almacenamiento)
+          </div>
+          <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.5rem;line-height:1.4;">
+            Pega el enlace del video oficial de YouTube. En la <strong>noticia principal</strong> se reproducirá directamente en 16:9; en las <strong>noticias pasadas</strong> se verá al hacer clic en ver el comunicado completo.
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <input
+              type="url"
+              id="noticia-video"
+              style="flex:1;padding:0.55rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+              placeholder="https://www.youtube.com/watch?v=... o https://youtu.be/..."
+            />
+            <button
+              type="button"
+              id="btn-limpiar-video"
+              style="background:#f1f5f9;border:1px solid #cbd5e1;color:#64748b;padding:0.55rem 0.85rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;"
+              title="Quitar video de YouTube"
+            >
+              ✕ Quitar
+            </button>
+          </div>
+          <!-- Vista previa de video incrustado -->
+          <div id="noticia-video-preview-wrap" style="display:none;margin-top:0.75rem;width:100%;max-width:360px;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#000;box-shadow:0 4px 10px rgba(0,0,0,0.15);">
+            <iframe id="noticia-video-preview" src="" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <!-- 2. FOTOGRAFÍA PRINCIPAL (PORTADA HORIZONTAL 16:9) -->
+        <div>
+          <!-- Guía de dimensiones recomendadas para Noticias -->
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem 0.9rem;margin-bottom:0.75rem;font-size:0.8rem;color:#166534;display:flex;flex-direction:column;gap:0.35rem;">
+            <div style="display:flex;align-items:center;gap:0.4rem;font-weight:700;">
+              <span>📐</span> Proporción recomendada: <strong>1200 × 675 px</strong> (Horizontal 16:9)
+            </div>
+            <div style="font-size:0.75rem;color:#15803d;line-height:1.4;">
+              <strong>💡 Fotografía principal de portada:</strong> Se mostrará en la tarjeta y como imagen de cabecera. La compresión WebP automática ahorra hasta un 85% de espacio.
+            </div>
+          </div>
+
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Fotografía Principal (Portada) *</label>
+          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.5rem;flex-wrap:wrap;">
+            <input type="url" id="noticia-image" required style="flex:1;min-width:240px;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="https://...supabase.co/... o pegar URL" value="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80" />
+            <label style="background:#f1f5f9;border:1px solid #cbd5e1;color:#1e293b;padding:0.6rem 0.9rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:0.35rem;" title="Optimizar a WebP y subir a Supabase Storage">
+              <span>📁 Subir Portada (WebP)</span>
+              <input type="file" id="noticia-file-upload" accept="image/*" style="display:none;" />
+            </label>
+          </div>
+          <div id="noticia-upload-status" style="font-size:0.75rem;color:#64748b;margin-bottom:0.35rem;display:none;"></div>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <img id="noticia-image-preview" src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80" alt="Vista previa" style="max-height:80px;aspect-ratio:16/9;border-radius:6px;border:1px solid #e2e8f0;object-fit:cover;" />
+          </div>
+        </div>
+
+        <!-- 3. GALERÍA DE FOTOS ADICIONALES (CARRUSEL INTERACTIVO) -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.9rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;flex-wrap:wrap;gap:0.5rem;">
+            <div style="display:flex;align-items:center;gap:0.4rem;font-weight:700;font-size:0.85rem;color:#0f172a;">
+              <span>📸</span> Fotografías Adicionales (Galería y Carrusel en Tarjeta)
+            </div>
+            <span id="gallery-count-badge" style="font-size:0.75rem;background:#e2e8f0;color:#475569;padding:0.15rem 0.5rem;border-radius:9999px;font-weight:600;">
+              0 fotos adicionales
+            </span>
+          </div>
+          <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.6rem;line-height:1.4;">
+            En las tarjetas de noticias pasadas, las fotos <strong>cambiarán automáticamente o con flechas de foto en foto</strong>. Al ingresar a la noticia completa, el ciudadano podrá ver y ampliar la galería completa en alta resolución.
+          </div>
+
+          <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.6rem;flex-wrap:wrap;">
+            <input
+              type="url"
+              id="noticia-extra-photo-url"
+              style="flex:1;min-width:200px;padding:0.55rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.85rem;"
+              placeholder="Pegar URL de foto adicional..."
+            />
+            <button
+              type="button"
+              id="btn-agregar-extra-foto"
+              style="background:#f1f5f9;border:1px solid #cbd5e1;color:#1e293b;padding:0.55rem 0.85rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;"
+            >
+              + Añadir URL
+            </button>
+            <label style="background:#2D5016;color:#FAF7F2;padding:0.55rem 0.85rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:0.35rem;" title="Subir foto adicional en WebP">
+              <span>📁 Subir Foto (WebP)</span>
+              <input type="file" id="noticia-extra-file-upload" accept="image/*" style="display:none;" />
+            </label>
+          </div>
+          <div id="noticia-extra-upload-status" style="font-size:0.75rem;color:#64748b;margin-bottom:0.5rem;display:none;"></div>
+
+          <!-- Contenedor dinámico de miniaturas de la galería -->
+          <div id="noticia-extra-photos-container" style="display:flex;flex-wrap:wrap;gap:0.5rem;min-height:54px;padding:0.5rem;background:#fff;border:1px dashed #cbd5e1;border-radius:6px;align-items:center;">
+            <span id="gallery-empty-msg" style="font-size:0.78rem;color:#94a3b8;font-style:italic;">
+              No hay fotos adicionales añadidas. Sube una foto o pega una URL para habilitar el carrusel en la tarjeta.
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Resumen o Bajada *</label>
+          <textarea id="noticia-summary" rows="2" required style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="Breve síntesis para la tarjeta..."></textarea>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Contenido Completo de la Noticia *</label>
+          <textarea id="noticia-content" rows="6" required style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="Redacte el comunicado oficial..."></textarea>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:0.75rem;border-top:1px solid #e2e8f0;padding-top:1rem;">
+          <button type="button" id="modal-noticia-cancelar" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:0.6rem 1.2rem;border-radius:6px;cursor:pointer;font-weight:600;">
+            Cancelar
+          </button>
+          <button type="submit" id="modal-noticia-guardar" style="background:#2D5016;color:#FAF7F2;border:none;padding:0.6rem 1.5rem;border-radius:6px;cursor:pointer;font-weight:600;">
+            Guardar en Supabase
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Almacén seguro de datos en JSON para evitar problemas de comillas en atributos HTML -->
+  <script id="noticias-json-data" type="application/json" set:html={JSON.stringify(noticias)}></script>
+
+  <script>
+    function parseYouTubeEmbed(url: string): string | null {
+      if (!url || typeof url !== 'string') return null;
+      const trimmed = url.trim();
+      const match = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+      return match && match[1] ? `https://www.youtube-nocookie.com/embed/${match[1]}?rel=0&modestbranding=1` : null;
+    }
+
+    function initNoticias() {
+      const modal = document.getElementById('modal-noticia');
+      const form = document.getElementById('form-noticia') as HTMLFormElement | null;
+      const modalTitulo = document.getElementById('modal-noticia-titulo');
+
+      const idInput = document.getElementById('noticia-id') as HTMLInputElement | null;
+      const titleInput = document.getElementById('noticia-title') as HTMLInputElement | null;
+      const categoryInput = document.getElementById('noticia-category') as HTMLSelectElement | null;
+      const statusInput = document.getElementById('noticia-status') as HTMLSelectElement | null;
+      const videoInput = document.getElementById('noticia-video') as HTMLInputElement | null;
+      const imageInput = document.getElementById('noticia-image') as HTMLInputElement | null;
+      const summaryInput = document.getElementById('noticia-summary') as HTMLTextAreaElement | null;
+      const contentInput = document.getElementById('noticia-content') as HTMLTextAreaElement | null;
+
+      // Video Preview
+      const videoPreviewWrap = document.getElementById('noticia-video-preview-wrap');
+      const videoPreviewIframe = document.getElementById('noticia-video-preview') as HTMLIFrameElement | null;
+      const btnLimpiarVideo = document.getElementById('btn-limpiar-video');
+
+      // Galería adicional
+      const extraPhotoUrlInput = document.getElementById('noticia-extra-photo-url') as HTMLInputElement | null;
+      const btnAddExtraFoto = document.getElementById('btn-agregar-extra-foto');
+      const extraFileUploadInput = document.getElementById('noticia-extra-file-upload') as HTMLInputElement | null;
+      const extraPhotosContainer = document.getElementById('noticia-extra-photos-container');
+      const galleryCountBadge = document.getElementById('gallery-count-badge');
+      const galleryEmptyMsg = document.getElementById('gallery-empty-msg');
+      const extraUploadStatus = document.getElementById('noticia-extra-upload-status');
+
+      let currentGalleryImages: string[] = [];
+
+      function updateVideoPreview(url: string) {
+        const embed = parseYouTubeEmbed(url);
+        if (embed && videoPreviewWrap && videoPreviewIframe) {
+          videoPreviewIframe.src = embed;
+          videoPreviewWrap.style.display = 'block';
+        } else if (videoPreviewWrap && videoPreviewIframe) {
+          videoPreviewIframe.src = '';
+          videoPreviewWrap.style.display = 'none';
+        }
+      }
+
+      videoInput?.addEventListener('input', () => {
+        updateVideoPreview(videoInput.value.trim());
+      });
+
+      btnLimpiarVideo?.addEventListener('click', () => {
+        if (videoInput) videoInput.value = '';
+        updateVideoPreview('');
+      });
+
+      function renderGalleryChips() {
+        if (!extraPhotosContainer) return;
+        extraPhotosContainer.innerHTML = '';
+
+        if (currentGalleryImages.length === 0) {
+          if (galleryEmptyMsg) {
+            extraPhotosContainer.appendChild(galleryEmptyMsg);
+            galleryEmptyMsg.style.display = 'inline';
+          }
+          if (galleryCountBadge) galleryCountBadge.textContent = '0 fotos adicionales';
+          return;
+        }
+
+        if (galleryCountBadge) {
+          galleryCountBadge.textContent = `${currentGalleryImages.length} foto${currentGalleryImages.length > 1 ? 's' : ''} adicional${currentGalleryImages.length > 1 ? 'es' : ''}`;
+        }
+
+        currentGalleryImages.forEach((imgUrl, idx) => {
+          const chip = document.createElement('div');
+          chip.style.cssText = 'position:relative;width:76px;height:52px;border-radius:6px;overflow:hidden;border:1px solid #cbd5e1;background:#000;box-shadow:0 1px 3px rgba(0,0,0,0.1);';
+
+          const img = document.createElement('img');
+          img.src = imgUrl;
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.innerHTML = '✕';
+          delBtn.title = 'Quitar foto de la galería';
+          delBtn.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(220,38,38,0.85);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;';
+
+          delBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            currentGalleryImages.splice(idx, 1);
+            renderGalleryChips();
+          });
+
+          chip.appendChild(img);
+          chip.appendChild(delBtn);
+          extraPhotosContainer.appendChild(chip);
+        });
+      }
+
+      function addExtraPhoto(url: string) {
+        if (!url || typeof url !== 'string') return;
+        const clean = url.trim();
+        if (clean && !currentGalleryImages.includes(clean)) {
+          currentGalleryImages.push(clean);
+          renderGalleryChips();
+        }
+      }
+
+      btnAddExtraFoto?.addEventListener('click', () => {
+        if (extraPhotoUrlInput && extraPhotoUrlInput.value.trim()) {
+          addExtraPhoto(extraPhotoUrlInput.value.trim());
+          extraPhotoUrlInput.value = '';
+        }
+      });
+
+      // Subida optimizada en WebP de fotos adicionales
+      extraFileUploadInput?.addEventListener('change', async () => {
+        const rawFile = extraFileUploadInput.files?.[0];
+        if (!rawFile) return;
+
+        if (extraUploadStatus) {
+          extraUploadStatus.style.display = 'block';
+          extraUploadStatus.style.color = '#2563eb';
+          extraUploadStatus.textContent = '⚡ Optimizando foto adicional a WebP...';
+        }
+
+        try {
+          const optimizer = (window as any).optimizeImageToWebP;
+          let fileToUpload = rawFile;
+          let statsMsg = '';
+
+          if (optimizer) {
+            const { file: optFile, originalSize, optimizedSize, savedPercent } = await optimizer(rawFile, {
+              maxWidth: 1400,
+              maxHeight: 1400,
+              quality: 0.82
+            });
+            fileToUpload = optFile;
+            if (savedPercent > 0) {
+              statsMsg = ` (-${savedPercent}%)`;
+            }
+          }
+
+          if (extraUploadStatus) {
+            extraUploadStatus.textContent = `⏳ Subiendo a Supabase Storage${statsMsg}...`;
+          }
+
+          const formData = new FormData();
+          formData.append('file', fileToUpload);
+          formData.append('folder', 'noticias');
+
+          const adminFetch = (window as any).adminFetch || fetch;
+          const res = await adminFetch('/api/admin/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success && data.url) {
+            addExtraPhoto(data.url);
+            if (extraUploadStatus) {
+              extraUploadStatus.style.color = '#16a34a';
+              extraUploadStatus.textContent = `✅ Añadida a la galería: ${data.fileName}${statsMsg}`;
+            }
+          } else {
+            if (extraUploadStatus) {
+              extraUploadStatus.style.color = '#dc2626';
+              extraUploadStatus.textContent = `❌ ${data.error || 'Error al subir a Supabase Storage'}`;
+            }
+          }
+        } catch (err: any) {
+          if (extraUploadStatus) {
+            extraUploadStatus.style.color = '#dc2626';
+            extraUploadStatus.textContent = '❌ Error de conexión al subir imagen adicional';
+          }
+        } finally {
+          extraFileUploadInput.value = '';
+        }
+      });
+
+      let noticiasList: any[] = [];
+      try {
+        const rawJson = document.getElementById('noticias-json-data')?.textContent || '[]';
+        noticiasList = JSON.parse(rawJson);
+      } catch (e) {
+        console.error('Error parseando noticias JSON:', e);
+      }
+
+      const imagePreview = document.getElementById('noticia-image-preview') as HTMLImageElement | null;
+      const uploadStatus = document.getElementById('noticia-upload-status');
+      const fileUploadInput = document.getElementById('noticia-file-upload') as HTMLInputElement | null;
+
+      function updatePreview(url: string) {
+        if (imagePreview) {
+          if (url) {
+            imagePreview.src = url;
+            imagePreview.style.display = 'block';
+          } else {
+            imagePreview.style.display = 'none';
+          }
+        }
+      }
+
+      imageInput?.addEventListener('input', () => {
+        updatePreview(imageInput.value.trim());
+      });
+
+      fileUploadInput?.addEventListener('change', async () => {
+        const rawFile = fileUploadInput.files?.[0];
+        if (!rawFile) return;
+
+        if (uploadStatus) {
+          uploadStatus.style.display = 'block';
+          uploadStatus.style.color = '#2563eb';
+          uploadStatus.textContent = '⚡ Optimizando imagen de portada a WebP...';
+        }
+
+        try {
+          const optimizer = (window as any).optimizeImageToWebP;
+          let fileToUpload = rawFile;
+          let statsMsg = '';
+
+          if (optimizer) {
+            const { file: optFile, originalSize, optimizedSize, savedPercent } = await optimizer(rawFile, {
+              maxWidth: 1400,
+              maxHeight: 1400,
+              quality: 0.82
+            });
+            fileToUpload = optFile;
+            if (savedPercent > 0) {
+              statsMsg = ` (Reducido: ${(originalSize/1024).toFixed(0)}KB ➔ ${(optimizedSize/1024).toFixed(0)}KB, -${savedPercent}%)`;
+            }
+          }
+
+          if (uploadStatus) {
+            uploadStatus.textContent = `⏳ Subiendo a Supabase Storage${statsMsg}...`;
+          }
+
+          const formData = new FormData();
+          formData.append('file', fileToUpload);
+          formData.append('folder', 'noticias');
+
+          const adminFetch = (window as any).adminFetch || fetch;
+          const res = await adminFetch('/api/admin/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success && data.url) {
+            if (imageInput) imageInput.value = data.url;
+            updatePreview(data.url);
+            if (uploadStatus) {
+              uploadStatus.style.color = '#16a34a';
+              uploadStatus.textContent = `✅ Guardada en Supabase Storage: ${data.fileName}${statsMsg}`;
+            }
+          } else {
+            if (uploadStatus) {
+              uploadStatus.style.color = '#dc2626';
+              uploadStatus.textContent = `❌ ${data.error || 'Error al subir a Supabase Storage'}`;
+            }
+          }
+        } catch (err: any) {
+          if (uploadStatus) {
+            uploadStatus.style.color = '#dc2626';
+            uploadStatus.textContent = '❌ Error de conexión al subir imagen';
+          }
+        } finally {
+          fileUploadInput.value = '';
+        }
+      });
+
+      function openModal(editData: any = null) {
+        if (!modal || !form || !modalTitulo) return;
+        if (uploadStatus) uploadStatus.style.display = 'none';
+        if (extraUploadStatus) extraUploadStatus.style.display = 'none';
+
+        if (editData) {
+          modalTitulo.textContent = 'Editar Noticia';
+          if (idInput) idInput.value = editData.id;
+          if (titleInput) titleInput.value = editData.title || '';
+          if (categoryInput) categoryInput.value = editData.category_id || (editData.category ? editData.category.id : '');
+          if (statusInput) statusInput.value = editData.status || 'publicado';
+          if (videoInput) videoInput.value = editData.video_url || '';
+          updateVideoPreview(editData.video_url || '');
+          if (imageInput) imageInput.value = editData.featured_image_url || '';
+          updatePreview(editData.featured_image_url || '');
+          if (summaryInput) summaryInput.value = editData.summary || '';
+          if (contentInput) contentInput.value = editData.content || '';
+
+          currentGalleryImages = Array.isArray(editData.gallery_images) ? [...editData.gallery_images] : [];
+          renderGalleryChips();
+        } else {
+          modalTitulo.textContent = 'Redactar Nuevo Comunicado';
+          form.reset();
+          if (idInput) idInput.value = '';
+          if (videoInput) videoInput.value = '';
+          updateVideoPreview('');
+          const defaultImg = 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80';
+          if (imageInput) imageInput.value = defaultImg;
+          updatePreview(defaultImg);
+
+          currentGalleryImages = [];
+          renderGalleryChips();
+        }
+        modal.classList.add('open');
+        modal.style.display = 'flex';
+      }
+
+      function closeModal() {
+        if (!modal || !form) return;
+        modal.classList.remove('open');
+        modal.style.display = 'none';
+        form.reset();
+        currentGalleryImages = [];
+        updateVideoPreview('');
+      }
+
+      // Cerrar al hacer clic fuera
+      modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      // Delegación de eventos global
+      document.addEventListener('click', async (e) => {
+        const target = e.target as HTMLElement;
+
+        // Click en "+ Redactar Comunicado"
+        if (target.closest('#btn-nueva-noticia')) {
+          e.preventDefault();
+          openModal();
+          return;
+        }
+
+        // Click en Cerrar o Cancelar
+        if (target.closest('#modal-noticia-cerrar') || target.closest('#modal-noticia-cancelar')) {
+          e.preventDefault();
+          closeModal();
+          return;
+        }
+
+        // Click en Editar
+        const editBtn = target.closest('.btn-editar-noticia');
+        if (editBtn) {
+          e.preventDefault();
+          const id = editBtn.getAttribute('data-id');
+          const n = noticiasList.find((item: any) => String(item.id) === String(id));
+          if (n) {
+            openModal(n);
+          } else {
+            alert('No se pudo encontrar la noticia para edición.');
+          }
+          return;
+        }
+
+        // Click en Eliminar
+        const deleteBtn = target.closest('.btn-eliminar-noticia');
+        if (deleteBtn) {
+          e.preventDefault();
+          const id = deleteBtn.getAttribute('data-id');
+          const title = deleteBtn.getAttribute('data-title') || 'esta noticia';
+          if (!id) return;
+
+          if (!confirm(`¿Está seguro de eliminar el comunicado "${title}"?`)) {
+            return;
+          }
+
+          try {
+            const adminFetch = (window as any).adminFetch || fetch;
+            const res = await adminFetch(`/api/admin/noticias/${id}`, {
+              method: 'DELETE'
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              if ((window as any).showToast) {
+                (window as any).showToast('Noticia eliminada correctamente');
+              } else {
+                alert('Noticia eliminada correctamente');
+              }
+              document.getElementById(`noticia-row-${id}`)?.remove();
+            } else {
+              alert(data.error || 'No se pudo eliminar la noticia');
+            }
+          } catch (err: any) {
+            alert('Error al intentar eliminar la noticia: ' + err.message);
+          }
+        }
+      });
+
+      // Guardar noticia (Crear o Actualizar)
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('modal-noticia-guardar') as HTMLButtonElement | null;
+        if (saveBtn) {
+          saveBtn.disabled = true;
+          saveBtn.textContent = 'Guardando en Supabase...';
+        }
+
+        const id = idInput?.value;
+        const payload = {
+          title: titleInput?.value.trim(),
+          category_id: categoryInput?.value,
+          status: statusInput?.value,
+          video_url: videoInput?.value.trim() || null,
+          featured_image_url: imageInput?.value.trim(),
+          gallery_images: currentGalleryImages,
+          summary: summaryInput?.value.trim(),
+          content: contentInput?.value.trim(),
+        };
+
+        try {
+          const adminFetch = (window as any).adminFetch || fetch;
+          const url = id ? `/api/admin/noticias/${id}` : '/api/admin/noticias';
+          const method = id ? 'PUT' : 'POST';
+
+          const res = await adminFetch(url, {
+            method,
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            if ((window as any).showToast) {
+              (window as any).showToast(id ? 'Noticia actualizada con éxito' : 'Noticia publicada con éxito en Supabase');
+            }
+            closeModal();
+            setTimeout(() => window.location.reload(), 800);
+          } else {
+            alert(data.error || 'Ocurrió un error al guardar');
+          }
+        } catch (err: any) {
+          alert('Error de conexión al guardar noticia: ' + err.message);
+        } finally {
+          if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Guardar en Supabase';
+          }
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initNoticias);
+    } else {
+      initNoticias();
+    }
+  </script>
+</AdminLayout>

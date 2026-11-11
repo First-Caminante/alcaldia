@@ -1,0 +1,622 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '../../lib/supabase';
+import { DEFAULT_HERO, DEFAULT_CONOCE_INTRO } from '../../lib/data-defaults';
+
+export const prerender = false;
+
+let hero = DEFAULT_HERO;
+let conoce = DEFAULT_CONOCE_INTRO;
+let cultura = {
+  title: 'Cultura y Comunidades',
+  content: 'Pelechuco es tierra de artesanas y pastores que preservan técnicas ancestrales de hilado en lana virgen de vicuña y alpaca. Sus más de 40 comunidades articuladas en ayllus mantienen vivos los idiomas quechua y aymara, la música de lakitas y la devoción en la Festividad de la Virgen de la Asunción cada 15 de agosto.',
+  subtitle: 'Comunidades originarias, Patrimonio cultural, Textilería de alpaca',
+  image_url: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80',
+  image_key: ''
+};
+
+if (isSupabaseConfigured()) {
+  try {
+    const client = getSupabaseAdmin() || supabase;
+    const [hRes, cRes, cultRes] = await Promise.all([
+      client.from('hero_section').select('*').single(),
+      client.from('conoce_intro').select('*').single(),
+      client.from('conoce_secciones').select('*').eq('slug', 'cultura').single()
+    ]);
+    if (hRes.data) hero = hRes.data;
+    if (cRes.data) conoce = cRes.data;
+    if (cultRes.data) cultura = cultRes.data;
+  } catch (err) {
+    console.warn(err);
+  }
+}
+---
+
+<AdminLayout title="Portada y Conoce Pelechuco — Panel GAM Pelechuco" activeNav="configuracion">
+  <div style="margin-bottom:1.5rem;">
+    <h1 style="font-size:1.6rem;font-weight:700;color:#1e293b;margin:0 0 0.25rem 0;">Portada y Conoce Pelechuco</h1>
+    <p style="color:#64748b;font-size:0.875rem;margin:0;">Modifica los textos principales de la portada (Hero) e información geográfica del municipio en tiempo real</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 420px), 1fr));gap:1.5rem;">
+    <!-- Formulario Hero -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <h2 style="font-size:1.2rem;font-weight:700;color:#2D5016;margin:0 0 1rem 0;border-bottom:1px solid #f1f5f9;padding-bottom:0.5rem;">
+        🏔️ Portada Principal (Hero)
+      </h2>
+      <form id="hero-form" style="display:flex;flex-direction:column;gap:1rem;">
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Texto del Badge Superior</label>
+          <input type="text" id="hero-badge" value={hero.badge_text} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Título Principal</label>
+          <input type="text" id="hero-title-main" value={hero.title_main} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Título Destacado (Cursiva)</label>
+          <input type="text" id="hero-title-highlight" value={hero.title_highlight} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Subtítulo Descriptivo</label>
+          <textarea id="hero-subtitle" rows="3" style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;">{hero.subtitle}</textarea>
+        </div>
+        <div>
+          <!-- Guía de dimensiones recomendadas para Portada -->
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem 0.9rem;margin-bottom:0.75rem;font-size:0.8rem;color:#166534;display:flex;flex-direction:column;gap:0.35rem;">
+            <div style="display:flex;align-items:center;gap:0.4rem;font-weight:700;">
+              <span>📐</span> Dimensiones recomendadas: <strong>1920 × 1080 px</strong> (Proporción 16:9 Panorámica)
+            </div>
+            <div style="font-size:0.75rem;color:#15803d;line-height:1.4;">
+              <strong>💡 Ejemplo recomendado:</strong> Paisaje abierto de la cordillera de Apolobamba o vista aérea del valle de Pelechuco con buena luz de día. Evitar fotos con textos incrustados ya que los títulos se superponen automáticamente.
+            </div>
+          </div>
+
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Imagen de Fondo de Portada</label>
+          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.5rem;">
+            <input type="url" id="hero-bg-image" value={hero.bg_image_url} style="flex:1;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="https://...supabase.co/... o URL" />
+            <label style="background:#f1f5f9;border:1px solid #cbd5e1;color:#1e293b;padding:0.6rem 0.9rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:0.35rem;" title="Optimizar a WebP y subir a Supabase Storage">
+              <span>📁 Subir Fondo (WebP)</span>
+              <input type="file" id="hero-file-upload" accept="image/*" style="display:none;" />
+            </label>
+          </div>
+          <div id="hero-upload-status" style="font-size:0.75rem;color:#64748b;margin-bottom:0.35rem;display:none;"></div>
+          <div style="margin-top:0.35rem;">
+            <img id="hero-image-preview" src={hero.bg_image_url} alt="Vista previa de portada" style="max-height:100px;border-radius:6px;border:1px solid #e2e8f0;object-fit:cover;width:100%;" />
+          </div>
+        </div>
+        <button type="submit" id="btn-save-hero" class="btn-primary" style="background:#2D5016;color:#FAF7F2;padding:0.7rem;border-radius:6px;border:none;font-weight:600;font-size:0.875rem;cursor:pointer;margin-top:0.5rem;">
+          Guardar Cambios de Portada en Supabase
+        </button>
+      </form>
+    </div>
+
+    <!-- Formulario Conoce Pelechuco -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <h2 style="font-size:1.2rem;font-weight:700;color:#4A7FA5;margin:0 0 1rem 0;border-bottom:1px solid #f1f5f9;padding-bottom:0.5rem;">
+        🗺️ Sección Conoce Pelechuco
+      </h2>
+      <form id="conoce-form" style="display:flex;flex-direction:column;gap:1rem;">
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Título de la Sección</label>
+          <input type="text" id="conoce-title" value={conoce.title} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Descripción Editorial</label>
+          <textarea id="conoce-description" rows="4" style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;">{conoce.description}</textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Altitud</label>
+            <input type="text" id="conoce-altitud" value={conoce.altitud} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Superficie</label>
+            <input type="text" id="conoce-superficie" value={conoce.superficie} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Población Censada</label>
+          <input type="text" id="conoce-poblacion" value={conoce.poblacion} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+        </div>
+
+        <div>
+          <!-- Guía de dimensiones recomendadas para Conoce Pelechuco -->
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem 0.9rem;margin-bottom:0.75rem;font-size:0.8rem;color:#166534;display:flex;flex-direction:column;gap:0.35rem;">
+            <div style="display:flex;align-items:center;gap:0.4rem;font-weight:700;">
+              <span>📐</span> Dimensiones recomendadas: <strong>1200 × 900 px</strong> (Proporción 4:3 o 3:2 Horizontal)
+            </div>
+            <div style="font-size:0.75rem;color:#15803d;line-height:1.4;">
+              <strong>💡 Ejemplo recomendado:</strong> Paisaje montañoso de la Cordillera de Apolobamba, campamento andino, lagunas o vista territorial representativa de Pelechuco con buena iluminación.
+            </div>
+          </div>
+
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+            Fotografía Destacada de Conoce Pelechuco (Territorio)
+          </label>
+          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.5rem;">
+            <input
+              type="url"
+              id="conoce-image-url"
+              value={conoce.image_url || 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80'}
+              style="flex:1;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+              placeholder="https://... o sube una imagen"
+            />
+            <input type="hidden" id="conoce-image-key" value={conoce.image_key || ''} />
+            <label
+              style="background:#4A7FA5;color:#fff;padding:0.6rem 0.9rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:0.35rem;"
+              title="Optimizar a WebP y subir a Supabase Storage"
+            >
+              <span>📁 Subir Foto (WebP)</span>
+              <input type="file" id="conoce-file-upload" accept="image/*" style="display:none;" />
+            </label>
+          </div>
+          <div id="conoce-upload-status" style="font-size:0.75rem;color:#64748b;margin-bottom:0.35rem;display:none;"></div>
+          <div style="margin-top:0.35rem;height:140px;background:#0f172a;border-radius:6px;overflow:hidden;border:1px solid #e2e8f0;">
+            <img
+              id="conoce-image-preview"
+              src={conoce.image_url || 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80'}
+              alt="Vista previa de Conoce Pelechuco"
+              style="width:100%;height:100%;object-fit:cover;"
+            />
+          </div>
+        </div>
+
+        <button type="submit" id="btn-save-conoce" class="btn-primary" style="background:#4A7FA5;color:#fff;padding:0.7rem;border-radius:6px;border:none;font-weight:600;font-size:0.875rem;cursor:pointer;margin-top:0.5rem;">
+          Guardar Datos del Municipio en Supabase
+        </button>
+      </form>
+    </div>
+
+    <!-- Formulario Cultura y Comunidades (Bloque 2 Conoce Pelechuco) -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);grid-column: 1 / -1;">
+      <h2 style="font-size:1.2rem;font-weight:700;color:#2D5016;margin:0 0 1rem 0;border-bottom:1px solid #f1f5f9;padding-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;">
+        <span>🎭</span> Cultura y Comunidades (Bloque Editorial de Conoce Pelechuco)
+      </h2>
+      <p style="font-size:0.85rem;color:#64748b;margin-bottom:1rem;">
+        Edita el título, la reseña cultural de comunidades y pastores, las etiquetas y la imagen destacada que se muestran en el portal oficial.
+      </p>
+
+      <form id="cultura-form" style="display:flex;flex-direction:column;gap:1rem;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+              Título del Bloque
+            </label>
+            <input
+              type="text"
+              id="cultura-title"
+              value={cultura.title}
+              required
+              style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+            />
+          </div>
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+              Etiquetas / Tags (separadas por coma)
+            </label>
+            <input
+              type="text"
+              id="cultura-tags"
+              value={cultura.subtitle || 'Comunidades originarias, Patrimonio cultural, Textilería de alpaca'}
+              placeholder="Comunidades originarias, Patrimonio cultural, Textilería de alpaca"
+              style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+            Texto Descriptivo / Reseña Ancestral
+          </label>
+          <textarea
+            id="cultura-content"
+            rows="4"
+            required
+            style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+          >{cultura.content}</textarea>
+        </div>
+
+        <div>
+          <!-- Guía de dimensiones recomendadas para Cultura y Comunidades -->
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem 0.9rem;margin-bottom:0.75rem;font-size:0.8rem;color:#166534;display:flex;flex-direction:column;gap:0.35rem;">
+            <div style="display:flex;align-items:center;gap:0.4rem;font-weight:700;">
+              <span>📐</span> Dimensiones recomendadas: <strong>1200 × 800 px</strong> (Proporción 3:2 o 4:3 Horizontal)
+            </div>
+            <div style="font-size:0.75rem;color:#15803d;line-height:1.4;">
+              <strong>💡 Ejemplo recomendado:</strong> Fotografía representativa de tejedoras y artesanas con fibra de alpaca/vicuña, fiesta patronal de la Asunción o paisajes culturales de los ayllus originarios.
+            </div>
+          </div>
+
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+            Fotografía Destacada (WebP Supabase Storage)
+          </label>
+          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.5rem;">
+            <input
+              type="url"
+              id="cultura-image-url"
+              value={cultura.image_url}
+              style="flex:1;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+              placeholder="https://... o sube una imagen"
+            />
+            <input type="hidden" id="cultura-image-key" value={cultura.image_key || ''} />
+            <label
+              style="background:#2D5016;color:#FAF7F2;padding:0.6rem 0.9rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:0.35rem;"
+            >
+              <span>📁 Subir Foto (WebP)</span>
+              <input type="file" id="cultura-file-upload" accept="image/*" style="display:none;" />
+            </label>
+          </div>
+          <div id="cultura-upload-status" style="font-size:0.75rem;color:#64748b;margin-bottom:0.35rem;display:none;"></div>
+          <div style="margin-top:0.35rem;height:140px;background:#0f172a;border-radius:6px;overflow:hidden;border:1px solid #e2e8f0;">
+            <img
+              id="cultura-image-preview"
+              src={cultura.image_url}
+              alt="Vista previa de Cultura y Comunidades"
+              style="width:100%;height:100%;object-fit:cover;"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          id="btn-save-cultura"
+          class="btn-primary"
+          style="background:#2D5016;color:#FAF7F2;padding:0.7rem;border-radius:6px;border:none;font-weight:600;font-size:0.875rem;cursor:pointer;margin-top:0.5rem;"
+        >
+          Guardar Cultura y Comunidades en Supabase
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function initConfig() {
+      // Subida de imagen de Portada a R2
+      const heroImageInput = document.getElementById('hero-bg-image') as HTMLInputElement | null;
+      const heroImagePreview = document.getElementById('hero-image-preview') as HTMLImageElement | null;
+      const heroFileUpload = document.getElementById('hero-file-upload') as HTMLInputElement | null;
+      const heroUploadStatus = document.getElementById('hero-upload-status');
+
+      heroImageInput?.addEventListener('input', () => {
+        if (heroImagePreview && heroImageInput.value.trim()) {
+          heroImagePreview.src = heroImageInput.value.trim();
+        }
+      });
+
+      heroFileUpload?.addEventListener('change', async () => {
+        const rawFile = heroFileUpload.files?.[0];
+        if (!rawFile) return;
+
+        if (heroUploadStatus) {
+          heroUploadStatus.style.display = 'block';
+          heroUploadStatus.style.color = '#2563eb';
+          heroUploadStatus.textContent = '⚡ Optimizando imagen de portada a WebP...';
+        }
+
+        try {
+          const optimizer = (window as any).optimizeImageToWebP;
+          let fileToUpload = rawFile;
+          let statsMsg = '';
+
+          if (optimizer) {
+            const { file: optFile, originalSize, optimizedSize, savedPercent } = await optimizer(rawFile, {
+              maxWidth: 1920,
+              maxHeight: 1080,
+              quality: 0.82
+            });
+            fileToUpload = optFile;
+            if (savedPercent > 0) {
+              statsMsg = ` (Reducido: ${(originalSize/1024).toFixed(0)}KB ➔ ${(optimizedSize/1024).toFixed(0)}KB, -${savedPercent}%)`;
+            }
+          }
+
+          if (heroUploadStatus) {
+            heroUploadStatus.textContent = `⏳ Subiendo a Supabase Storage${statsMsg}...`;
+          }
+
+          const formData = new FormData();
+          formData.append('file', fileToUpload);
+          formData.append('folder', 'hero');
+
+          const adminFetch = (window as any).adminFetch || fetch;
+          const res = await adminFetch('/api/admin/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success && data.url) {
+            if (heroImageInput) heroImageInput.value = data.url;
+            if (heroImagePreview) heroImagePreview.src = data.url;
+            if (heroUploadStatus) {
+              heroUploadStatus.style.color = '#16a34a';
+              heroUploadStatus.textContent = `✅ Guardada en Supabase Storage: ${data.fileName}${statsMsg}`;
+            }
+          } else {
+            if (heroUploadStatus) {
+              heroUploadStatus.style.color = '#dc2626';
+              heroUploadStatus.textContent = `❌ ${data.error || 'Error al subir a Supabase Storage'}`;
+            }
+          }
+        } catch {
+          if (heroUploadStatus) {
+            heroUploadStatus.style.color = '#dc2626';
+            heroUploadStatus.textContent = '❌ Error de conexión al subir imagen';
+          }
+        } finally {
+          heroFileUpload.value = '';
+        }
+      });
+
+      // Guardar Hero
+      const heroForm = document.getElementById('hero-form') as HTMLFormElement;
+      heroForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-save-hero') as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = 'Guardando en Supabase...';
+
+        const payload = {
+          badge_text: (document.getElementById('hero-badge') as HTMLInputElement).value.trim(),
+          title_main: (document.getElementById('hero-title-main') as HTMLInputElement).value.trim(),
+          title_highlight: (document.getElementById('hero-title-highlight') as HTMLInputElement).value.trim(),
+          subtitle: (document.getElementById('hero-subtitle') as HTMLTextAreaElement).value.trim(),
+          bg_image_url: (document.getElementById('hero-bg-image') as HTMLInputElement).value.trim(),
+        };
+
+        try {
+          const res = await (window as any).adminFetch('/api/admin/hero', {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            (window as any).showToast('Portada actualizada con éxito en Supabase');
+          } else {
+            alert(data.error || 'Error al actualizar portada');
+          }
+        } catch {
+          alert('Error de conexión con el servidor');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Guardar Cambios de Portada en Supabase';
+        }
+      });
+
+      // Subida de imagen para Conoce Pelechuco
+      const conoceImageInput = document.getElementById('conoce-image-url') as HTMLInputElement | null;
+      const conoceImageKey = document.getElementById('conoce-image-key') as HTMLInputElement | null;
+      const conoceImagePreview = document.getElementById('conoce-image-preview') as HTMLImageElement | null;
+      const conoceFileUpload = document.getElementById('conoce-file-upload') as HTMLInputElement | null;
+      const conoceUploadStatus = document.getElementById('conoce-upload-status');
+
+      conoceImageInput?.addEventListener('input', () => {
+        if (conoceImagePreview && conoceImageInput.value.trim()) {
+          conoceImagePreview.src = conoceImageInput.value.trim();
+        }
+      });
+
+      conoceFileUpload?.addEventListener('change', async () => {
+        const rawFile = conoceFileUpload.files?.[0];
+        if (!rawFile) return;
+
+        if (conoceUploadStatus) {
+          conoceUploadStatus.style.display = 'block';
+          conoceUploadStatus.style.color = '#2563eb';
+          conoceUploadStatus.textContent = '⚡ Optimizando imagen de Conoce Pelechuco a WebP...';
+        }
+
+        try {
+          const optimizer = (window as any).optimizeImageToWebP;
+          let fileToUpload = rawFile;
+          let statsMsg = '';
+
+          if (optimizer) {
+            const { file: optFile, originalSize, optimizedSize, savedPercent } = await optimizer(rawFile, {
+              maxWidth: 1600,
+              maxHeight: 1200,
+              quality: 0.82
+            });
+            fileToUpload = optFile;
+            if (savedPercent > 0) {
+              statsMsg = ` (Ahorro: ${(originalSize/1024).toFixed(0)}KB ➔ ${(optimizedSize/1024).toFixed(0)}KB, -${savedPercent}%)`;
+            }
+          }
+
+          if (conoceUploadStatus) {
+            conoceUploadStatus.textContent = `⏳ Subiendo a Supabase Storage${statsMsg}...`;
+          }
+
+          const formData = new FormData();
+          formData.append('file', fileToUpload);
+          formData.append('folder', 'conoce');
+
+          const res = await (window as any).adminFetch('/api/admin/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success && data.url) {
+            if (conoceImageInput) conoceImageInput.value = data.url;
+            if (conoceImageKey) conoceImageKey.value = data.fileKey || '';
+            if (conoceImagePreview) conoceImagePreview.src = data.url;
+            if (conoceUploadStatus) {
+              conoceUploadStatus.style.color = '#16a34a';
+              conoceUploadStatus.textContent = `✅ Guardada en Supabase Storage exitosamente${statsMsg}`;
+            }
+          } else {
+            if (conoceUploadStatus) {
+              conoceUploadStatus.style.color = '#dc2626';
+              conoceUploadStatus.textContent = `❌ ${data.error || 'Error al subir a Supabase Storage'}`;
+            }
+          }
+        } catch {
+          if (conoceUploadStatus) {
+            conoceUploadStatus.style.color = '#dc2626';
+            conoceUploadStatus.textContent = '❌ Error de conexión al subir imagen';
+          }
+        } finally {
+          conoceFileUpload.value = '';
+        }
+      });
+
+      // Guardar Conoce
+      const conoceForm = document.getElementById('conoce-form') as HTMLFormElement;
+      conoceForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-save-conoce') as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = 'Guardando en Supabase...';
+
+        const payload = {
+          title: (document.getElementById('conoce-title') as HTMLInputElement).value.trim(),
+          description: (document.getElementById('conoce-description') as HTMLTextAreaElement).value.trim(),
+          altitud: (document.getElementById('conoce-altitud') as HTMLInputElement).value.trim(),
+          superficie: (document.getElementById('conoce-superficie') as HTMLInputElement).value.trim(),
+          poblacion: (document.getElementById('conoce-poblacion') as HTMLInputElement).value.trim(),
+          image_url: (document.getElementById('conoce-image-url') as HTMLInputElement)?.value.trim() || undefined,
+          image_key: (document.getElementById('conoce-image-key') as HTMLInputElement)?.value.trim() || undefined,
+        };
+
+        try {
+          const res = await (window as any).adminFetch('/api/admin/conoce', {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            (window as any).showToast('Datos del municipio actualizados con éxito en Supabase');
+          } else {
+            alert(data.error || 'Error al actualizar sección Conoce');
+          }
+        } catch {
+          alert('Error de conexión con el servidor');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Guardar Datos del Municipio en Supabase';
+        }
+      });
+
+      // Subida de imagen para Cultura y Comunidades
+      const cultImageInput = document.getElementById('cultura-image-url') as HTMLInputElement | null;
+      const cultImageKey = document.getElementById('cultura-image-key') as HTMLInputElement | null;
+      const cultImagePreview = document.getElementById('cultura-image-preview') as HTMLImageElement | null;
+      const cultFileUpload = document.getElementById('cultura-file-upload') as HTMLInputElement | null;
+      const cultUploadStatus = document.getElementById('cultura-upload-status');
+
+      cultImageInput?.addEventListener('input', () => {
+        if (cultImagePreview && cultImageInput.value.trim()) {
+          cultImagePreview.src = cultImageInput.value.trim();
+        }
+      });
+
+      cultFileUpload?.addEventListener('change', async () => {
+        const rawFile = cultFileUpload.files?.[0];
+        if (!rawFile) return;
+
+        if (cultUploadStatus) {
+          cultUploadStatus.style.display = 'block';
+          cultUploadStatus.style.color = '#2563eb';
+          cultUploadStatus.textContent = '⚡ Optimizando imagen a WebP de alta compresión...';
+        }
+
+        try {
+          const optimizer = (window as any).optimizeImageToWebP;
+          let fileToUpload = rawFile;
+          let statsMsg = '';
+
+          if (optimizer) {
+            const { file: optFile, originalSize, optimizedSize, savedPercent } = await optimizer(rawFile, {
+              maxWidth: 1600,
+              maxHeight: 1200,
+              quality: 0.82
+            });
+            fileToUpload = optFile;
+            if (savedPercent > 0) {
+              statsMsg = ` (Ahorro: ${(originalSize/1024).toFixed(0)}KB ➔ ${(optimizedSize/1024).toFixed(0)}KB, -${savedPercent}%)`;
+            }
+          }
+
+          if (cultUploadStatus) {
+            cultUploadStatus.textContent = `⏳ Subiendo a Supabase Storage${statsMsg}...`;
+          }
+
+          const formData = new FormData();
+          formData.append('file', fileToUpload);
+          formData.append('folder', 'conoce');
+
+          const res = await (window as any).adminFetch('/api/admin/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success && data.url) {
+            if (cultImageInput) cultImageInput.value = data.url;
+            if (cultImageKey) cultImageKey.value = data.fileKey || '';
+            if (cultImagePreview) cultImagePreview.src = data.url;
+            if (cultUploadStatus) {
+              cultUploadStatus.style.color = '#16a34a';
+              cultUploadStatus.textContent = `✅ Guardada en Supabase Storage exitosamente${statsMsg}`;
+            }
+          } else {
+            if (cultUploadStatus) {
+              cultUploadStatus.style.color = '#dc2626';
+              cultUploadStatus.textContent = `❌ ${data.error || 'Error al subir a Supabase Storage'}`;
+            }
+          }
+        } catch {
+          if (cultUploadStatus) {
+            cultUploadStatus.style.color = '#dc2626';
+            cultUploadStatus.textContent = '❌ Error de conexión al subir imagen';
+          }
+        } finally {
+          cultFileUpload.value = '';
+        }
+      });
+
+      // Guardar Cultura y Comunidades
+      const cultForm = document.getElementById('cultura-form') as HTMLFormElement;
+      cultForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-save-cultura') as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = 'Guardando en Supabase...';
+
+        const payload = {
+          title: (document.getElementById('cultura-title') as HTMLInputElement).value.trim(),
+          subtitle: (document.getElementById('cultura-tags') as HTMLInputElement).value.trim(),
+          content: (document.getElementById('cultura-content') as HTMLTextAreaElement).value.trim(),
+          image_url: (document.getElementById('cultura-image-url') as HTMLInputElement).value.trim(),
+          image_key: (document.getElementById('cultura-image-key') as HTMLInputElement).value.trim() || undefined,
+        };
+
+        try {
+          const res = await (window as any).adminFetch('/api/admin/conoce/cultura', {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            (window as any).showToast('Cultura y Comunidades actualizado con éxito en Supabase');
+          } else {
+            alert(data.error || 'Error al actualizar Cultura y Comunidades');
+          }
+        } catch {
+          alert('Error de conexión con el servidor');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Guardar Cultura y Comunidades en Supabase';
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initConfig);
+    } else {
+      initConfig();
+    }
+  </script>
+</AdminLayout>

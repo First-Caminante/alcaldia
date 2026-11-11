@@ -1,0 +1,878 @@
+---
+import { isSupabaseConfigured } from '../lib/supabase';
+
+interface Props {
+  title?: string;
+  activeNav?: string;
+}
+
+const { title = "Panel Administrativo — GAM Pelechuco", activeNav = "dashboard" } = Astro.props;
+const supabaseReady = isSupabaseConfigured();
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/styles.css" />
+  <meta name="color-scheme" content="light dark" />
+  <script is:inline>
+    (function() {
+      try {
+        const stored = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (systemDark ? 'dark' : 'light');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+          const meta = document.querySelector('meta[name="color-scheme"]');
+          if (meta) meta.content = 'dark';
+        } else {
+          document.documentElement.classList.remove('dark');
+          const meta = document.querySelector('meta[name="color-scheme"]');
+          if (meta) meta.content = 'light';
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style is:global>
+    :root {
+      color-scheme: light dark;
+      --admin-bg: #f4f6f9;
+      --admin-content-bg: #f8fafc;
+      --admin-card-bg: #ffffff;
+      --admin-card-inner: #f8fafc;
+      --admin-border: #e2e8f0;
+      --admin-border-subtle: #f1f5f9;
+      --admin-text: #1e293b;
+      --admin-text-muted: #64748b;
+      --admin-text-subtle: #475569;
+    }
+
+    html.dark {
+      --admin-bg: #0b1120;
+      --admin-content-bg: #0b1120;
+      --admin-card-bg: #131f2e;
+      --admin-card-inner: #0f1824;
+      --admin-border: #23364e;
+      --admin-border-subtle: #1e2c3f;
+      --admin-text: #f8fafc;
+      --admin-text-muted: #94a3b8;
+      --admin-text-subtle: #cbd5e1;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      background: var(--admin-bg);
+      color: var(--admin-text);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SISTEMA COMPLETO DE MODO OSCURO PARA EL PANEL ADMINISTRATIVO
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* 1. Contenedores y Estructura Principal */
+    html.dark .admin-layout,
+    html.dark .admin-content,
+    html.dark #admin-main {
+      background: var(--admin-content-bg) !important;
+      color: var(--admin-text) !important;
+    }
+
+    /* 2. Tarjetas y Paneles Blancos */
+    html.dark .admin-card,
+    html.dark .stat-card,
+    html.dark .galeria-card,
+    html.dark [style*="background:#fff"],
+    html.dark [style*="background: #fff"],
+    html.dark [style*="background:#ffffff"],
+    html.dark [style*="background: #ffffff"],
+    html.dark [style*="background-color:#fff"],
+    html.dark [style*="background-color: #fff"] {
+      background: var(--admin-card-bg) !important;
+      border-color: var(--admin-border) !important;
+      color: var(--admin-text) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    /* 3. Sub-tarjetas, cajas interiores y fondos gris claro */
+    html.dark [style*="background:#f8fafc"],
+    html.dark [style*="background: #f8fafc"],
+    html.dark [style*="background:#f1f5f9"],
+    html.dark [style*="background: #f1f5f9"],
+    html.dark [style*="background-color:#f8fafc"],
+    html.dark [style*="background-color: #f8fafc"] {
+      background: var(--admin-card-inner) !important;
+      border-color: var(--admin-border) !important;
+      color: var(--admin-text-subtle) !important;
+    }
+
+    /* 4. Encabezados, Títulos y Textos Oscuros */
+    html.dark h1,
+    html.dark h2,
+    html.dark h3,
+    html.dark h4,
+    html.dark h5,
+    html.dark strong,
+    html.dark b,
+    html.dark [style*="color:#0f172a"],
+    html.dark [style*="color: #0f172a"],
+    html.dark [style*="color:#1e293b"],
+    html.dark [style*="color: #1e293b"],
+    html.dark [style*="color:#334155"],
+    html.dark [style*="color: #334155"] {
+      color: #f8fafc !important;
+    }
+
+    /* 5. Etiquetas de Formularios (Labels) */
+    html.dark label,
+    html.dark .form-label,
+    html.dark [style*="color:#475569"],
+    html.dark [style*="color: #475569"] {
+      color: #cbd5e1 !important;
+    }
+
+    /* 6. Textos Secundarios y Atenuados (Muted) */
+    html.dark small,
+    html.dark .form-help,
+    html.dark .admin-subtitle,
+    html.dark [style*="color:#64748b"],
+    html.dark [style*="color: #64748b"] {
+      color: #94a3b8 !important;
+    }
+
+    /* 7. Verde Institucional adaptado para Dark Mode (Headings, Dimensiones, Precios, Badges) */
+    html.dark [style*="color:#2D5016"],
+    html.dark [style*="color: #2D5016"],
+    html.dark [style*="color:#166534"],
+    html.dark [style*="color: #166534"],
+    html.dark [style*="color:#15803d"],
+    html.dark [style*="color: #15803d"] {
+      color: #86efac !important;
+    }
+
+    /* 8. Azul Institucional adaptado para Dark Mode (Acciones, enlaces, badges) */
+    html.dark [style*="color:#4A7FA5"],
+    html.dark [style*="color: #4A7FA5"],
+    html.dark [style*="color:#3b82f6"],
+    html.dark [style*="color:#1d4ed8"] {
+      color: #7dd3fc !important;
+    }
+
+    /* 9. Badges e insignias verdes */
+    html.dark [style*="background:rgba(45,80,22"],
+    html.dark [style*="background: rgba(45,80,22"] {
+      background: rgba(34, 197, 94, 0.16) !important;
+      color: #86efac !important;
+      border: 1px solid rgba(34, 197, 94, 0.3) !important;
+    }
+
+    /* 10. Cuadros de Alerta de Éxito / Dimensiones (Verdes) */
+    html.dark [style*="background:#f0fdf4"],
+    html.dark [style*="background: #f0fdf4"],
+    html.dark [style*="background:#dcfce7"] {
+      background: rgba(34, 197, 94, 0.12) !important;
+      border-color: rgba(34, 197, 94, 0.35) !important;
+      color: #bbf7d0 !important;
+    }
+    html.dark [style*="background:#f0fdf4"] strong,
+    html.dark [style*="background:#f0fdf4"] div,
+    html.dark [style*="background:#f0fdf4"] span {
+      color: #86efac !important;
+    }
+
+    /* 11. Cuadros de Advertencia / Alerta Amarilla */
+    html.dark [style*="background:rgba(245,158,11"],
+    html.dark [style*="background:#fefce8"] {
+      background: rgba(245, 158, 11, 0.12) !important;
+      border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html.dark [style*="color:#b45309"],
+    html.dark [style*="color:#92400e"],
+    html.dark [style*="color:#78350f"] {
+      color: #fef08a !important;
+    }
+
+    /* 12. Cuadros de Error / Peligro */
+    html.dark [style*="background:#fef2f2"],
+    html.dark [style*="background: #fef2f2"] {
+      background: rgba(239, 68, 68, 0.14) !important;
+      border-color: rgba(239, 68, 68, 0.35) !important;
+      color: #fca5a5 !important;
+    }
+    html.dark [style*="color:#b91c1c"],
+    html.dark [style*="color:#dc2626"] {
+      color: #f87171 !important;
+    }
+
+    /* 13. Cuadros de Información Azul */
+    html.dark [style*="background:#eff6ff"],
+    html.dark [style*="background:#dbeafe"] {
+      background: rgba(59, 130, 246, 0.14) !important;
+      border-color: rgba(59, 130, 246, 0.35) !important;
+      color: #bfdbfe !important;
+    }
+
+    /* 14. Tablas Oficiales */
+    html.dark table {
+      color: #e2e8f0 !important;
+    }
+    html.dark table thead,
+    html.dark table thead tr,
+    html.dark table th {
+      background: #0d1522 !important;
+      color: #94a3b8 !important;
+      border-color: var(--admin-border) !important;
+    }
+    html.dark table td {
+      border-color: var(--admin-border-subtle) !important;
+      color: #e2e8f0 !important;
+    }
+    html.dark table tr:hover td {
+      background: rgba(255, 255, 255, 0.03) !important;
+    }
+    html.dark tr[style*="border-bottom"],
+    html.dark td[style*="border-bottom"],
+    html.dark div[style*="border-bottom"],
+    html.dark div[style*="border-top"] {
+      border-bottom-color: var(--admin-border-subtle) !important;
+      border-top-color: var(--admin-border-subtle) !important;
+    }
+
+    /* 15. Controles de Formularios (Inputs, Textarea, Selects) */
+    html.dark input:not([type="submit"]):not([type="button"]),
+    html.dark textarea,
+    html.dark select {
+      background: #0b131e !important;
+      border: 1px solid #293d56 !important;
+      color: #f8fafc !important;
+    }
+    html.dark input::placeholder,
+    html.dark textarea::placeholder {
+      color: #64748b !important;
+    }
+    html.dark input:focus,
+    html.dark textarea:focus,
+    html.dark select:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18) !important;
+    }
+    html.dark select option {
+      background: #0f1a28 !important;
+      color: #f8fafc !important;
+    }
+    html.dark input[type="file"] {
+      background: #0b131e !important;
+      border-color: #293d56 !important;
+      color: #cbd5e1 !important;
+    }
+
+    /* 16. Botones Secundarios (Cancelar, Editar foto, Copiar URL) */
+    html.dark button[style*="background:#f1f5f9"],
+    html.dark [style*="background:#f1f5f9"] button,
+    html.dark label[style*="background:#f1f5f9"],
+    html.dark a[style*="background:#f1f5f9"],
+    html.dark .btn-edit-foto {
+      background: #1b293a !important;
+      border-color: #334a66 !important;
+      color: #e2e8f0 !important;
+    }
+    html.dark button[style*="background:#f1f5f9"]:hover,
+    html.dark .btn-edit-foto:hover {
+      background: #24364c !important;
+      color: #fff !important;
+    }
+
+    /* 17. Modales y Diálogos Flotantes */
+    html.dark .admin-modal-backdrop {
+      background: rgba(3, 7, 18, 0.82) !important;
+      backdrop-filter: blur(6px) !important;
+    }
+    html.dark .admin-modal-card {
+      background: #111c29 !important;
+      border: 1px solid #23364e !important;
+      color: var(--admin-text) !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75) !important;
+    }
+    html.dark .admin-modal-card h3 {
+      color: #f8fafc !important;
+    }
+    html.dark .admin-modal-card button#modal-noticia-cerrar,
+    html.dark .admin-modal-card button#modal-tramite-cerrar,
+    html.dark .admin-modal-card button#modal-autoridad-cerrar,
+    html.dark .admin-modal-card button#modal-galeria-cerrar,
+    html.dark .admin-modal-card button#modal-red-cerrar,
+    html.dark .admin-modal-card button#modal-subida-cerrar {
+      color: #94a3b8 !important;
+    }
+
+    /* 18. Líneas divisoras e indicadores */
+    html.dark hr {
+      border-color: var(--admin-border-subtle) !important;
+    }
+    html.dark [style*="border: 1px solid #e2e8f0"],
+    html.dark [style*="border:1px solid #e2e8f0"],
+    html.dark [style*="border: 1px solid #cbd5e1"],
+    html.dark [style*="border:1px solid #cbd5e1"] {
+      border-color: var(--admin-border) !important;
+    }
+
+    .top-status-bar {
+      background: #111b27;
+      color: #94a3b8;
+      padding: 0.5rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-badge.online {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .sidebar-toggle-btn {
+      display: none;
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 0.4rem 0.65rem;
+      font-size: 1.1rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .sidebar-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+    .sidebar-close-btn {
+      display: none;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 1rem;
+      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Telón oscuro para menú móvil lateral */
+    .admin-sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 998;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .admin-sidebar-backdrop.open {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Estilos de Modales compartidos para CRUD */
+    .admin-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .admin-modal-backdrop.open {
+      display: flex !important;
+    }
+    .admin-modal-card {
+      background: #fff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      border: 1px solid #e2e8f0;
+      padding: 1.75rem;
+    }
+
+    /* Tablas con scroll horizontal suave en móvil */
+    .admin-table-container,
+    .admin-card:has(table),
+    div:has(> table) {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      max-width: 100% !important;
+      border-radius: 10px;
+    }
+    table {
+      min-width: 520px;
+    }
+
+    /* Notificaciones Toast */
+    #admin-toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      z-index: 2000;
+      display: none;
+      transition: all 0.3s ease;
+    }
+    #admin-toast.success { background: #166534; display: block; border: 1px solid #22c55e; }
+    #admin-toast.error { background: #991b1b; display: block; border: 1px solid #ef4444; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ADAPTACIONES RESPONSIVAS INTEGRALES PARA MÓVIL Y TABLET
+       ═══════════════════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .sidebar-toggle-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+      }
+      .sidebar-close-btn {
+        display: flex !important;
+      }
+      .admin-layout {
+        grid-template-columns: 1fr !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+      }
+      .admin-sidebar {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        width: 280px !important;
+        max-width: 85vw !important;
+        height: 100vh !important;
+        z-index: 999 !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1) !important;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.45) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow-y: auto !important;
+      }
+      .admin-sidebar.open {
+        transform: translateX(0) !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+      }
+      .top-status-bar {
+        padding: 0.5rem 0.85rem !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        gap: 0.5rem !important;
+      }
+      .top-status-brand-title {
+        font-size: 0.85rem !important;
+        max-width: 140px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      .top-status-bar-sub,
+      .status-badge-text-verbose,
+      #admin-user-display {
+        display: none !important;
+      }
+      .admin-content,
+      #admin-main {
+        padding: 1rem 0.75rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+      }
+      /* Encabezados de páginas administrativas (título y botón) */
+      .admin-content > div:first-child:has(h1) {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.85rem !important;
+        margin-bottom: 1.25rem !important;
+      }
+      .admin-content > div:first-child:has(h1) button,
+      .admin-content > div:first-child:has(h1) a.btn-primary {
+        width: 100% !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 0.65rem 1rem !important;
+        box-sizing: border-box !important;
+      }
+      .admin-content h1 {
+        font-size: 1.35rem !important;
+      }
+      /* Grids generales: nunca forzar un ancho mayor al de la pantalla */
+      [style*="minmax(420px"],
+      [style*="minmax(400px"],
+      [style*="minmax(380px"],
+      [style*="minmax(320px"] {
+        grid-template-columns: 1fr !important;
+      }
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="grid-template-columns:1fr 1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+      }
+      /* Modales ajustados a la pantalla táctil */
+      .admin-modal-backdrop {
+        padding: 0.5rem !important;
+        align-items: flex-end !important;
+      }
+      .admin-modal-card {
+        padding: 1.25rem 1rem !important;
+        max-height: 93vh !important;
+        border-radius: 16px 16px 0 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      /* Estadísticas y métricas en teléfonos pequeños */
+      [style*="minmax(220px"],
+      [style*="minmax(210px"] {
+        grid-template-columns: 1fr !important;
+      }
+      .top-status-portal-link {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Telón oscuro para el menú lateral en móvil -->
+  <div id="admin-sidebar-backdrop" class="admin-sidebar-backdrop" aria-hidden="true"></div>
+
+  <!-- Barra superior del sistema -->
+  <div class="top-status-bar">
+    <div style="display:flex;align-items:center;gap:0.6rem;">
+      <button class="sidebar-toggle-btn" id="mobile-sidebar-toggle" aria-label="Abrir menú de navegación lateral">☰</button>
+      <span class="top-status-brand-title"><strong>GAM Pelechuco</strong> <span class="top-status-bar-sub">· Sistema de Gestión</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.6rem;">
+      {supabaseReady ? (
+        <span class="status-badge online" title="Base de datos Supabase conectada">
+          <span>●</span> <span class="status-badge-text-verbose">Supabase Activo</span>
+        </span>
+      ) : (
+        <span class="status-badge pending" title="Ingrese las API keys de Supabase en el archivo .env">
+          <span>●</span> <span class="status-badge-text-verbose">Modo Local</span>
+        </span>
+      )}
+      <span id="admin-user-display" style="color:#e2e8f0;font-weight:500;font-size:0.8rem;">
+        👤 Administrador
+      </span>
+      <button id="admin-theme-toggle" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#fff;border-radius:6px;padding:0.25rem 0.55rem;font-size:0.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;" title="Alternar Modo Oscuro / Claro">
+        <span id="admin-theme-icon">🌙</span>
+      </button>
+      <a href="/" target="_blank" class="top-status-portal-link" style="color:#38bdf8;text-decoration:none;font-weight:600;font-size:0.75rem;padding:0.25rem 0.45rem;">
+        Portal ↗
+      </a>
+      <button id="btn-admin-logout" style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-weight:600;white-space:nowrap;">
+        Salir
+      </button>
+    </div>
+  </div>
+
+  <div class="admin-layout">
+    <!-- Barra Lateral (Sidebar) -->
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Menú de administración">
+      <div class="admin-sidebar-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <div class="admin-logo" style="display:flex;align-items:center;gap:0.75rem;">
+          <img src="/assets/images/escudo-pelechuco.svg" alt="Escudo Pelechuco" style="width:28px;height:34px;object-fit:contain;" />
+          <div>
+            PANEL ADMINISTRATIVO
+            <small>GAM Pelechuco</small>
+          </div>
+        </div>
+        <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="Cerrar menú lateral">✕</button>
+      </div>
+
+      <nav class="admin-nav" aria-label="Navegación administrativa">
+        <div class="admin-nav-section">Principal</div>
+        <a href="/admin" class={`admin-nav-item ${activeNav === 'dashboard' ? 'active' : ''}`}>
+          <span class="nav-icon">🏠</span> Dashboard
+        </a>
+
+        <div class="admin-nav-section">Contenidos</div>
+        <a href="/admin/noticias" class={`admin-nav-item ${activeNav === 'noticias' ? 'active' : ''}`}>
+          <span class="nav-icon">📰</span> Noticias y Comunicados
+        </a>
+        <a href="/admin/tramites" class={`admin-nav-item ${activeNav === 'tramites' ? 'active' : ''}`}>
+          <span class="nav-icon">📋</span> Trámites y Categorías
+        </a>
+        <a href="/admin/autoridades" class={`admin-nav-item ${activeNav === 'autoridades' ? 'active' : ''}`}>
+          <span class="nav-icon">👤</span> Autoridades
+        </a>
+        <a href="/admin/galeria" class={`admin-nav-item ${activeNav === 'galeria' ? 'active' : ''}`}>
+          <span class="nav-icon">🖼️</span> Galería Municipal
+        </a>
+
+        <div class="admin-nav-section">Institución & Configuración</div>
+        <a href="/admin/configuracion" class={`admin-nav-item ${activeNav === 'configuracion' ? 'active' : ''}`}>
+          <span class="nav-icon">🏛️</span> Portada y Conoce Pelechuco
+        </a>
+        <a href="/admin/contacto" class={`admin-nav-item ${activeNav === 'contacto' ? 'active' : ''}`}>
+          <span class="nav-icon">📞</span> Contacto y Redes
+        </a>
+        <a href="/admin/mensajes" class={`admin-nav-item ${activeNav === 'mensajes' ? 'active' : ''}`}>
+          <span class="nav-icon">📬</span> Buzón Ciudadano
+        </a>
+        <a href="/admin/media" class={`admin-nav-item ${activeNav === 'media' ? 'active' : ''}`}>
+          <span class="nav-icon">📁</span> Multimedia y Fotos
+        </a>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        <a href="/" class="admin-nav-item" style="color:rgba(255,255,255,0.6);text-decoration:none;">
+          <span class="nav-icon">←</span> Volver al Portal
+        </a>
+      </div>
+    </aside>
+
+    <!-- Contenedor Principal de la página de administración -->
+    <main class="admin-content" id="admin-main" style="padding: 2rem;">
+      <slot />
+    </main>
+  </div>
+
+  <!-- Toast de Notificaciones -->
+  <div id="admin-toast"></div>
+
+  <script>
+    // ── Guardia de Autenticación en Cliente ──
+    const token = localStorage.getItem('gam_admin_token');
+    const userStr = localStorage.getItem('gam_admin_user');
+
+    if (!token) {
+      window.location.href = '/admin/login';
+    } else {
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          const userDisplay = document.getElementById('admin-user-display');
+          if (userDisplay && userObj.full_name) {
+            userDisplay.textContent = `👤 ${userObj.full_name}`;
+          }
+        } catch {}
+      }
+    }
+
+    // Helper global para llamadas autenticadas a la API
+    (window as any).adminFetch = async (url: string, options: RequestInit = {}) => {
+      const currentToken = localStorage.getItem('gam_admin_token');
+      const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+      const headers: Record<string, string> = {
+        'Authorization': `Bearer ${currentToken}`,
+        ...(options.headers as Record<string, string> || {})
+      };
+      if (!isFormData && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      const res = await fetch(url, { ...options, headers });
+      if (res.status === 401) {
+        localStorage.removeItem('gam_admin_token');
+        localStorage.removeItem('gam_admin_user');
+        window.location.href = '/admin/login';
+        throw new Error('Sesión expirada');
+      }
+      return res;
+    };
+
+    // Helper global para mostrar alertas Toast
+    (window as any).showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+      const toast = document.getElementById('admin-toast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.className = type;
+      setTimeout(() => {
+        toast.style.display = 'none';
+        toast.className = '';
+      }, 3500);
+    };
+
+    // Helper global para optimizar imágenes y convertirlas a WebP antes de subirlas
+    (window as any).optimizeImageToWebP = async (
+      file: File,
+      options: { maxWidth?: number; maxHeight?: number; quality?: number } = {}
+    ): Promise<{ file: File; originalSize: number; optimizedSize: number; savedPercent: number }> => {
+      const originalSize = file.size;
+      if (!file.type || !file.type.startsWith('image/')) {
+        return { file, originalSize, optimizedSize: originalSize, savedPercent: 0 };
+      }
+
+      const { maxWidth = 1400, maxHeight = 1400, quality = 0.82 } = options;
+
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth || height > maxHeight) {
+              if (width > height) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              } else {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve({ file, originalSize, optimizedSize: originalSize, savedPercent: 0 });
+              return;
+            }
+
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  resolve({ file, originalSize, optimizedSize: originalSize, savedPercent: 0 });
+                  return;
+                }
+                const cleanBase = file.name.replace(/\.[^/.]+$/, '');
+                const optimizedFile = new File([blob], `${cleanBase}.webp`, {
+                  type: 'image/webp',
+                });
+                const optimizedSize = optimizedFile.size;
+                const savedPercent = Math.max(0, Math.round(((originalSize - optimizedSize) / originalSize) * 100));
+                resolve({ file: optimizedFile, originalSize, optimizedSize, savedPercent });
+              },
+              'image/webp',
+              quality
+            );
+          };
+          img.onerror = () => resolve({ file, originalSize, optimizedSize: originalSize, savedPercent: 0 });
+          img.src = e.target?.result as string;
+        };
+        reader.onerror = () => resolve({ file, originalSize, optimizedSize: originalSize, savedPercent: 0 });
+        reader.readAsDataURL(file);
+      });
+    };
+
+    // Alternador de tema en Admin
+    const adminThemeBtn = document.getElementById('admin-theme-toggle');
+    const adminThemeIcon = document.getElementById('admin-theme-icon');
+    const adminMeta = document.querySelector('meta[name="color-scheme"]');
+
+    function syncAdminThemeUI(isDark: boolean) {
+      if (adminThemeIcon) adminThemeIcon.textContent = isDark ? '☀️' : '🌙';
+    }
+    syncAdminThemeUI(document.documentElement.classList.contains('dark'));
+
+    adminThemeBtn?.addEventListener('click', () => {
+      const willBeDark = !document.documentElement.classList.contains('dark');
+      document.documentElement.classList.toggle('dark', willBeDark);
+      localStorage.setItem('theme', willBeDark ? 'dark' : 'light');
+      if (adminMeta) (adminMeta as HTMLMetaElement).content = willBeDark ? 'dark' : 'light';
+      syncAdminThemeUI(willBeDark);
+    });
+
+    // Botón de cerrar sesión
+    document.getElementById('btn-admin-logout')?.addEventListener('click', () => {
+      localStorage.removeItem('gam_admin_token');
+      localStorage.removeItem('gam_admin_user');
+      document.cookie = 'gam_admin_token=; path=/; max-age=0;';
+      window.location.href = '/admin/login';
+    });
+
+    // Control táctil responsivo del menú lateral móvil
+    const adminSidebar = document.getElementById('admin-sidebar');
+    const adminBackdrop = document.getElementById('admin-sidebar-backdrop');
+    const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
+    const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+
+    function openMobileSidebar() {
+      adminSidebar?.classList.add('open');
+      adminBackdrop?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileSidebar() {
+      adminSidebar?.classList.remove('open');
+      adminBackdrop?.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    mobileSidebarToggle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (adminSidebar?.classList.contains('open')) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar();
+      }
+    });
+
+    sidebarCloseBtn?.addEventListener('click', closeMobileSidebar);
+    adminBackdrop?.addEventListener('click', closeMobileSidebar);
+
+    // Cerrar automáticamente al hacer clic en cualquier enlace del menú móvil
+    adminSidebar?.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 900) {
+          closeMobileSidebar();
+        }
+      });
+    });
+
+    // Cerrar con tecla Escape por accesibilidad
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && adminSidebar?.classList.contains('open')) {
+        closeMobileSidebar();
+      }
+    });
+  </script>
+</body>
+</html>

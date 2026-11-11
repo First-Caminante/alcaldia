@@ -1,0 +1,548 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '../../lib/supabase';
+import { DEFAULT_CONTACTO, DEFAULT_REDES } from '../../lib/data-defaults';
+
+export const prerender = false;
+
+let contacto = DEFAULT_CONTACTO;
+let redes = DEFAULT_REDES;
+
+let mapAlcaldia = 'https://maps.google.com/maps?q=-14.816667,-69.050000&hl=es&z=17&output=embed';
+let mapComunidad = 'https://maps.google.com/maps?q=Pelechuco+Franz+Tamayo+Bolivia&hl=es&z=11&output=embed';
+
+if (isSupabaseConfigured()) {
+  try {
+    const client = getSupabaseAdmin() || supabase;
+    const [cRes, rRes] = await Promise.all([
+      client.from('contacto_config').select('*').single(),
+      client.from('redes_sociales').select('*').order('display_order'),
+    ]);
+    if (cRes.data) {
+      contacto = cRes.data;
+      if (contacto.map_embed_url) {
+        try {
+          const parsed = JSON.parse(contacto.map_embed_url);
+          if (parsed.alcaldia) mapAlcaldia = parsed.alcaldia;
+          if (parsed.comunidad) mapComunidad = parsed.comunidad;
+        } catch {
+          mapAlcaldia = contacto.map_embed_url;
+        }
+      }
+    }
+    if (rRes.data && rRes.data.length > 0) redes = rRes.data;
+  } catch (err) {
+    console.warn('Aviso cargando contacto/redes:', err);
+  }
+}
+---
+
+<AdminLayout title="Contacto y Redes Oficiales — Panel GAM Pelechuco" activeNav="contacto">
+  <div style="margin-bottom:1.5rem;">
+    <h1 style="font-size:1.6rem;font-weight:700;color:#1e293b;margin:0 0 0.25rem 0;">Contacto y Redes Sociales</h1>
+    <p style="color:#64748b;font-size:0.875rem;margin:0;">Configuración de teléfonos oficiales, WhatsApp, correos de despacho y redes institucionales</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 420px), 1fr));gap:1.5rem;align-items:start;">
+    <!-- Formulario Canales de Contacto -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <h2 style="font-size:1.2rem;font-weight:700;color:#1e293b;margin:0 0 1rem 0;border-bottom:1px solid #f1f5f9;padding-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;">
+        <span>📞</span> Canales Institucionales de Despacho
+      </h2>
+      <form id="contacto-form" style="display:flex;flex-direction:column;gap:1rem;">
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+            🏛️ Dirección de la Alcaldía (Casa Consistorial / Plaza Principal)
+          </label>
+          <input
+            type="text"
+            id="contacto-address"
+            value={contacto.address_primary}
+            required
+            placeholder="Ej. Plaza Principal 25 de Mayo s/n · Acera Norte"
+            style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+          />
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+            🏔️ Ubicación / Territorio de la Comunidad y Municipio
+          </label>
+          <input
+            type="text"
+            id="contacto-address-secondary"
+            value={contacto.address_secondary || 'Municipio de Pelechuco · Provincia Franz Tamayo, Departamento de La Paz'}
+            required
+            placeholder="Ej. Municipio de Pelechuco · Provincia Franz Tamayo, Cordillera de Apolobamba"
+            style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+          />
+        </div>
+
+        <!-- Bloque de 2 Mapas Georreferenciados -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;">
+          <h3 style="font-size:0.95rem;font-weight:700;color:#1e293b;margin:0 0 0.75rem 0;display:flex;align-items:center;gap:0.4rem;">
+            <span>📍</span> Doble Mapa Georreferenciado (Alcaldía y Comunidad)
+          </h3>
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div>
+              <label style="display:block;font-size:0.775rem;font-weight:600;color:#475569;margin-bottom:0.2rem;">
+                Mapa 1: Ubicación Exacta de la Alcaldía (Casa Consistorial)
+              </label>
+              <input
+                type="url"
+                id="contacto-map-alcaldia"
+                value={mapAlcaldia}
+                required
+                placeholder="https://maps.google.com/maps?q=-14.816667,-69.050000&hl=es&z=17&output=embed"
+                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;"
+              />
+              <small style="color:#64748b;font-size:0.7rem;display:block;margin-top:0.2rem;">
+                💡 Enlace Embed de Google Maps para el edificio municipal y plaza central.
+              </small>
+            </div>
+
+            <div>
+              <label style="display:block;font-size:0.775rem;font-weight:600;color:#475569;margin-bottom:0.2rem;">
+                Mapa 2: Ubicación General de la Comunidad y Territorio Municipal
+              </label>
+              <input
+                type="url"
+                id="contacto-map-comunidad"
+                value={mapComunidad}
+                required
+                placeholder="https://maps.google.com/maps?q=Pelechuco+Franz+Tamayo+Bolivia&hl=es&z=11&output=embed"
+                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;"
+              />
+              <small style="color:#64748b;font-size:0.7rem;display:block;margin-top:0.2rem;">
+                💡 Enlace Embed de Google Maps para el territorio comunal de Pelechuco y Apolobamba.
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Teléfono Central</label>
+            <input type="text" id="contacto-phone" value={contacto.phone_central} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">WhatsApp Oficial</label>
+            <input type="text" id="contacto-whatsapp" value={contacto.phone_whatsapp} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Correo de Consultas</label>
+            <input type="email" id="contacto-email-general" value={contacto.email_general} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Correo de Despacho</label>
+            <input type="email" id="contacto-email-dispatch" value={contacto.email_dispatch} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Horario de Atención</label>
+          <input type="text" id="contacto-schedule" value={contacto.schedule_weekdays} style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" />
+        </div>
+        <button type="submit" id="btn-save-contacto" class="btn-primary" style="background:#2D5016;color:#FAF7F2;padding:0.7rem;border-radius:6px;border:none;font-weight:600;font-size:0.875rem;cursor:pointer;margin-top:0.5rem;">
+          Guardar Canales de Contacto en Supabase
+        </button>
+      </form>
+    </div>
+
+    <!-- Redes Sociales Oficiales (CRUD Completo) -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid #f1f5f9;padding-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem;">
+        <h2 style="font-size:1.2rem;font-weight:700;color:#1e293b;margin:0;display:flex;align-items:center;gap:0.5rem;">
+          <span>🌐</span> Redes Sociales Oficiales
+        </h2>
+        <button
+          id="btn-nueva-red"
+          type="button"
+          style="background:#2D5016;color:#FAF7F2;padding:0.45rem 0.9rem;border-radius:6px;border:none;font-size:0.8rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;"
+        >
+          <span>+ Nueva Red</span>
+        </button>
+      </div>
+
+      <div id="redes-list" style="display:flex;flex-direction:column;gap:0.85rem;">
+        {redes.map(r => {
+          const plat = (r.platform || '').toLowerCase();
+          const badgeColor = plat.includes('face') ? '#1877f2' : plat.includes('what') ? '#25d366' : plat.includes('yout') ? '#ff0000' : plat.includes('tik') ? '#111827' : '#0284c7';
+          return (
+            <div
+              class="red-item"
+              id={`red-item-${r.id}`}
+              style="padding:0.85rem 1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;display:flex;flex-direction:column;gap:0.5rem;"
+            >
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  <span style={`background:${badgeColor};color:#fff;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:12px;font-weight:700;text-transform:uppercase;`}>
+                    {r.platform}
+                  </span>
+                  <span style="font-weight:700;font-size:0.925rem;color:#0f172a;">{r.name}</span>
+                </div>
+                <span style="background:#e2e8f0;color:#475569;font-size:0.7rem;padding:0.15rem 0.45rem;border-radius:4px;font-weight:600;">
+                  Orden #{r.display_order ?? 0}
+                </span>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.8rem;color:#64748b;word-break:break-all;">
+                <span>{r.url}</span>
+                {r.handle && <span style="font-weight:600;color:#2D5016;margin-left:0.5rem;">{r.handle}</span>}
+              </div>
+
+              <div style="display:flex;justify-content:flex-end;gap:0.5rem;border-top:1px solid #e2e8f0;padding-top:0.5rem;margin-top:0.25rem;">
+                <a
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style="color:#4A7FA5;font-size:0.75rem;font-weight:600;text-decoration:none;padding:0.25rem 0.5rem;"
+                >
+                  Visitar ↗
+                </a>
+                <button
+                  type="button"
+                  class="btn-edit-red"
+                  data-red={JSON.stringify(r)}
+                  style="background:#f1f5f9;border:1px solid #cbd5e1;color:#1e293b;padding:0.25rem 0.65rem;border-radius:5px;font-size:0.75rem;font-weight:600;cursor:pointer;"
+                >
+                  ✏️ Editar
+                </button>
+                <button
+                  type="button"
+                  class="btn-delete-red"
+                  data-id={r.id}
+                  data-name={r.name}
+                  style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);color:#dc2626;padding:0.25rem 0.65rem;border-radius:5px;font-size:0.75rem;font-weight:600;cursor:pointer;"
+                >
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Agregar o Editar Red Social -->
+  <div id="modal-red" class="admin-modal-backdrop">
+    <div class="admin-modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;border-bottom:1px solid #f1f5f9;padding-bottom:0.75rem;">
+        <h2 id="modal-red-title" style="font-size:1.2rem;font-weight:700;color:#1e293b;margin:0;">
+          + Agregar Red Social Oficial
+        </h2>
+        <button id="btn-close-modal-red" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#94a3b8;line-height:1;">
+          ✕
+        </button>
+      </div>
+
+      <form id="red-form" style="display:flex;flex-direction:column;gap:1rem;">
+        <input type="hidden" id="red-id" value="" />
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+              Plataforma *
+            </label>
+            <select
+              id="red-platform"
+              required
+              style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+            >
+              <option value="facebook">Facebook</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="youtube">YouTube</option>
+              <option value="tiktok">TikTok</option>
+              <option value="twitter_x">X (Twitter)</option>
+              <option value="instagram">Instagram</option>
+              <option value="telegram">Telegram</option>
+              <option value="otra">Otra Red Oficial</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+              Orden de Visualización
+            </label>
+            <input
+              type="number"
+              id="red-order"
+              value="0"
+              min="0"
+              style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+            Nombre Institucional de la Cuenta *
+          </label>
+          <input
+            type="text"
+            id="red-name"
+            required
+            placeholder="Ej. Facebook Institucional GAM Pelechuco"
+            style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+          />
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+            Enlace / URL Oficial *
+          </label>
+          <input
+            type="url"
+            id="red-url"
+            required
+            placeholder="https://facebook.com/GAMPelechuco"
+            style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+          />
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">
+            Identificador o Teléfono / Handle
+          </label>
+          <input
+            type="text"
+            id="red-handle"
+            placeholder="@GAMPelechuco o (+591) 715-84210"
+            style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;"
+          />
+        </div>
+
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <input type="checkbox" id="red-active" checked style="width:16px;height:16px;" />
+          <label for="red-active" style="font-size:0.85rem;color:#475569;font-weight:500;">
+            Visible en el portal público (Activo)
+          </label>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:0.75rem;border-top:1px solid #f1f5f9;padding-top:1rem;">
+          <button
+            type="button"
+            id="btn-cancel-modal-red"
+            style="background:#f1f5f9;border:1px solid #cbd5e1;color:#475569;padding:0.6rem 1rem;border-radius:6px;font-size:0.875rem;font-weight:600;cursor:pointer;"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            id="btn-save-red"
+            style="background:#2D5016;color:#FAF7F2;padding:0.6rem 1.4rem;border-radius:6px;border:none;font-size:0.875rem;font-weight:600;cursor:pointer;"
+          >
+            Guardar Red Social
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function initContacto() {
+      // Formulario Contacto General
+      const formContacto = document.getElementById('contacto-form') as HTMLFormElement;
+      formContacto?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-save-contacto') as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = 'Guardando en Supabase...';
+
+        const mapAlcaldiaVal = (document.getElementById('contacto-map-alcaldia') as HTMLInputElement).value.trim();
+        const mapComunidadVal = (document.getElementById('contacto-map-comunidad') as HTMLInputElement).value.trim();
+
+        const payload = {
+          address_primary: (document.getElementById('contacto-address') as HTMLInputElement).value.trim(),
+          address_secondary: (document.getElementById('contacto-address-secondary') as HTMLInputElement).value.trim(),
+          map_embed_url: JSON.stringify({
+            alcaldia: mapAlcaldiaVal,
+            comunidad: mapComunidadVal
+          }),
+          phone_central: (document.getElementById('contacto-phone') as HTMLInputElement).value.trim(),
+          phone_whatsapp: (document.getElementById('contacto-whatsapp') as HTMLInputElement).value.trim(),
+          email_general: (document.getElementById('contacto-email-general') as HTMLInputElement).value.trim(),
+          email_dispatch: (document.getElementById('contacto-email-dispatch') as HTMLInputElement).value.trim(),
+          schedule_weekdays: (document.getElementById('contacto-schedule') as HTMLInputElement).value.trim(),
+        };
+
+        try {
+          const res = await (window as any).adminFetch('/api/admin/contacto', {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            (window as any).showToast('Canales de contacto actualizados con éxito en Supabase');
+          } else {
+            alert(data.error || 'Error al actualizar contacto');
+          }
+        } catch {
+          alert('Error de conexión con el servidor');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Guardar Canales de Contacto en Supabase';
+        }
+      });
+
+      // Modal y Formulario Redes Sociales
+      const modalRed = document.getElementById('modal-red');
+      const formRed = document.getElementById('red-form') as HTMLFormElement;
+      const modalRedTitle = document.getElementById('modal-red-title');
+
+      const inputId = document.getElementById('red-id') as HTMLInputElement;
+      const inputPlatform = document.getElementById('red-platform') as HTMLSelectElement;
+      const inputOrder = document.getElementById('red-order') as HTMLInputElement;
+      const inputName = document.getElementById('red-name') as HTMLInputElement;
+      const inputUrl = document.getElementById('red-url') as HTMLInputElement;
+      const inputHandle = document.getElementById('red-handle') as HTMLInputElement;
+      const inputActive = document.getElementById('red-active') as HTMLInputElement;
+      const btnSaveRed = document.getElementById('btn-save-red') as HTMLButtonElement;
+
+      function openRedModal(isEdit = false, data: any = null) {
+        if (!modalRed) return;
+        modalRed.classList.add('open');
+
+        if (isEdit && data) {
+          if (modalRedTitle) modalRedTitle.textContent = '✏️ Editar Red Social Oficial';
+          inputId.value = data.id || '';
+          inputPlatform.value = data.platform || 'facebook';
+          inputOrder.value = String(data.display_order ?? 0);
+          inputName.value = data.name || '';
+          inputUrl.value = data.url || '';
+          inputHandle.value = data.handle || '';
+          inputActive.checked = data.is_active !== false;
+        } else {
+          if (modalRedTitle) modalRedTitle.textContent = '+ Agregar Red Social Oficial';
+          inputId.value = '';
+          inputPlatform.value = 'facebook';
+          inputOrder.value = '0';
+          inputName.value = '';
+          inputUrl.value = '';
+          inputHandle.value = '';
+          inputActive.checked = true;
+        }
+      }
+
+      function closeRedModal() {
+        if (modalRed) modalRed.classList.remove('open');
+      }
+
+      document.getElementById('btn-nueva-red')?.addEventListener('click', () => openRedModal(false));
+      document.getElementById('btn-close-modal-red')?.addEventListener('click', closeRedModal);
+      document.getElementById('btn-cancel-modal-red')?.addEventListener('click', closeRedModal);
+
+      // Guardar Red Social (POST o PUT)
+      formRed?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = inputId.value.trim();
+        const isEdit = Boolean(id);
+
+        btnSaveRed.disabled = true;
+        btnSaveRed.textContent = 'Guardando en Supabase...';
+
+        const payload = {
+          platform: inputPlatform.value,
+          icon_name: inputPlatform.value,
+          display_order: Number(inputOrder.value) || 0,
+          name: inputName.value.trim(),
+          url: inputUrl.value.trim(),
+          handle: inputHandle.value.trim() || undefined,
+          is_active: inputActive.checked,
+        };
+
+        try {
+          const endpoint = isEdit ? `/api/admin/redes/${id}` : '/api/admin/redes';
+          const method = isEdit ? 'PUT' : 'POST';
+
+          const res = await (window as any).adminFetch(endpoint, {
+            method,
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            (window as any).showToast(isEdit ? 'Red social actualizada con éxito' : 'Red social creada con éxito');
+            closeRedModal();
+            setTimeout(() => window.location.reload(), 600);
+          } else {
+            alert(data.error || 'Error al guardar red social');
+          }
+        } catch {
+          alert('Error de conexión con el servidor');
+        } finally {
+          btnSaveRed.disabled = false;
+          btnSaveRed.textContent = 'Guardar Red Social';
+        }
+      });
+
+      // Event delegation para Editar y Eliminar Redes
+      document.addEventListener('click', async (e) => {
+        const target = e.target as HTMLElement;
+
+        // Editar
+        const btnEdit = target.closest('.btn-edit-red');
+        if (btnEdit) {
+          try {
+            const raw = btnEdit.getAttribute('data-red');
+            if (raw) {
+              const red = JSON.parse(raw);
+              openRedModal(true, red);
+            }
+          } catch (err) {
+            console.error('Error parseando red social:', err);
+          }
+          return;
+        }
+
+        // Eliminar
+        const btnDelete = target.closest('.btn-delete-red');
+        if (btnDelete) {
+          const id = btnDelete.getAttribute('data-id');
+          const name = btnDelete.getAttribute('data-name') || 'esta red social';
+          if (!id) return;
+
+          const confirmed = confirm(`¿Está seguro de que desea eliminar la red social "${name}"?`);
+          if (!confirmed) return;
+
+          (btnDelete as HTMLButtonElement).disabled = true;
+          (btnDelete as HTMLButtonElement).textContent = 'Eliminando...';
+
+          try {
+            const res = await (window as any).adminFetch(`/api/admin/redes/${id}`, {
+              method: 'DELETE'
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              (window as any).showToast('Red social eliminada con éxito');
+              const item = document.getElementById(`red-item-${id}`);
+              if (item) {
+                item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                item.style.opacity = '0';
+                item.style.transform = 'scale(0.95)';
+                setTimeout(() => item.remove(), 350);
+              } else {
+                window.location.reload();
+              }
+            } else {
+              alert(data.error || 'Error al eliminar red social');
+              (btnDelete as HTMLButtonElement).disabled = false;
+              (btnDelete as HTMLButtonElement).textContent = '🗑️ Eliminar';
+            }
+          } catch {
+            alert('Error de conexión con el servidor');
+            (btnDelete as HTMLButtonElement).disabled = false;
+            (btnDelete as HTMLButtonElement).textContent = '🗑️ Eliminar';
+          }
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initContacto);
+    } else {
+      initContacto();
+    }
+  </script>
+</AdminLayout>

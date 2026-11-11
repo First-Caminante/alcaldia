@@ -41,7 +41,7 @@ const Admin = {
     document.getElementById('btn-logout')?.addEventListener('click', () => {
       App.openModal('Cerrar sesión', `
         <p>Esta es una demostración visual. No existe una sesión real activa.</p>
-        <p style="margin-top:1rem;"><a href="../index.html" class="btn-primary">Volver a la galería de propuestas</a></p>
+        <p style="margin-top:1rem;"><a href="../index.html" class="btn-primary">Volver al portal municipal</a></p>
       `);
     });
   },

@@ -1,0 +1,465 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '../../lib/supabase';
+import { DEFAULT_AUTORIDADES } from '../../lib/data-defaults';
+
+export const prerender = false;
+
+let autoridades = DEFAULT_AUTORIDADES;
+
+if (isSupabaseConfigured()) {
+  try {
+    const client = getSupabaseAdmin() || supabase;
+    const { data } = await client.from('autoridades').select('*').order('display_order');
+    if (data && data.length > 0) autoridades = data;
+  } catch (err) {
+    console.warn(err);
+  }
+}
+---
+
+<AdminLayout title="Autoridades Municipales — Panel GAM Pelechuco" activeNav="autoridades">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+    <div>
+      <h1 style="font-size:1.6rem;font-weight:700;color:#1e293b;margin:0 0 0.25rem 0;">Autoridades Municipales</h1>
+      <p style="color:#64748b;font-size:0.875rem;margin:0;">Alcalde, Presidenta del Concejo, Secretarios y Directores de Área</p>
+    </div>
+    <button id="btn-nueva-autoridad" type="button" class="btn-primary" style="background:#2D5016;color:#FAF7F2;padding:0.6rem 1.2rem;border-radius:6px;border:none;font-weight:600;font-size:0.875rem;cursor:pointer;">
+      + Registrar Autoridad
+    </button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 280px), 1fr));gap:1.25rem;" id="autoridades-grid">
+    {autoridades.map(a => (
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);text-align:center;" id={`autoridad-card-${a.id}`}>
+        <div style="width:72px;height:72px;border-radius:50%;overflow:hidden;background:#f1f5f9;border:2px solid #cbd5e1;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;">
+          {a.photo_url ? (
+            <img
+              src={a.photo_url}
+              alt={a.name}
+              style="width:100%;height:100%;object-fit:cover;"
+              onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+            />
+            <span style="font-size:1.8rem;display:none;">👤</span>
+          ) : (
+            <span style="font-size:1.8rem;">👤</span>
+          )}
+        </div>
+        <div style="font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:0.25rem;">{a.name}</div>
+        <div style="font-size:0.85rem;color:#2D5016;font-weight:600;margin-bottom:0.25rem;">{a.position}</div>
+        <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.75rem;">{a.area}</div>
+        {a.institutional_contact && (
+          <div style="font-size:0.75rem;color:#475569;margin-bottom:1rem;">✉️ {a.institutional_contact}</div>
+        )}
+        <div style="border-top:1px solid #f1f5f9;padding-top:0.75rem;display:flex;justify-content:center;gap:0.75rem;">
+          <button
+            type="button"
+            class="btn-editar-autoridad"
+            data-id={a.id}
+            style="background:none;border:none;color:#4A7FA5;font-size:0.8rem;font-weight:600;cursor:pointer;"
+          >
+            Editar
+          </button>
+          <span style="color:#cbd5e1;">·</span>
+          <button
+            type="button"
+            class="btn-eliminar-autoridad"
+            data-id={a.id}
+            data-name={a.name}
+            style="background:none;border:none;color:#ef4444;font-size:0.8rem;cursor:pointer;"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- Modal para Crear / Editar Autoridad -->
+  <div id="modal-autoridad" class="admin-modal-backdrop" style="display:none;">
+    <div class="admin-modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.75rem;">
+        <h3 id="modal-autoridad-titulo" style="font-size:1.2rem;font-weight:700;color:#0f172a;margin:0;">
+          Registrar Autoridad
+        </h3>
+        <button type="button" id="modal-autoridad-cerrar" style="background:none;border:none;font-size:1.25rem;cursor:pointer;color:#64748b;">✕</button>
+      </div>
+
+      <form id="form-autoridad" style="display:flex;flex-direction:column;gap:1rem;">
+        <input type="hidden" id="autoridad-id" />
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Nombre Completo y Grado *</label>
+          <input type="text" id="autoridad-name" required style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="Ej. Lic. Eulogio Mamani Choque" />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Cargo Oficial *</label>
+            <input type="text" id="autoridad-position" required style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="Ej. Alcalde Municipal" />
+          </div>
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Área o Dirección *</label>
+            <input type="text" id="autoridad-area" required style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="Ej. Despacho Municipal" />
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Correo Institucional / Contacto</label>
+          <input type="text" id="autoridad-contact" style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="alcaldia@pelechuco.gob.bo" />
+        </div>
+
+        <div>
+          <!-- Guía de dimensiones recomendadas para Autoridades -->
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem 0.9rem;margin-bottom:0.75rem;font-size:0.8rem;color:#166534;display:flex;flex-direction:column;gap:0.35rem;">
+            <div style="display:flex;align-items:center;gap:0.4rem;font-weight:700;">
+              <span>📐</span> Dimensiones recomendadas: <strong>600 × 600 px</strong> (Proporción 1:1 Cuadrada)
+            </div>
+            <div style="font-size:0.75rem;color:#15803d;line-height:1.4;">
+              <strong>💡 Ejemplo recomendado:</strong> Retrato de frente o medio plano de la autoridad municipal (Alcalde, Concejales, Subalcaldes o Mallkus) con vestimenta formal o de gala originaria.
+            </div>
+          </div>
+
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Fotografía Institucional</label>
+          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.5rem;">
+            <input type="url" id="autoridad-photo" style="flex:1;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;" placeholder="https://...supabase.co/... o pegar URL" />
+            <label style="background:#f1f5f9;border:1px solid #cbd5e1;color:#1e293b;padding:0.6rem 0.9rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:0.35rem;" title="Optimizar a WebP y subir a Supabase Storage">
+              <span>📁 Subir Foto (WebP)</span>
+              <input type="file" id="autoridad-file-upload" accept="image/*" style="display:none;" />
+            </label>
+          </div>
+          <div id="autoridad-upload-status" style="font-size:0.75rem;color:#64748b;margin-bottom:0.35rem;display:none;"></div>
+
+          <!-- Vista previa y botón para quitar foto / dejar perfil vacío -->
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-top:0.5rem;padding:0.75rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <div style="width:72px;height:72px;border-radius:50%;overflow:hidden;background:#fff;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,0.06);">
+                <img
+                  id="autoridad-photo-preview"
+                  src=""
+                  alt="Vista previa"
+                  style="width:100%;height:100%;object-fit:cover;display:none;"
+                  onerror="this.style.display='none'; const emptyIcon = document.getElementById('autoridad-photo-empty-icon'); if (emptyIcon) emptyIcon.style.display='flex';"
+                />
+                <span id="autoridad-photo-empty-icon" style="font-size:2rem;display:flex;align-items:center;justify-content:center;">👤</span>
+              </div>
+              <div>
+                <div style="font-size:0.8rem;font-weight:600;color:#1e293b;" id="autoridad-preview-label">Perfil actual</div>
+                <div style="font-size:0.72rem;color:#64748b;">Si no tiene foto, se mostrará el avatar oficial vacío (👤)</div>
+              </div>
+            </div>
+            <button
+              type="button"
+              id="btn-remover-foto-autoridad"
+              style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:0.45rem 0.85rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;"
+              title="Quitar foto y restablecer avatar de silueta vacía"
+            >
+              <span>🗑️</span> Quitar fotografía (dejar perfil vacío 👤)
+            </button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:0.75rem;border-top:1px solid #e2e8f0;padding-top:1rem;">
+          <button type="button" id="modal-autoridad-cancelar" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:0.6rem 1.2rem;border-radius:6px;cursor:pointer;font-weight:600;">
+            Cancelar
+          </button>
+          <button type="submit" id="modal-autoridad-guardar" style="background:#2D5016;color:#FAF7F2;border:none;padding:0.6rem 1.5rem;border-radius:6px;cursor:pointer;font-weight:600;">
+            Guardar en Supabase
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Almacén seguro de datos en JSON -->
+  <script id="autoridades-json-data" type="application/json" set:html={JSON.stringify(autoridades)}></script>
+
+  <script>
+    function initAutoridades() {
+      const modal = document.getElementById('modal-autoridad');
+      const form = document.getElementById('form-autoridad') as HTMLFormElement | null;
+      const modalTitulo = document.getElementById('modal-autoridad-titulo');
+
+      const idInput = document.getElementById('autoridad-id') as HTMLInputElement | null;
+      const nameInput = document.getElementById('autoridad-name') as HTMLInputElement | null;
+      const posInput = document.getElementById('autoridad-position') as HTMLInputElement | null;
+      const areaInput = document.getElementById('autoridad-area') as HTMLInputElement | null;
+      const contactInput = document.getElementById('autoridad-contact') as HTMLInputElement | null;
+      const photoInput = document.getElementById('autoridad-photo') as HTMLInputElement | null;
+
+      let autoridadesList: any[] = [];
+      try {
+        const raw = document.getElementById('autoridades-json-data')?.textContent || '[]';
+        autoridadesList = JSON.parse(raw);
+      } catch (e) {
+        console.error('Error parseando autoridades JSON:', e);
+      }
+
+      const photoPreview = document.getElementById('autoridad-photo-preview') as HTMLImageElement | null;
+      const photoEmptyIcon = document.getElementById('autoridad-photo-empty-icon');
+      const uploadStatus = document.getElementById('autoridad-upload-status');
+      const fileUploadInput = document.getElementById('autoridad-file-upload') as HTMLInputElement | null;
+      const btnRemoverFoto = document.getElementById('btn-remover-foto-autoridad');
+
+      function updatePhotoPreview(url: string) {
+        if (photoPreview && photoEmptyIcon) {
+          if (url && url.trim()) {
+            photoPreview.src = url.trim();
+            photoPreview.style.display = 'block';
+            photoEmptyIcon.style.display = 'none';
+          } else {
+            photoPreview.src = '';
+            photoPreview.style.display = 'none';
+            photoEmptyIcon.style.display = 'flex';
+          }
+        }
+      }
+
+      // Botón para quitar foto explícitamente y dejar perfil vacío (👤)
+      btnRemoverFoto?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (photoInput) photoInput.value = '';
+        if (fileUploadInput) fileUploadInput.value = '';
+        updatePhotoPreview('');
+        if (uploadStatus) {
+          uploadStatus.style.display = 'block';
+          uploadStatus.style.color = '#15803d';
+          uploadStatus.textContent = 'ℹ️ Fotografía removida. Se guardará con perfil vacío oficial (👤).';
+        }
+      });
+
+      photoInput?.addEventListener('input', () => {
+        updatePhotoPreview(photoInput.value.trim());
+      });
+
+      fileUploadInput?.addEventListener('change', async () => {
+        const rawFile = fileUploadInput.files?.[0];
+        if (!rawFile) return;
+
+        if (uploadStatus) {
+          uploadStatus.style.display = 'block';
+          uploadStatus.style.color = '#2563eb';
+          uploadStatus.textContent = '⚡ Optimizando retrato a WebP...';
+        }
+
+        try {
+          const optimizer = (window as any).optimizeImageToWebP;
+          let fileToUpload = rawFile;
+          let statsMsg = '';
+
+          if (optimizer) {
+            const { file: optFile, originalSize, optimizedSize, savedPercent } = await optimizer(rawFile, {
+              maxWidth: 800,
+              maxHeight: 800,
+              quality: 0.85
+            });
+            fileToUpload = optFile;
+            if (savedPercent > 0) {
+              statsMsg = ` (Reducido: ${(originalSize/1024).toFixed(0)}KB ➔ ${(optimizedSize/1024).toFixed(0)}KB, -${savedPercent}%)`;
+            }
+          }
+
+          if (uploadStatus) {
+            uploadStatus.textContent = `⏳ Subiendo a Supabase Storage${statsMsg}...`;
+          }
+
+          const formData = new FormData();
+          formData.append('file', fileToUpload);
+          formData.append('folder', 'autoridades');
+
+          const adminFetch = (window as any).adminFetch || fetch;
+          const res = await adminFetch('/api/admin/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success && data.url) {
+            if (photoInput) photoInput.value = data.url;
+            updatePhotoPreview(data.url);
+            if (uploadStatus) {
+              uploadStatus.style.color = '#16a34a';
+              uploadStatus.textContent = `✅ Guardada en Supabase Storage: ${data.fileName}${statsMsg}`;
+            }
+          } else {
+            if (uploadStatus) {
+              uploadStatus.style.color = '#dc2626';
+              uploadStatus.textContent = `❌ ${data.error || 'Error al subir a Supabase Storage'}`;
+            }
+          }
+        } catch (err: any) {
+          if (uploadStatus) {
+            uploadStatus.style.color = '#dc2626';
+            uploadStatus.textContent = '❌ Error de conexión al subir fotografía';
+          }
+        } finally {
+          fileUploadInput.value = '';
+        }
+      });
+
+      function openModal(editData: any = null) {
+        if (!modal || !form || !modalTitulo) return;
+        if (uploadStatus) uploadStatus.style.display = 'none';
+        if (editData) {
+          modalTitulo.textContent = 'Editar Autoridad';
+          if (idInput) idInput.value = editData.id;
+          if (nameInput) nameInput.value = editData.name || '';
+          if (posInput) posInput.value = editData.position || '';
+          if (areaInput) areaInput.value = editData.area || '';
+          if (contactInput) contactInput.value = editData.institutional_contact || '';
+          if (photoInput) photoInput.value = editData.photo_url || '';
+          updatePhotoPreview(editData.photo_url || '');
+        } else {
+          modalTitulo.textContent = 'Registrar Nueva Autoridad';
+          form.reset();
+          if (idInput) idInput.value = '';
+          updatePhotoPreview('');
+        }
+        modal.classList.add('open');
+        modal.style.display = 'flex';
+      }
+
+      function closeModal() {
+        if (!modal || !form) return;
+        modal.classList.remove('open');
+        modal.style.display = 'none';
+        form.reset();
+      }
+
+      // Cerrar al hacer clic fuera
+      modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      // Delegación de eventos global a nivel documento
+      document.addEventListener('click', async (e) => {
+        const target = e.target as HTMLElement;
+
+        // Click en "+ Registrar Autoridad"
+        if (target.closest('#btn-nueva-autoridad')) {
+          e.preventDefault();
+          openModal();
+          return;
+        }
+
+        // Click en Cerrar o Cancelar
+        if (target.closest('#modal-autoridad-cerrar') || target.closest('#modal-autoridad-cancelar')) {
+          e.preventDefault();
+          closeModal();
+          return;
+        }
+
+        // Click en Editar
+        const editBtn = target.closest('.btn-editar-autoridad');
+        if (editBtn) {
+          e.preventDefault();
+          const id = editBtn.getAttribute('data-id');
+          let a = autoridadesList.find((item: any) => String(item.id) === String(id));
+          if (!a && id) {
+            try {
+              const res = await fetch(`/api/autoridades`);
+              const data = await res.json();
+              if (Array.isArray(data)) {
+                a = data.find((item: any) => String(item.id) === String(id));
+              }
+            } catch {}
+          }
+          if (a) {
+            openModal(a);
+          } else {
+            alert('No se pudieron cargar los datos de la autoridad para edición.');
+          }
+          return;
+        }
+
+        // Click en Eliminar
+        const deleteBtn = target.closest('.btn-eliminar-autoridad');
+        if (deleteBtn) {
+          e.preventDefault();
+          const id = deleteBtn.getAttribute('data-id');
+          const name = deleteBtn.getAttribute('data-name') || 'esta autoridad';
+          if (!id) return;
+
+          if (!confirm(`¿Está seguro de eliminar a "${name}" del registro de autoridades?`)) {
+            return;
+          }
+
+          try {
+            const adminFetch = (window as any).adminFetch || fetch;
+            const res = await adminFetch(`/api/admin/autoridades/${id}`, {
+              method: 'DELETE'
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              if ((window as any).showToast) {
+                (window as any).showToast('Autoridad eliminada correctamente');
+              } else {
+                alert('Autoridad eliminada correctamente');
+              }
+              document.getElementById(`autoridad-card-${id}`)?.remove();
+            } else {
+              alert(data.error || 'No se pudo eliminar la autoridad');
+            }
+          } catch (err: any) {
+            alert('Error al intentar eliminar la autoridad: ' + err.message);
+          }
+        }
+      });
+
+      // Guardar
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('modal-autoridad-guardar') as HTMLButtonElement | null;
+        if (saveBtn) {
+          saveBtn.disabled = true;
+          saveBtn.textContent = 'Guardando en Supabase...';
+        }
+
+        const id = idInput?.value;
+        const photoVal = photoInput?.value.trim();
+        const payload = {
+          name: nameInput?.value.trim(),
+          position: posInput?.value.trim(),
+          area: areaInput?.value.trim(),
+          institutional_contact: contactInput?.value.trim() || null,
+          photo_url: photoVal ? photoVal : null
+        };
+
+        try {
+          const adminFetch = (window as any).adminFetch || fetch;
+          const url = id ? `/api/admin/autoridades/${id}` : '/api/admin/autoridades';
+          const method = id ? 'PUT' : 'POST';
+
+          const res = await adminFetch(url, {
+            method,
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            if ((window as any).showToast) {
+              (window as any).showToast(id ? 'Autoridad actualizada con éxito' : 'Autoridad registrada con éxito en Supabase');
+            }
+            closeModal();
+            setTimeout(() => window.location.reload(), 800);
+          } else {
+            alert(data.error || 'Ocurrió un error al guardar');
+          }
+        } catch (err: any) {
+          alert('Error de conexión al guardar autoridad: ' + err.message);
+        } finally {
+          if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Guardar en Supabase';
+          }
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAutoridades);
+    } else {
+      initAutoridades();
+    }
+  </script>
+</AdminLayout>

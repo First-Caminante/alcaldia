@@ -1,0 +1,1564 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
+
+/* ============================================================
+   PELECHUCO DIGITAL — Propuesta 02: Territorio y Naturaleza
+   Verde bosque · Piedra · Editorial/Revista
+   ============================================================ */
+
+:root {
+  --primary: #2D5016;
+  --primary-dark: #1A3008;
+  --primary-light: #3D6A20;
+  --secondary: #4A7FA5;
+  --accent: #C4A882;
+  --accent-light: #DFCABA;
+  --bg: #E4DAC3;
+  --bg-alt: #D5C9AE;
+  --card-bg: #F4EFE2;
+  --card-bg-hover: #FCF9F1;
+  --text: #182610;
+  --text-muted: #485A3F;
+  --border: #C2B496;
+  --border-light: #D8CDAF;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+html, body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg) !important;
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+
+main, #main-content {
+  background: var(--bg) !important;
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.p02-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: transparent;
+  transition: background 0.4s ease;
+  height: 80px;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.p02-header > .p02-header-inner {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.p02-header.scrolled {
+  background: rgba(45, 80, 22, 0.97);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ============================================================
+   LOGO
+   ============================================================ */
+
+.p02-logo-text {
+  color: white;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.p02-logo-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(196, 168, 130, 0.25);
+  border: 1.5px solid rgba(196, 168, 130, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+
+.p02-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.p02-nav a {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0 1rem;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease;
+  font-family: 'Lato', sans-serif;
+}
+
+.p02-nav a:hover {
+  color: white;
+}
+
+/* ============================================================
+   BOTÓN HAMBURGUESA
+   ============================================================ */
+
+.p02-menu-btn {
+  display: none;
+  background: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  color: white;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.p02-menu-btn:hover {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================
+   MOBILE NAV
+   ============================================================ */
+
+.p02-mobile-nav {
+  display: none;
+  flex-direction: column;
+  background: rgba(30, 55, 15, 0.98);
+  position: fixed;
+  top: 80px;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(196, 168, 130, 0.2);
+}
+
+.p02-mobile-nav.open {
+  display: flex;
+}
+
+.p02-mobile-nav a {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.p02-mobile-nav a:last-child {
+  border-bottom: none;
+}
+
+.p02-mobile-nav a:hover {
+  color: var(--accent);
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.p02-hero {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.p02-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.p02-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 30, 10, 0.55);
+}
+
+.p02-hero-content {
+  position: relative;
+  z-index: 1;
+  color: white;
+  padding: 8rem 2rem 4rem;
+  max-width: 800px;
+}
+
+.p02-hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.p02-hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.p02-hero-sub {
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 1rem;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+.p02-hero-inst {
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2.5rem;
+}
+
+/* ============================================================
+   BOTONES
+   ============================================================ */
+
+.p02-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.875rem 2rem;
+  background: var(--primary);
+  color: white;
+  border-radius: 2px;
+  font-weight: 700;
+  font-family: 'Lato', sans-serif;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  transition: background 0.2s ease, transform 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.p02-btn-primary:hover {
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.p02-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.875rem 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: white;
+  border-radius: 2px;
+  font-weight: 700;
+  font-family: 'Lato', sans-serif;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.p02-btn-outline:hover {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   SECCIONES GENERALES
+   ============================================================ */
+
+.p02-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(4rem, 8vw, 6rem) 1.5rem;
+}
+
+.p02-section-alt {
+  background: var(--bg-alt);
+}
+
+.p02-section-alt .p02-section {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.p02-section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.p02-section-title-deco {
+  width: 60px;
+  height: 3px;
+  background: var(--accent);
+  margin-bottom: 2rem;
+  border: none;
+}
+
+.p02-section-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+/* ============================================================
+   SECCIÓN CONOCE — BLOQUES ALTERNADOS
+   ============================================================ */
+
+.p02-conoce-alternado {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  margin-bottom: 5rem;
+}
+
+.p02-conoce-alternado:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Par (imagen derecha): revertir orden */
+.p02-conoce-alternado.par .p02-conoce-img {
+  order: 2;
+}
+
+.p02-conoce-alternado.par .p02-conoce-texto {
+  order: 1;
+}
+
+.p02-conoce-img {
+  border-radius: 4px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+}
+
+.p02-conoce-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.p02-conoce-img:hover img {
+  transform: scale(1.03);
+}
+
+.p02-conoce-texto h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.p02-conoce-texto p {
+  color: var(--text-muted);
+  line-height: 1.75;
+  font-weight: 300;
+  font-size: 0.98rem;
+}
+
+.p02-conoce-detalle {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.p02-tag {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: rgba(45, 80, 22, 0.1);
+  padding: 0.25rem 0.65rem;
+  border-radius: 2px;
+  font-weight: 700;
+}
+
+.p02-conoce-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+/* ============================================================
+   GALERÍA
+   ============================================================ */
+
+.p02-galeria {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.p02-galeria-item {
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.p02-galeria-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.p02-galeria-item:hover img {
+  transform: scale(1.06);
+}
+
+/* ============================================================
+   NOTICIAS — GRID REVISTA
+   ============================================================ */
+
+.p02-noticias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+/* Card noticia P02 */
+.noticia-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.noticia-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 35px rgba(45, 80, 22, 0.12);
+  border-color: var(--accent);
+}
+
+.noticia-imagen {
+  height: 240px;
+  overflow: hidden;
+  background: var(--bg-alt);
+  position: relative;
+}
+
+.noticia-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.noticia-card:hover .noticia-imagen img {
+  transform: scale(1.04);
+}
+
+.noticia-cuerpo {
+  padding: 1.25rem 1.5rem 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.noticia-meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.noticia-categoria {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--primary);
+  font-weight: 700;
+  background: rgba(45, 80, 22, 0.08);
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+}
+
+.noticia-fecha {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.noticia-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.noticia-resumen {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  flex: 1;
+}
+
+.noticia-leer {
+  margin-top: 1rem;
+  font-size: 0.82rem;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+/* ============================================================
+   AUTORIDADES
+   ============================================================ */
+
+.p02-autoridades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.p02-autoridad-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--primary);
+  border-radius: 6px;
+  padding: 2rem;
+  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.25s ease;
+}
+
+.p02-autoridad-card:hover {
+  box-shadow: 0 12px 32px rgba(45, 80, 22, 0.12);
+  transform: translateY(-3px);
+  border-color: var(--primary-light);
+}
+
+/* ============================================================
+   TRÁMITES
+   ============================================================ */
+
+.tramite-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.25s ease;
+}
+
+.tramite-card:hover {
+  box-shadow: 0 8px 24px rgba(45, 80, 22, 0.12);
+  transform: translateX(4px);
+  border-color: var(--primary);
+}
+
+.tramite-icono {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.tramite-titulo {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.tramite-desc {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.tramite-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tramite-tag {
+  font-size: 0.72rem;
+  color: var(--primary);
+  background: rgba(45, 80, 22, 0.08);
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================================
+   CONTACTO
+   ============================================================ */
+
+.p02-contacto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+}
+
+/* ============================================================
+   FORMULARIO
+   ============================================================ */
+
+.p02-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.p02-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.p02-form-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+.p02-form-input,
+.p02-form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: 'Lato', sans-serif;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+}
+
+.p02-form-input:focus,
+.p02-form-textarea:focus {
+  outline: none;
+  background: var(--card-bg-hover);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.15);
+}
+
+.p02-form-textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.p02-form-submit {
+  align-self: flex-start;
+  padding: 0.85rem 2rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 2px;
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.p02-form-submit:hover {
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   MAPA PLACEHOLDER
+   ============================================================ */
+
+.p02-mapa-placeholder {
+  height: 220px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #d4e8c0, #b8d4a0);
+  border: 1px dashed #6a9e50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #2D5016;
+  font-weight: 600;
+  font-size: 0.9rem;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.p02-mapa-placeholder span {
+  font-size: 2rem;
+}
+
+/* ============================================================
+   INFO CONTACTO
+   ============================================================ */
+
+.p02-info-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.p02-info-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(45, 80, 22, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.p02-info-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+.p02-info-value {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.p02-footer {
+  background: var(--primary-dark);
+  color: rgba(255, 255, 255, 0.75);
+  border-top: 4px solid var(--accent);
+}
+
+.p02-footer-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 4.5rem 1.5rem 2.5rem;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.1fr 1.2fr;
+  gap: 2.5rem;
+}
+
+.p02-footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.25rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.p02-footer-desc {
+  font-size: 0.86rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 1.25rem;
+}
+
+.p02-footer-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: white;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.02em;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.p02-footer-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 32px;
+  height: 2px;
+  background: var(--accent);
+}
+
+.p02-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.p02-footer-links li {
+  margin-bottom: 0.65rem;
+}
+
+.p02-footer-links a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.p02-footer-links a:hover {
+  color: var(--accent);
+  transform: translateX(3px);
+}
+
+/* ============================================================
+   REDES SOCIALES OFICIALES EN FOOTER
+   ============================================================ */
+
+.p02-social-wrap {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.p02-social-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  color: white;
+  margin: 0 0 0.35rem 0;
+  letter-spacing: 0.02em;
+}
+
+.p02-social-subtitle {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 0.85rem 0;
+  line-height: 1.4;
+}
+
+.p02-social-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.p02-social-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #FAF5ED;
+  text-decoration: none;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.p02-social-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.p02-social-btn:hover {
+  transform: translateY(-4px) scale(1.08);
+  color: #ffffff;
+}
+
+.p02-social-btn:hover svg {
+  transform: scale(1.12);
+}
+
+/* Colores institucionales de red con suave aura */
+.p02-social-btn.social-fb:hover {
+  background: #1877F2;
+  border-color: #1877F2;
+  box-shadow: 0 8px 22px rgba(24, 119, 242, 0.45);
+}
+
+.p02-social-btn.social-wa:hover {
+  background: #25D366;
+  border-color: #25D366;
+  box-shadow: 0 8px 22px rgba(37, 211, 102, 0.45);
+}
+
+.p02-social-btn.social-yt:hover {
+  background: #FF0000;
+  border-color: #FF0000;
+  box-shadow: 0 8px 22px rgba(255, 0, 0, 0.45);
+}
+
+.p02-social-btn.social-tk:hover {
+  background: #010101;
+  border-color: #25F4EE;
+  box-shadow: 0 8px 22px rgba(37, 244, 238, 0.35);
+}
+
+.p02-social-btn.social-tw:hover {
+  background: #111111;
+  border-color: #ffffff;
+  box-shadow: 0 8px 22px rgba(255, 255, 255, 0.3);
+}
+
+.p02-social-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.p02-footer-bottom {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.p02-footer-bottom p {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+}
+
+.p02-footer-bottom-links {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+}
+
+.p02-footer-bottom-links a {
+  color: rgba(196, 168, 130, 0.85);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.p02-footer-bottom-links a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.p02-footer-bottom-links .sep {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.p02-admin-tag {
+  background: rgba(196, 168, 130, 0.18);
+  border: 1px solid rgba(196, 168, 130, 0.4);
+  color: var(--accent) !important;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.76rem;
+  letter-spacing: 0.03em;
+  margin-left: 0.5rem;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.p02-admin-tag:hover {
+  background: var(--accent) !important;
+  color: #1A3008 !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(196, 168, 130, 0.3);
+}
+
+/* ============================================================
+   SOBREESCRITURAS PARA ARMONIZACIÓN CROMÁTICA (CERO BLANCO PURO)
+   ============================================================ */
+
+.mapa-card-completo {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 8px 24px rgba(45, 80, 22, 0.08) !important;
+}
+
+.mapa-card-header {
+  background: var(--primary-dark) !important;
+}
+
+.mapa-card-footer {
+  background: var(--bg-alt) !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+.mapa-btn-link {
+  color: var(--primary) !important;
+}
+
+.modal-box {
+  background: var(--card-bg, #FAF5ED) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* ============================================================
+   PENDIENTE / PLACEHOLDER
+   ============================================================ */
+
+.p02-pendiente {
+  border: 1.5px dashed #f0a040;
+  background: rgba(255, 165, 0, 0.04);
+  border-radius: 4px;
+  padding: 1rem 1.25rem;
+  color: #8a6010;
+  font-size: 0.85rem;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* Busqueda y filtros (reutilizados desde styles.css, reforzados) */
+.busqueda-wrap {
+  margin-bottom: 1rem;
+}
+
+.busqueda-input {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.65rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--card-bg);
+  transition: border-color 0.2s, background 0.2s;
+  box-sizing: border-box;
+}
+
+.busqueda-input:focus {
+  outline: none;
+  background: var(--card-bg-hover);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.12);
+}
+
+.filtros-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.filtro-btn {
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  border: 1.5px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  font-family: 'Lato', sans-serif;
+}
+
+.filtro-btn.activo,
+.filtro-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.paginacion-wrap {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.pag-btn {
+  padding: 0.4rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  font-family: 'Lato', sans-serif;
+}
+
+.pag-btn.activo,
+.pag-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* ============================================================
+   BANDA INTRO
+   ============================================================ */
+
+.p02-intro-band {
+  background: var(--bg-alt);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.p02-intro-band p {
+  max-width: 720px;
+  margin: 0 auto;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.75;
+  font-weight: 300;
+}
+
+/* ============================================================
+   SISTEMA RESPONSIVO INTEGRAL — PROPUESTA 02
+   Mobile First & Desktop Adaptive (320px hasta 1400px+)
+   ============================================================ */
+
+/* ── 1. PREVENCIÓN GLOBAL DE OVERFLOW HORIZONTAL ── */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  position: relative;
+}
+
+/* ── 2. HEADER INSTITUCIONAL Y NAVEGACIÓN MÓVIL ── */
+.p02-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 800 !important;
+  background: rgba(22, 42, 11, 0.94) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid rgba(196, 168, 130, 0.2) !important;
+  height: 72px;
+  padding: 0 1.5rem;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 900px) {
+  .p02-header {
+    height: 62px !important;
+    padding: 0 1rem !important;
+  }
+  .p02-nav {
+    display: none !important;
+  }
+  .p02-menu-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 8px !important;
+    font-size: 1.35rem !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1.5px solid rgba(196, 168, 130, 0.4) !important;
+    color: #ffffff !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+  }
+  .p02-menu-btn:hover {
+    background: var(--accent) !important;
+    color: #1A3008 !important;
+  }
+  .p02-logo-text {
+    font-size: 1rem !important;
+    gap: 0.5rem !important;
+  }
+  .p02-logo-text img {
+    width: 32px !important;
+    height: 38px !important;
+  }
+
+  /* Menú desplegable móvil (tipo Drawer elegante) */
+  .p02-mobile-nav {
+    position: fixed !important;
+    top: 62px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 799 !important;
+    background: rgba(18, 34, 9, 0.98) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    padding: 1.5rem 1.25rem 3rem !important;
+    flex-direction: column !important;
+    gap: 0.6rem !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-top: 1px solid rgba(196, 168, 130, 0.3) !important;
+    animation: p02DrawerIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .p02-mobile-nav a {
+    font-family: 'Playfair Display', serif !important;
+    font-size: 1.15rem !important;
+    color: #FAF5ED !important;
+    padding: 0.85rem 1rem !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    transition: all 0.2s ease !important;
+  }
+  .p02-mobile-nav a:hover,
+  .p02-mobile-nav a:active {
+    background: rgba(196, 168, 130, 0.2) !important;
+    color: var(--accent) !important;
+    transform: translateX(4px) !important;
+  }
+  .p02-mobile-nav a::after {
+    content: '→';
+    font-family: sans-serif;
+    font-size: 0.95rem;
+    opacity: 0.6;
+  }
+}
+
+@keyframes p02DrawerIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 4. SECCIÓN HERO Y CTA BUTTONS ── */
+@media (max-width: 768px) {
+  .p02-hero {
+    min-height: 82svh !important;
+    min-height: 82vh !important;
+  }
+  .p02-hero-content {
+    padding: 3.5rem 1.25rem 2.5rem !important;
+  }
+  .p02-hero h1 {
+    font-size: clamp(1.85rem, 6.5vw, 2.75rem) !important;
+    line-height: 1.18 !important;
+    margin-bottom: 1rem !important;
+  }
+  .p02-hero-sub {
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: 1.5rem !important;
+  }
+  .p02-hero-inst {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.08em !important;
+    margin-bottom: 1.5rem !important;
+  }
+  .p02-hero-content > div {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    max-width: 300px !important;
+    margin: 0 auto !important;
+  }
+  .p02-btn-primary,
+  .p02-btn-outline {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 0.85rem 1.5rem !important;
+    font-size: 0.88rem !important;
+  }
+}
+
+/* ── 5. SECCIÓN CONOCE PELECHUCO Y BLOQUES ALTERNADOS ── */
+.p02-section {
+  padding: clamp(3rem, 6vw, 5.5rem) 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .p02-section {
+    padding: 3rem 1.25rem !important;
+  }
+  .p02-section-title {
+    font-size: clamp(1.65rem, 4.5vw, 2.25rem) !important;
+  }
+  .p02-conoce-alternado {
+    grid-template-columns: 1fr !important;
+    gap: 1.75rem !important;
+    margin-bottom: 3.5rem !important;
+  }
+  .p02-conoce-alternado.par .p02-conoce-img,
+  .p02-conoce-alternado.impar .p02-conoce-img {
+    order: 1 !important;
+  }
+  .p02-conoce-alternado.par .p02-conoce-texto,
+  .p02-conoce-alternado.impar .p02-conoce-texto {
+    order: 2 !important;
+  }
+  .p02-conoce-img {
+    aspect-ratio: 16 / 10 !important;
+    border-radius: 8px !important;
+    max-height: 320px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .p02-conoce-cards-grid,
+  #conoce > .p02-section > div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    margin-top: 2rem !important;
+  }
+  .p02-galeria {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.65rem !important;
+  }
+  .p02-galeria-item {
+    border-radius: 6px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .p02-section {
+    padding: 2.5rem 1rem !important;
+  }
+  .p02-galeria {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.45rem !important;
+  }
+}
+
+/* ── 6. SECCIÓN NOTICIAS ── */
+@media (max-width: 900px) {
+  .p02-noticias-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 1.5rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .p02-noticias-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+  .noticia-imagen {
+    height: 190px !important;
+  }
+  .noticia-cuerpo {
+    padding: 1.15rem !important;
+  }
+  .busqueda-wrap, .busqueda-input {
+    max-width: 100% !important;
+  }
+  .filtros-wrap {
+    gap: 0.4rem !important;
+  }
+  .filtro-btn {
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.72rem !important;
+  }
+}
+
+/* ── 7. SECCIÓN AUTORIDADES ── */
+@media (max-width: 900px) {
+  .p02-autoridades-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .p02-autoridades-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  .p02-autoridad-card {
+    padding: 1.5rem 1.25rem !important;
+    text-align: center !important;
+  }
+}
+
+/* ── 8. SECCIÓN TRÁMITES Y SERVICIOS ── */
+@media (max-width: 640px) {
+  .tramite-card {
+    padding: 1rem !important;
+    gap: 0.75rem !important;
+  }
+  .tramite-icono {
+    font-size: 1.25rem !important;
+  }
+  .tramite-titulo {
+    font-size: 0.9rem !important;
+  }
+  .tramite-desc {
+    font-size: 0.8rem !important;
+  }
+}
+
+/* ── 9. SECCIÓN CONTACTO, MAPA Y FORMULARIO ── */
+@media (max-width: 900px) {
+  .p02-contacto-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .mapa-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.35rem !important;
+    padding: 0.75rem 1rem !important;
+  }
+  .mapa-coords {
+    font-size: 0.68rem !important;
+    word-break: break-all !important;
+  }
+  .mapa-visual-preview {
+    height: 180px !important;
+  }
+  .mapa-overlay-info {
+    left: 0.6rem !important;
+    right: 0.6rem !important;
+    bottom: 0.6rem !important;
+    padding: 0.65rem 0.75rem !important;
+  }
+  .mapa-overlay-info h4 {
+    font-size: 0.88rem !important;
+  }
+  .mapa-overlay-info p {
+    font-size: 0.74rem !important;
+  }
+  .mapa-ruta-tag {
+    font-size: 0.65rem !important;
+    white-space: normal !important;
+  }
+  .mapa-btn-link {
+    font-size: 0.8rem !important;
+  }
+  .p02-info-item {
+    gap: 0.75rem !important;
+  }
+  .p02-info-icon {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 0.9rem !important;
+  }
+  .p02-info-value {
+    font-size: 0.82rem !important;
+    word-break: break-word !important;
+  }
+
+  /* Formulario móvil optimizado (evita auto-zoom en iOS Safari) */
+  .p02-form-input,
+  .p02-form-textarea {
+    font-size: 16px !important;
+    padding: 0.8rem 0.9rem !important;
+  }
+  .p02-form-submit {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+    padding: 0.95rem 1.5rem !important;
+  }
+}
+
+/* ── 10. FOOTER INSTITUCIONAL ── */
+@media (max-width: 900px) {
+  .p02-footer-main {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2.25rem !important;
+    padding: 3.5rem 1.25rem 2rem !important;
+  }
+  .p02-footer-main > *:first-child {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .p02-footer-main {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    padding: 2.5rem 1rem 1.5rem !important;
+  }
+  .p02-footer-main > *:first-child {
+    grid-column: auto !important;
+  }
+  .p02-footer-bottom {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 0.85rem !important;
+    padding: 1.5rem 1rem !important;
+  }
+  .p02-footer-bottom-links {
+    justify-content: center !important;
+    gap: 0.45rem !important;
+  }
+  .p02-admin-tag {
+    margin-left: 0 !important;
+    margin-top: 0.4rem !important;
+  }
+}

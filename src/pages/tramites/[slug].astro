@@ -1,0 +1,233 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { DEFAULT_TRAMITES, DEFAULT_CONTACTO } from '../../lib/data-defaults';
+import type { Tramite } from '../../types/database';
+import { getYouTubeEmbedUrl } from '../../lib/youtube';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+let tramite: Tramite | null = null;
+
+if (isSupabaseConfigured()) {
+  try {
+    const { data } = await supabase
+      .from('tramites')
+      .select('*, categoria:tramites_categorias(*), archivos:tramites_archivos(*)')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single();
+
+    if (data) {
+      const def = DEFAULT_TRAMITES.find(t => t.slug === slug || t.id === data.id);
+      tramite = {
+        ...def,
+        ...data,
+        image_url: data.image_url ?? def?.image_url ?? null,
+        video_url: data.video_url ?? def?.video_url ?? null,
+        document_url: data.document_url ?? def?.document_url ?? null,
+        document_name: data.document_name ?? def?.document_name ?? null,
+      };
+    }
+  } catch (err) {
+    console.warn('Error cargando trámite de Supabase:', err);
+  }
+}
+
+if (!tramite) {
+  tramite = DEFAULT_TRAMITES.find(t => t.slug === slug) || null;
+}
+
+if (!tramite) {
+  return Astro.redirect('/#tramites');
+}
+
+const reqs = Array.isArray(tramite.requirements) ? tramite.requirements : [];
+const videoEmbedUrl = tramite.video_url ? getYouTubeEmbedUrl(tramite.video_url) : null;
+const isWordDoc = Boolean(
+  (tramite.document_name && (tramite.document_name.endsWith('.doc') || tramite.document_name.endsWith('.docx'))) ||
+  (tramite.document_url && (tramite.document_url.includes('.doc') || tramite.document_url.includes('.docx')))
+);
+---
+
+<BaseLayout
+  title={`${tramite.title} — Trámites GAM Pelechuco`}
+  description={tramite.description}
+>
+  <Header />
+
+  <main style="padding-top: 100px; min-height: 80vh;">
+    <div style="max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem;">
+      <!-- Migas de pan -->
+      <nav style="margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--text-muted);" aria-label="Ruta de navegación">
+        <a href="/#inicio" style="color: var(--primary); text-decoration: none;">Inicio</a>
+        <span style="margin: 0 0.5rem;">/</span>
+        <a href="/#tramites" style="color: var(--primary); text-decoration: none;">Trámites y Servicios</a>
+        <span style="margin: 0 0.5rem;">/</span>
+        <span>{tramite.title}</span>
+      </nav>
+
+      <!-- Encabezado del Trámite -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+            <span class="p02-tag">
+              {tramite.categoria?.name || 'Servicio Municipal'}
+            </span>
+            {videoEmbedUrl && (
+              <span style="background: rgba(220, 38, 38, 0.1); color: #dc2626; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">
+                🎬 Con Video Tutorial
+              </span>
+            )}
+            {tramite.document_url && (
+              <span style="background: rgba(45, 80, 22, 0.1); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">
+                📥 Con {isWordDoc ? 'Plantilla Word' : 'Formulario PDF'}
+              </span>
+            )}
+          </div>
+          <h1 style="font-size: clamp(1.8rem, 3.5vw, 2.3rem); color: var(--text); line-height: 1.25; font-weight: 800;">
+            {tramite.title}
+          </h1>
+        </div>
+        <div style="background: var(--primary); color: #FAF7F2; padding: 0.55rem 1.15rem; border-radius: 8px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          {tramite.cost}
+        </div>
+      </div>
+
+      <!-- 1. FOTOGRAFÍA ILUSTRATIVA (SI EXISTE) -->
+      {tramite.image_url && (
+        <div style="border-radius: 12px; overflow: hidden; margin-bottom: 2rem; aspect-ratio: 16/9; max-height: 420px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid var(--border); background: #0f1824;">
+          <img
+            src={tramite.image_url}
+            alt={tramite.title}
+            style="width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;"
+            onerror="this.parentElement.style.display='none';"
+          />
+        </div>
+      )}
+
+      <!-- 2. VIDEO EXPLICATIVO DE YOUTUBE (SI EXISTE) -->
+      {videoEmbedUrl && (
+        <div style="margin-bottom: 2.25rem;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+            <span>🎬</span> Video Guía y Tutorial Oficial del Trámite
+          </h3>
+          <div style="position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.12); background: #000;">
+            <iframe
+              src={videoEmbedUrl}
+              title={`Guía en video: ${tramite.title}`}
+              style="width: 100%; height: 100%; border: none;"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </div>
+      )}
+
+      <!-- 3. DOCUMENTO OFICIAL DESCARGABLE - PDF O WORD (SI EXISTE) -->
+      {tramite.document_url && (
+        <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <span style="font-size: 2.4rem; line-height: 1;">
+              {isWordDoc ? '📝' : '📄'}
+            </span>
+            <div>
+              <div style="font-size: 1.05rem; font-weight: 700; color: var(--text);">
+                {tramite.document_name || 'Documento Oficial Descargable'}
+              </div>
+              <div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.2rem;">
+                {isWordDoc ? 'Plantilla editable en formato Microsoft Word (.docx)' : 'Formulario oficial en formato PDF listo para descargar e imprimir'}
+              </div>
+            </div>
+          </div>
+          <a
+            href={tramite.document_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={tramite.document_name || undefined}
+            class="p02-btn-primary"
+            style="font-size: 0.875rem; padding: 0.65rem 1.4rem; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;"
+          >
+            <span>⬇</span> Descargar Documento {isWordDoc ? 'Word' : 'PDF'}
+          </a>
+        </div>
+      )}
+
+      <p style="font-size: 1.1rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 2rem;">
+        {tramite.description}
+      </p>
+
+      <!-- Ficha técnica del trámite -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2.5rem;">
+        <div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem;">Oficina Responsable</div>
+          <div style="font-weight: 700; color: var(--text); font-size: 0.95rem;">🏢 {tramite.office}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem;">Plazo de Entrega</div>
+          <div style="font-weight: 700; color: var(--text); font-size: 0.95rem;">⏱️ {tramite.processing_time}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem;">Horario de Atención</div>
+          <div style="font-weight: 700; color: var(--text); font-size: 0.95rem;">🕐 {tramite.schedule}</div>
+        </div>
+        {tramite.contact_info && (
+          <div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem;">Contacto de Consulta</div>
+            <div style="font-weight: 700; color: var(--text); font-size: 0.95rem;">📞 {tramite.contact_info}</div>
+          </div>
+        )}
+      </div>
+
+      <!-- Requisitos obligatorios -->
+      <div style="background: var(--bg-alt); border-radius: 8px; padding: 2rem; border: 1px solid var(--border); margin-bottom: 2.5rem;">
+        <h2 style="font-size: 1.35rem; color: var(--primary); margin-bottom: 1.25rem;">
+          📋 Requisitos y Documentación Obligatoria
+        </h2>
+        <ul style="padding-left: 1.5rem; line-height: 1.8; color: var(--text);">
+          {reqs.map((r: any) => (
+            <li style="margin-bottom: 0.5rem;">
+              <strong>{typeof r === 'string' ? r : r.texto}</strong>
+              {r.detalle && <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">{r.detalle}</p>}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Formularios descargables adicionales (de la tabla tramites_archivos) -->
+      {tramite.archivos && tramite.archivos.length > 0 && (
+        <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 3rem;">
+          <h3 style="font-size: 1.15rem; color: var(--primary); margin-bottom: 1rem;">
+            📥 Archivos y Plantillas Adicionales
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {tramite.archivos.map(arch => (
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem; background: var(--bg); border: 1px solid var(--border-light); border-radius: 6px;">
+                <div>
+                  <div style="font-weight: 700; font-size: 0.95rem;">{arch.file_title}</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">{arch.file_name}</div>
+                </div>
+                <a href={arch.file_url} target="_blank" rel="noopener noreferrer" class="p02-btn-primary" style="font-size: 0.85rem; padding: 0.45rem 1rem;">
+                  Descargar Formulario PDF ↓
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <!-- Enlace de regreso -->
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="/#tramites" class="p02-btn-outline">
+          ← Volver al Catálogo de Trámites
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <Footer contacto={DEFAULT_CONTACTO} />
+</BaseLayout>

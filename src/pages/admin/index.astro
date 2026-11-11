@@ -1,0 +1,226 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '../../lib/supabase';
+import { DEFAULT_NOTICIAS, DEFAULT_TRAMITES, DEFAULT_AUTORIDADES } from '../../lib/data-defaults';
+
+export const prerender = false;
+
+const isConfigured = isSupabaseConfigured();
+const adminClient = getSupabaseAdmin() || supabase;
+let stats = {
+  noticiasCount: DEFAULT_NOTICIAS.length,
+  tramitesCount: DEFAULT_TRAMITES.length,
+  autoridadesCount: DEFAULT_AUTORIDADES.length,
+  mensajesCount: 0,
+};
+
+let ultimasNoticias = DEFAULT_NOTICIAS.slice(0, 5);
+let ultimosTramites = DEFAULT_TRAMITES.slice(0, 5);
+
+if (isConfigured) {
+  try {
+    const [notRes, tramRes, autRes, msgRes] = await Promise.all([
+      adminClient.from('noticias').select('id, title, status, published_at, slug', { count: 'exact' }).order('published_at', { ascending: false }).limit(5),
+      adminClient.from('tramites').select('id, title, cost, office', { count: 'exact' }).limit(5),
+      adminClient.from('autoridades').select('id', { count: 'exact' }),
+      adminClient.from('mensajes_contacto').select('id, is_read', { count: 'exact' }),
+    ]);
+
+    if (notRes.count !== null) stats.noticiasCount = notRes.count;
+    if (tramRes.count !== null) stats.tramitesCount = tramRes.count;
+    if (autRes.count !== null) stats.autoridadesCount = autRes.count;
+    if (msgRes.count !== null) stats.mensajesCount = msgRes.count;
+
+    if (notRes.data && notRes.data.length > 0) {
+      ultimasNoticias = notRes.data as any;
+    }
+    if (tramRes.data && tramRes.data.length > 0) {
+      ultimosTramites = tramRes.data as any;
+    }
+  } catch (err) {
+    console.warn('Error obteniendo estadísticas de Supabase:', err);
+  }
+}
+---
+
+<AdminLayout title="Dashboard — Panel Administrativo GAM Pelechuco" activeNav="dashboard">
+  <!-- Encabezado de página -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
+    <div>
+      <h1 style="font-size:1.75rem;font-weight:700;color:#1e293b;margin:0 0 0.25rem 0;">
+        Dashboard Municipal
+      </h1>
+      <p style="color:#64748b;font-size:0.9rem;margin:0;">
+        Gobierno Autónomo Municipal de Pelechuco · Provincia Franz Tamayo, La Paz
+      </p>
+    </div>
+    <div style="display:flex;gap:0.75rem;">
+      <a href="/admin/noticias" class="btn-primary" style="background:#2D5016;color:#FAF7F2;padding:0.6rem 1.2rem;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.875rem;">
+        + Nueva Noticia
+      </a>
+      <a href="/admin/tramites" class="btn-primary" style="background:#4A7FA5;color:#fff;padding:0.6rem 1.2rem;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.875rem;">
+        + Nuevo Trámite
+      </a>
+    </div>
+  </div>
+
+  <!-- Alerta de estado de Supabase -->
+  {!isConfigured ? (
+    <div style="background:rgba(245,158,11,0.08);border:1px solid #f59e0b;border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:2rem;">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+        <span style="font-size:1.5rem;">⏳</span>
+        <h3 style="color:#b45309;font-size:1.05rem;font-weight:700;margin:0;">
+          Esperando credenciales de Supabase
+        </h3>
+      </div>
+      <p style="color:#92400e;font-size:0.875rem;line-height:1.6;margin:0 0 0.75rem 0;">
+        El proyecto está listo y corriendo con <strong>Astro + Hono</strong>. Actualmente se muestran datos de demostración preconfigurados mientras proporcionas el URL del proyecto, la Anon Key pública y la Service Role Key secreta en el archivo <code>.env</code>.
+      </p>
+      <div style="background:rgba(255,255,255,0.7);padding:0.75rem 1rem;border-radius:6px;font-family:monospace;font-size:0.8rem;color:#78350f;">
+        PUBLIC_SUPABASE_URL=...<br />
+        PUBLIC_SUPABASE_ANON_KEY=...<br />
+        SUPABASE_SERVICE_ROLE_KEY=...
+      </div>
+    </div>
+  ) : (
+    <div style="background:rgba(16,185,129,0.08);border:1px solid #10b981;border-radius:10px;padding:1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span style="font-size:1.35rem;">✅</span>
+        <div>
+          <strong style="color:#065f46;font-size:0.95rem;">Conexión a Supabase Activa</strong>
+          <p style="color:#047857;font-size:0.8rem;margin:0.2rem 0 0 0;">Los cambios que realices se guardan directamente en tu base de datos PostgreSQL.</p>
+        </div>
+      </div>
+      <span style="background:#10b981;color:#fff;padding:0.25rem 0.75rem;border-radius:12px;font-size:0.75rem;font-weight:700;">EN LÍNEA</span>
+    </div>
+  )}
+
+  <!-- Tarjetas de métricas y estadísticas -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1.25rem;margin-bottom:2rem;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <span style="font-size:0.8rem;font-weight:600;color:#64748b;text-transform:uppercase;">Publicaciones</span>
+        <span style="font-size:1.3rem;">📰</span>
+      </div>
+      <div style="font-size:1.8rem;font-weight:700;color:#0f172a;">{stats.noticiasCount}</div>
+      <div style="font-size:0.75rem;color:#10b981;margin-top:0.25rem;">Noticias y comunicados</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <span style="font-size:0.8rem;font-weight:600;color:#64748b;text-transform:uppercase;">Trámites Activos</span>
+        <span style="font-size:1.3rem;">📋</span>
+      </div>
+      <div style="font-size:1.8rem;font-weight:700;color:#0f172a;">{stats.tramitesCount}</div>
+      <div style="font-size:0.75rem;color:#3b82f6;margin-top:0.25rem;">Servicios ciudadanos</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <span style="font-size:0.8rem;font-weight:600;color:#64748b;text-transform:uppercase;">Autoridades</span>
+        <span style="font-size:1.3rem;">👤</span>
+      </div>
+      <div style="font-size:1.8rem;font-weight:700;color:#0f172a;">{stats.autoridadesCount}</div>
+      <div style="font-size:0.75rem;color:#8b5cf6;margin-top:0.25rem;">Gabinete y Concejo</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <span style="font-size:0.8rem;font-weight:600;color:#64748b;text-transform:uppercase;">Buzón Ciudadano</span>
+        <span style="font-size:1.3rem;">📬</span>
+      </div>
+      <div style="font-size:1.8rem;font-weight:700;color:#0f172a;">{stats.mensajesCount}</div>
+      <div style="font-size:0.75rem;color:#f59e0b;margin-top:0.25rem;">Mensajes recibidos</div>
+    </div>
+  </div>
+
+  <!-- Grilla de Tablas y Accesos directos -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 380px), 1fr));gap:1.5rem;">
+    <!-- Últimas Noticias -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid #f1f5f9;padding-bottom:0.75rem;">
+        <h3 style="font-size:1.1rem;font-weight:700;color:#1e293b;margin:0;">Últimas Noticias</h3>
+        <a href="/admin/noticias" style="font-size:0.8rem;color:#2D5016;font-weight:600;text-decoration:none;">Ver todas →</a>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+        <thead>
+          <tr style="text-align:left;color:#64748b;font-size:0.75rem;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">
+            <th style="padding:0.5rem 0;">Título</th>
+            <th style="padding:0.5rem 0;text-align:right;">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ultimasNoticias.map(n => (
+            <tr style="border-bottom:1px solid #f8fafc;">
+              <td style="padding:0.75rem 0;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                <a href={`/noticias/${n.slug}`} target="_blank" style="color:#0f172a;text-decoration:none;font-weight:500;">
+                  {n.title}
+                </a>
+              </td>
+              <td style="padding:0.75rem 0;text-align:right;">
+                <span style="background:rgba(45,80,22,0.1);color:#2D5016;padding:0.2rem 0.5rem;border-radius:12px;font-size:0.75rem;font-weight:600;">
+                  {n.status || 'publicado'}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Trámites Recientes -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid #f1f5f9;padding-bottom:0.75rem;">
+        <h3 style="font-size:1.1rem;font-weight:700;color:#1e293b;margin:0;">Catálogo de Trámites</h3>
+        <a href="/admin/tramites" style="font-size:0.8rem;color:#4A7FA5;font-weight:600;text-decoration:none;">Gestionar →</a>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+        <thead>
+          <tr style="text-align:left;color:#64748b;font-size:0.75rem;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">
+            <th style="padding:0.5rem 0;">Trámite</th>
+            <th style="padding:0.5rem 0;text-align:right;">Costo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ultimosTramites.map(t => (
+            <tr style="border-bottom:1px solid #f8fafc;">
+              <td style="padding:0.75rem 0;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                <span style="color:#0f172a;font-weight:500;">{t.title}</span>
+                <div style="font-size:0.72rem;color:#64748b;">{t.office}</div>
+              </td>
+              <td style="padding:0.75rem 0;text-align:right;">
+                <span style="color:#4A7FA5;font-weight:600;font-size:0.8rem;">
+                  {t.cost}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Endpoints API Hono integrados -->
+  <div style="margin-top:2.5rem;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;">
+    <h3 style="font-size:1.1rem;font-weight:700;color:#1e293b;margin:0 0 0.5rem 0;">
+      ⚡ API REST Hono integrada en Astro
+    </h3>
+    <p style="color:#64748b;font-size:0.85rem;margin:0 0 1rem 0;">
+      Endpoints disponibles listos para consumo del portal, panel administrativo o aplicaciones externas:
+    </p>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;font-family:monospace;font-size:0.8rem;">
+      <a href="/api/status" target="_blank" style="background:#f1f5f9;color:#334155;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;border:1px solid #cbd5e1;">
+        GET /api/status ↗
+      </a>
+      <a href="/api/portal" target="_blank" style="background:#f1f5f9;color:#334155;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;border:1px solid #cbd5e1;">
+        GET /api/portal ↗
+      </a>
+      <a href="/api/noticias" target="_blank" style="background:#f1f5f9;color:#334155;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;border:1px solid #cbd5e1;">
+        GET /api/noticias ↗
+      </a>
+      <a href="/api/tramites" target="_blank" style="background:#f1f5f9;color:#334155;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;border:1px solid #cbd5e1;">
+        GET /api/tramites ↗
+      </a>
+    </div>
+  </div>
+</AdminLayout>

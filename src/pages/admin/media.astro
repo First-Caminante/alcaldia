@@ -1,0 +1,923 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '../../lib/supabase';
+import { STORAGE_CONFIG, syncStorageWithDatabase } from '../../lib/storage';
+import type { R2Media } from '../../types/database';
+
+export const prerender = false;
+
+let mediaFiles: R2Media[] = [];
+let totalBytesUsed = 0;
+const supabaseOnline = isSupabaseConfigured();
+
+if (supabaseOnline) {
+  try {
+    const client = getSupabaseAdmin() || supabase;
+    // Sincronizar para indexar archivos del bucket que falten
+    await syncStorageWithDatabase();
+
+    const { data } = await client
+      .from('r2_media')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      mediaFiles = data as any;
+      totalBytesUsed = mediaFiles.reduce((acc, f) => acc + (f.file_size_bytes || 0), 0);
+    }
+  } catch (err) {
+    console.warn('Aviso cargando multimedia:', err);
+  }
+}
+
+const kbUsed = (totalBytesUsed / 1024).toFixed(1);
+const mbUsed = (totalBytesUsed / (1024 * 1024)).toFixed(2);
+const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
+---
+
+<AdminLayout title="Multimedia y Fotos — Almacenamiento GAM Pelechuco" activeNav="media">
+  <style>
+    .filter-btn {
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      transition: all 0.2s ease;
+    }
+    .filter-btn:hover {
+      border-color: #94a3b8;
+      color: #1e293b;
+    }
+    .filter-btn.active {
+      border-color: #2D5016 !important;
+      background: #2D5016 !important;
+      color: #FAF7F2 !important;
+    }
+    html.dark .filter-btn {
+      border-color: #23364e !important;
+      background: #0f1824 !important;
+      color: #cbd5e1 !important;
+    }
+    html.dark .filter-btn:hover {
+      border-color: #38bdf8 !important;
+      color: #f8fafc !important;
+    }
+    html.dark .filter-btn.active {
+      border-color: #22c55e !important;
+      background: #14532d !important;
+      color: #86efac !important;
+    }
+
+    .btn-view-toggle {
+      padding: 0.45rem 0.85rem;
+      border: none;
+      background: #f8fafc;
+      color: #475569;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+    }
+    .btn-view-toggle.active {
+      background: #2D5016 !important;
+      color: #FAF7F2 !important;
+    }
+    html.dark .btn-view-toggle {
+      background: #0f1824 !important;
+      color: #94a3b8 !important;
+    }
+    html.dark .btn-view-toggle.active {
+      background: #14532d !important;
+      color: #86efac !important;
+    }
+
+    .media-card-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
+    }
+    .media-thumb-container:hover img {
+      transform: scale(1.04);
+    }
+  </style>
+
+  <!-- Cabecera principal -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 style="font-size:1.6rem;font-weight:700;color:#1e293b;margin:0 0 0.25rem 0;">Biblioteca Multimedia Oficial</h1>
+      <p style="color:#64748b;font-size:0.875rem;margin:0;">Archivos multimedia y fotografías oficiales alojados en Supabase Storage con compresión WebP</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+      <button
+        id="btn-sync-media"
+        type="button"
+        style="background:#f1f5f9;color:#1e293b;border:1px solid #cbd5e1;padding:0.65rem 1.1rem;border-radius:6px;font-weight:600;font-size:0.875rem;cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;"
+        title="Escanear y sincronizar fotos del almacenamiento en Supabase"
+      >
+        <span>🔄</span> Sincronizar Almacenamiento
+      </button>
+      <button
+        id="btn-abrir-subida"
+        class="btn-primary"
+        style="background:#2D5016;color:#FAF7F2;padding:0.65rem 1.3rem;border-radius:6px;border:none;font-weight:600;font-size:0.875rem;cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;"
+      >
+        <span>📤 Subir Foto / Documento</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tarjetas de estado y límites de almacenamiento -->
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-bottom:1.5rem;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));gap:1rem;font-size:0.85rem;">
+      <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:8px;border:1px solid #e2e8f0;">
+        <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Estado de Almacenamiento</div>
+        <div style="font-weight:700;margin-top:0.35rem;display:flex;align-items:center;gap:0.4rem;font-size:1.05rem;">
+          <span style="color:#16a34a;">● Supabase Activo</span>
+        </div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:0.25rem;">Bucket: <strong style="color:#0f172a;">{STORAGE_CONFIG.bucketName}</strong></div>
+      </div>
+
+      <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:8px;border:1px solid #e2e8f0;">
+        <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Archivos en Biblioteca</div>
+        <div style="font-weight:700;color:#0f172a;margin-top:0.35rem;font-size:1.35rem;" id="stat-total-archivos">
+          {mediaFiles.length}
+        </div>
+        <div style="font-size:0.75rem;color:#15803d;margin-top:0.25rem;">Fotografías y recursos oficiales</div>
+      </div>
+
+      <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:8px;border:1px solid #e2e8f0;">
+        <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Espacio Ocupado (1 GB Gratis)</div>
+        <div style="font-weight:700;color:#0f172a;margin-top:0.35rem;font-size:1.15rem;">
+          {mbUsed} MB <span style="font-size:0.8rem;font-weight:500;color:#64748b;">({kbUsed} KB)</span>
+        </div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:0.25rem;">Uso: {percentUsed}% del límite</div>
+      </div>
+
+      <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:8px;border:1px solid #e2e8f0;">
+        <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Compresión WebP Automática</div>
+        <div style="font-weight:700;color:#2D5016;margin-top:0.35rem;font-size:1.05rem;">
+          ⚡ Ahorro de ~85%
+        </div>
+        <div style="font-size:0.75rem;color:#15803d;margin-top:0.25rem;">Capacidad: ~8.000 imágenes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de Filtros, Búsqueda y Selector de Vista -->
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+    <!-- Filtros de Carpeta -->
+    <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;" id="filter-folder-bar">
+      <span style="font-size:0.8rem;font-weight:600;color:#64748b;margin-right:0.3rem;">Carpeta:</span>
+      <button class="filter-btn active" data-folder="all">
+        Todas ({mediaFiles.length})
+      </button>
+      <button class="filter-btn" data-folder="noticias">
+        noticias/
+      </button>
+      <button class="filter-btn" data-folder="galeria">
+        galeria/
+      </button>
+      <button class="filter-btn" data-folder="autoridades">
+        autoridades/
+      </button>
+      <button class="filter-btn" data-folder="hero">
+        hero/
+      </button>
+      <button class="filter-btn" data-folder="tramites">
+        tramites/
+      </button>
+      <button class="filter-btn" data-folder="conoce">
+        conoce/
+      </button>
+      <button class="filter-btn" data-folder="general">
+        general/
+      </button>
+    </div>
+
+    <!-- Búsqueda y Alternador de Vista (Cuadrícula / Tabla) -->
+    <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+      <div style="position:relative;">
+        <input
+          type="text"
+          id="search-media"
+          placeholder="🔍 Buscar por nombre..."
+          style="padding:0.45rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;width:200px;"
+        />
+      </div>
+
+      <div style="display:flex;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;">
+        <button
+          type="button"
+          id="btn-vista-grid"
+          class="btn-view-toggle active"
+          title="Vista Cuadrícula Visual"
+        >
+          <span>🖼️ Cuadrícula</span>
+        </button>
+        <button
+          type="button"
+          id="btn-vista-tabla"
+          class="btn-view-toggle"
+          title="Vista Tabla Detallada"
+        >
+          <span>📋 Tabla</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISTA 1: CUADRÍCULA DE FOTOS Y MULTIMEDIA (VISUAL) -->
+  <div id="contenedor-vista-grid">
+    {mediaFiles.length === 0 ? (
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:3.5rem 1.5rem;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05);" id="empty-state-grid">
+        <div style="font-size:3rem;margin-bottom:0.75rem;">📁</div>
+        <h3 style="font-size:1.15rem;font-weight:700;color:#1e293b;margin:0 0 0.5rem 0;">No hay fotos registradas aún</h3>
+        <p style="color:#64748b;font-size:0.85rem;max-width:460px;margin:0 auto 1.25rem auto;line-height:1.5;">
+          Usa el botón "Subir Foto / Documento" para cargar imágenes optimizadas a Supabase Storage, o pulsa "Sincronizar Almacenamiento" si ya tienes archivos en el bucket.
+        </p>
+        <button id="btn-empty-subir" style="background:#2D5016;color:#FAF7F2;padding:0.6rem 1.4rem;border-radius:6px;border:none;font-weight:600;font-size:0.875rem;cursor:pointer;">
+          + Subir Primera Fotografía
+        </button>
+      </div>
+    ) : (
+      <div
+        id="media-grid"
+        style="display:grid;grid-template-columns:repeat(auto-fill, minmax(min(100%, 260px), 1fr));gap:1.25rem;"
+      >
+        {mediaFiles.map((file) => (
+          <div
+            class="media-card-item"
+            data-id={file.id}
+            data-folder={file.folder}
+            data-name={file.file_name.toLowerCase()}
+            data-url={file.public_url}
+            style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;flex-direction:column;transition:transform 0.2s, box-shadow 0.2s;"
+          >
+            <!-- Miniatura / Previsualización -->
+            <div
+              class="media-thumb-container"
+              style="position:relative;height:165px;background:#0d1723;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;"
+              title="Click para ver en tamaño grande"
+            >
+              {file.mime_type?.startsWith('image/') ? (
+                <img
+                  src={file.public_url}
+                  alt={file.file_name}
+                  style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;"
+                  loading="lazy"
+                />
+              ) : (
+                <div style="text-align:center;color:#94a3b8;padding:1rem;">
+                  <div style="font-size:2.5rem;margin-bottom:0.25rem;">📄</div>
+                  <div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;">Documento PDF</div>
+                </div>
+              )}
+              <span
+                style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(15,23,42,0.85);backdrop-filter:blur(4px);color:#fff;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:10px;font-weight:600;"
+              >
+                {file.folder}
+              </span>
+              <span
+                style="position:absolute;top:0.5rem;right:0.5rem;background:rgba(45,80,22,0.9);color:#FAF7F2;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:6px;font-weight:600;"
+              >
+                {(file.file_size_bytes / 1024).toFixed(0)} KB
+              </span>
+            </div>
+
+            <!-- Información del Archivo -->
+            <div style="padding:0.85rem 1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+              <div>
+                <div
+                  style="font-size:0.85rem;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.25rem;"
+                  title={file.file_name}
+                >
+                  {file.file_name}
+                </div>
+                <div
+                  style="font-size:0.7rem;color:#94a3b8;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.75rem;"
+                  title={file.file_key}
+                >
+                  {file.file_key}
+                </div>
+              </div>
+
+              <!-- Acciones Rápidas -->
+              <div style="border-top:1px solid #f1f5f9;padding-top:0.6rem;display:flex;justify-content:space-between;align-items:center;">
+                <button
+                  type="button"
+                  class="btn-copiar-url"
+                  data-url={file.public_url}
+                  style="background:none;border:none;color:#4A7FA5;font-weight:600;font-size:0.78rem;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:0.25rem;"
+                  title="Copiar URL al portapapeles"
+                >
+                  📋 Copiar URL
+                </button>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  <a
+                    href={file.public_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style="color:#64748b;font-weight:600;font-size:0.78rem;text-decoration:none;"
+                    title="Abrir imagen en pestaña nueva"
+                  >
+                    Ver ↗
+                  </a>
+                  <span style="color:#cbd5e1;">·</span>
+                  <button
+                    type="button"
+                    class="btn-eliminar-media"
+                    data-id={file.id}
+                    data-name={file.file_name}
+                    style="background:none;border:none;color:#ef4444;font-size:0.78rem;cursor:pointer;padding:0;font-weight:600;"
+                    title="Eliminar de Supabase Storage"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+
+  <!-- VISTA 2: TABLA DETALLADA (OCULTA POR DEFECTO) -->
+  <div id="contenedor-vista-tabla" style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-top:1rem;">
+    <table style="width:100%;border-collapse:collapse;text-align:left;font-size:0.875rem;">
+      <thead style="background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:0.75rem;text-transform:uppercase;">
+        <tr>
+          <th style="padding:0.75rem 1rem;">Archivo</th>
+          <th style="padding:0.75rem 1rem;">Carpeta</th>
+          <th style="padding:0.75rem 1rem;">Formato</th>
+          <th style="padding:0.75rem 1rem;">Tamaño</th>
+          <th style="padding:0.75rem 1rem;text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-media-body">
+        {mediaFiles.length === 0 ? (
+          <tr>
+            <td colspan="5" style="padding:3rem 1rem;text-align:center;color:#64748b;">
+              No hay archivos subidos en Supabase Storage todavía.
+            </td>
+          </tr>
+        ) : (
+          mediaFiles.map((file) => (
+            <tr
+              style="border-bottom:1px solid #f1f5f9;"
+              class="media-table-row"
+              data-id={file.id}
+              data-folder={file.folder}
+              data-name={file.file_name.toLowerCase()}
+              id={`media-row-${file.id}`}
+            >
+              <td style="padding:0.75rem 1rem;font-weight:600;color:#0f172a;display:flex;align-items:center;gap:0.75rem;">
+                {file.mime_type?.startsWith('image/') ? (
+                  <img
+                    src={file.public_url}
+                    alt=""
+                    style="width:42px;height:42px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0;cursor:pointer;"
+                    class="table-thumb-preview"
+                    data-url={file.public_url}
+                  />
+                ) : (
+                  <span style="font-size:1.6rem;">📄</span>
+                )}
+                <div style="max-width:280px;">
+                  <a
+                    href={file.public_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style="color:inherit;text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                  >
+                    {file.file_name}
+                  </a>
+                  <div style="font-size:0.72rem;color:#94a3b8;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    {file.file_key}
+                  </div>
+                </div>
+              </td>
+              <td style="padding:0.75rem 1rem;">
+                <span style="background:rgba(45,80,22,0.1);color:#2D5016;padding:0.2rem 0.55rem;border-radius:12px;font-size:0.75rem;font-weight:600;">
+                  {file.folder}
+                </span>
+              </td>
+              <td style="padding:0.75rem 1rem;color:#64748b;font-size:0.8rem;">
+                {file.mime_type}
+              </td>
+              <td style="padding:0.75rem 1rem;color:#64748b;font-size:0.8rem;font-weight:500;">
+                {(file.file_size_bytes / 1024).toFixed(1)} KB
+              </td>
+              <td style="padding:0.75rem 1rem;text-align:right;">
+                <button
+                  type="button"
+                  class="btn-copiar-url"
+                  data-url={file.public_url}
+                  style="background:none;border:none;color:#4A7FA5;font-weight:600;font-size:0.8rem;cursor:pointer;margin-right:0.75rem;"
+                  title="Copiar URL para usar en el portal"
+                >
+                  Copiar URL
+                </button>
+                <a
+                  href={file.public_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style="color:#64748b;font-weight:600;font-size:0.8rem;text-decoration:none;margin-right:0.75rem;"
+                >
+                  Ver ↗
+                </a>
+                <button
+                  type="button"
+                  class="btn-eliminar-media"
+                  data-id={file.id}
+                  data-name={file.file_name}
+                  style="background:none;border:none;color:#ef4444;font-size:0.8rem;cursor:pointer;font-weight:600;"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Guía Oficial de Dimensiones y Formatos de Imagen -->
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-top:2rem;">
+    <h3 style="font-size:1.05rem;font-weight:700;color:#2D5016;margin:0 0 0.5rem 0;display:flex;align-items:center;gap:0.4rem;">
+      <span>📐</span> Guía Oficial de Dimensiones y Formatos — GAM Pelechuco
+    </h3>
+    <p style="font-size:0.825rem;color:#64748b;margin:0 0 1rem 0;">
+      Para garantizar que el portal cargue velozmente y las imágenes se vean nítidas en computadoras y celulares, consulte las medidas recomendadas:
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:1rem;">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.9rem;">
+        <div style="font-weight:700;color:#0f172a;font-size:0.875rem;margin-bottom:0.25rem;">🏔️ Portada Principal (Hero)</div>
+        <div style="color:#2D5016;font-weight:700;font-size:0.85rem;">1920 × 1080 px <span style="font-size:0.75rem;font-weight:500;color:#64748b;">(16:9 Panorámica)</span></div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:0.35rem;line-height:1.4;">
+          <strong>Carpeta:</strong> <code>hero/</code> · Cordillera, vista del valle o plaza principal.
+        </div>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.9rem;">
+        <div style="font-weight:700;color:#0f172a;font-size:0.875rem;margin-bottom:0.25rem;">🖼️ Galería Municipal</div>
+        <div style="color:#2D5016;font-weight:700;font-size:0.85rem;">1200 × 800 px <span style="font-size:0.75rem;font-weight:500;color:#64748b;">(3:2 o 4:3)</span></div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:0.35rem;line-height:1.4;">
+          <strong>Carpeta:</strong> <code>galeria/</code> · Camélidos, nevados, danzas y comunidades.
+        </div>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.9rem;">
+        <div style="font-weight:700;color:#0f172a;font-size:0.875rem;margin-bottom:0.25rem;">📰 Noticias y Comunicados</div>
+        <div style="color:#2D5016;font-weight:700;font-size:0.85rem;">1200 × 675 px <span style="font-size:0.75rem;font-weight:500;color:#64748b;">(16:9)</span></div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:0.35rem;line-height:1.4;">
+          <strong>Carpeta:</strong> <code>noticias/</code> · Asambleas, entregas de obra y gacetas.
+        </div>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.9rem;">
+        <div style="font-weight:700;color:#0f172a;font-size:0.875rem;margin-bottom:0.25rem;">👤 Autoridades Municipales</div>
+        <div style="color:#2D5016;font-weight:700;font-size:0.85rem;">600 × 600 px <span style="font-size:0.75rem;font-weight:500;color:#64748b;">(1:1 Cuadrada)</span></div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:0.35rem;line-height:1.4;">
+          <strong>Carpeta:</strong> <code>autoridades/</code> · Foto formal o de traje tradicional.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Lightbox para Vista Previa en Pantalla Completa -->
+  <div id="modal-lightbox" class="admin-modal-backdrop" style="display:none;">
+    <div class="admin-modal-card" style="max-width:800px;padding:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.75rem;">
+        <h3 id="lightbox-titulo" style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0;max-width:85%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          Vista Previa de Imagen
+        </h3>
+        <button type="button" id="lightbox-cerrar" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#64748b;">✕</button>
+      </div>
+
+      <div style="text-align:center;background:#0d1520;border-radius:8px;padding:1rem;margin-bottom:1rem;max-height:55vh;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        <img id="lightbox-img" src="" alt="Vista previa" style="max-height:50vh;max-width:100%;object-fit:contain;border-radius:4px;" />
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+        <div style="font-size:0.8rem;color:#64748b;font-family:monospace;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="lightbox-url-txt"></div>
+        <div style="display:flex;gap:0.5rem;">
+          <button
+            type="button"
+            id="lightbox-btn-copiar"
+            style="background:#2D5016;color:#FAF7F2;border:none;padding:0.5rem 1rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;"
+          >
+            📋 Copiar URL
+          </button>
+          <a
+            id="lightbox-btn-abrir"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:0.5rem 0.9rem;border-radius:6px;font-size:0.8rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;"
+          >
+            Abrir ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Subir Archivo a Supabase Storage -->
+  <div id="modal-subida-r2" class="admin-modal-backdrop" style="display:none;">
+    <div class="admin-modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.75rem;">
+        <h3 style="font-size:1.2rem;font-weight:700;color:#0f172a;margin:0;">
+          Subir a Supabase Storage
+        </h3>
+        <button type="button" id="modal-subida-cerrar" style="background:none;border:none;font-size:1.25rem;cursor:pointer;color:#64748b;">✕</button>
+      </div>
+
+      <form id="form-subida-r2" style="display:flex;flex-direction:column;gap:1.2rem;">
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Carpeta de destino *</label>
+          <select id="subida-folder" required style="width:100%;padding:0.6rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.875rem;">
+            <option value="noticias">noticias/ (Comunicados y novedades)</option>
+            <option value="galeria">galeria/ (Fotografías del municipio)</option>
+            <option value="autoridades">autoridades/ (Fotos de concejales y alcalde)</option>
+            <option value="hero">hero/ (Fondos de portada)</option>
+            <option value="tramites">tramites/ (Formularios y PDF de servicios)</option>
+            <option value="conoce">conoce/ (Imágenes de turismo y atractivos)</option>
+            <option value="general">general/ (Otros recursos institucionales)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:0.25rem;">Seleccionar archivo local *</label>
+          <input type="file" id="subida-archivo" required style="width:100%;padding:0.6rem 0.8rem;border:1px dashed #94a3b8;border-radius:6px;background:#f8fafc;" accept="image/*,application/pdf" />
+          <small style="color:#64748b;font-size:0.75rem;margin-top:0.25rem;display:block;">⚡ Las imágenes se optimizarán a formato WebP automáticamente antes de enviarse para ahorrar espacio.</small>
+        </div>
+
+        <div id="subida-status" style="font-size:0.8rem;display:none;padding:0.6rem 0.8rem;border-radius:6px;"></div>
+
+        <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:0.5rem;border-top:1px solid #e2e8f0;padding-top:1rem;">
+          <button type="button" id="modal-subida-cancelar" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:0.6rem 1.2rem;border-radius:6px;cursor:pointer;font-weight:600;">
+            Cancelar
+          </button>
+          <button type="submit" id="btn-subir-submit" style="background:#2D5016;color:#FAF7F2;border:none;padding:0.6rem 1.5rem;border-radius:6px;cursor:pointer;font-weight:600;">
+            Optimizar y Subir
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function initMedia() {
+      // Elementos del DOM
+      const modal = document.getElementById('modal-subida-r2');
+      const btnAbrir = document.getElementById('btn-abrir-subida');
+      const btnEmptySubir = document.getElementById('btn-empty-subir');
+      const btnCerrar = document.getElementById('modal-subida-cerrar');
+      const btnCancelar = document.getElementById('modal-subida-cancelar');
+      const form = document.getElementById('form-subida-r2') as HTMLFormElement | null;
+      const statusDiv = document.getElementById('subida-status');
+      const submitBtn = document.getElementById('btn-subir-submit') as HTMLButtonElement | null;
+      const fileInput = document.getElementById('subida-archivo') as HTMLInputElement | null;
+      const folderSelect = document.getElementById('subida-folder') as HTMLSelectElement | null;
+      const btnSync = document.getElementById('btn-sync-media');
+
+      // Vistas y filtros
+      const btnVistaGrid = document.getElementById('btn-vista-grid');
+      const btnVistaTabla = document.getElementById('btn-vista-tabla');
+      const vistaGrid = document.getElementById('contenedor-vista-grid');
+      const vistaTabla = document.getElementById('contenedor-vista-tabla');
+      const searchInput = document.getElementById('search-media') as HTMLInputElement | null;
+      const filterBtns = document.querySelectorAll('.filter-btn');
+
+      // Lightbox
+      const lightboxModal = document.getElementById('modal-lightbox');
+      const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+      const lightboxTitulo = document.getElementById('lightbox-titulo');
+      const lightboxUrlTxt = document.getElementById('lightbox-url-txt');
+      const lightboxBtnCopiar = document.getElementById('lightbox-btn-copiar');
+      const lightboxBtnAbrir = document.getElementById('lightbox-btn-abrir') as HTMLAnchorElement | null;
+      const lightboxCerrar = document.getElementById('lightbox-cerrar');
+
+      // Modal de subida
+      function openModal() {
+        if (!modal) return;
+        modal.classList.add('open');
+        modal.style.display = 'flex';
+        if (statusDiv) statusDiv.style.display = 'none';
+        form?.reset();
+      }
+
+      function closeModal() {
+        if (!modal) return;
+        modal.classList.remove('open');
+        modal.style.display = 'none';
+        form?.reset();
+      }
+
+      btnAbrir?.addEventListener('click', openModal);
+      btnEmptySubir?.addEventListener('click', openModal);
+      btnCerrar?.addEventListener('click', closeModal);
+      btnCancelar?.addEventListener('click', closeModal);
+
+      modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      // Alternar vistas (Cuadrícula vs Tabla)
+      btnVistaGrid?.addEventListener('click', () => {
+        if (!vistaGrid || !vistaTabla || !btnVistaGrid || !btnVistaTabla) return;
+        vistaGrid.style.display = 'block';
+        vistaTabla.style.display = 'none';
+        btnVistaGrid.classList.add('active');
+        btnVistaTabla.classList.remove('active');
+      });
+
+      btnVistaTabla?.addEventListener('click', () => {
+        if (!vistaGrid || !vistaTabla || !btnVistaGrid || !btnVistaTabla) return;
+        vistaGrid.style.display = 'none';
+        vistaTabla.style.display = 'block';
+        btnVistaTabla.classList.add('active');
+        btnVistaGrid.classList.remove('active');
+      });
+
+      // Filtro de carpeta
+      let activeFolder = 'all';
+      let searchTerm = '';
+
+      function applyFilters() {
+        const gridItems = document.querySelectorAll('.media-card-item');
+        const tableRows = document.querySelectorAll('.media-table-row');
+
+        gridItems.forEach((el) => {
+          const itemFolder = el.getAttribute('data-folder') || '';
+          const itemName = el.getAttribute('data-name') || '';
+          const matchFolder = activeFolder === 'all' || itemFolder === activeFolder;
+          const matchSearch = !searchTerm || itemName.includes(searchTerm);
+          (el as HTMLElement).style.display = (matchFolder && matchSearch) ? 'flex' : 'none';
+        });
+
+        tableRows.forEach((el) => {
+          const itemFolder = el.getAttribute('data-folder') || '';
+          const itemName = el.getAttribute('data-name') || '';
+          const matchFolder = activeFolder === 'all' || itemFolder === activeFolder;
+          const matchSearch = !searchTerm || itemName.includes(searchTerm);
+          (el as HTMLElement).style.display = (matchFolder && matchSearch) ? '' : 'none';
+        });
+      }
+
+      filterBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeFolder = btn.getAttribute('data-folder') || 'all';
+          applyFilters();
+        });
+      });
+
+      searchInput?.addEventListener('input', (e) => {
+        searchTerm = (e.target as HTMLInputElement).value.toLowerCase().trim();
+        applyFilters();
+      });
+
+      // Lightbox preview
+      function openLightbox(url: string, title: string) {
+        if (!lightboxModal || !lightboxImg) return;
+        lightboxImg.src = url;
+        if (lightboxTitulo) lightboxTitulo.textContent = title || 'Vista Previa';
+        if (lightboxUrlTxt) lightboxUrlTxt.textContent = url;
+        if (lightboxBtnAbrir) lightboxBtnAbrir.href = url;
+        lightboxModal.classList.add('open');
+        lightboxModal.style.display = 'flex';
+      }
+
+      function closeLightbox() {
+        if (!lightboxModal) return;
+        lightboxModal.classList.remove('open');
+        lightboxModal.style.display = 'none';
+        if (lightboxImg) lightboxImg.src = '';
+      }
+
+      lightboxCerrar?.addEventListener('click', closeLightbox);
+      lightboxModal?.addEventListener('click', (e) => {
+        if (e.target === lightboxModal) closeLightbox();
+      });
+
+      lightboxBtnCopiar?.addEventListener('click', () => {
+        const url = lightboxImg?.src;
+        if (url) {
+          navigator.clipboard.writeText(url).then(() => {
+            if ((window as any).showToast) {
+              (window as any).showToast('URL copiada al portapapeles');
+            } else {
+              alert('URL copiada: ' + url);
+            }
+          });
+        }
+      });
+
+      // Botón Sincronizar Almacenamiento
+      btnSync?.addEventListener('click', async () => {
+        if (btnSync) {
+          btnSync.setAttribute('disabled', 'true');
+          btnSync.innerHTML = '<span>⏳</span> Sincronizando...';
+        }
+        try {
+          const adminFetch = (window as any).adminFetch || fetch;
+          const res = await adminFetch('/api/admin/media/sync', { method: 'POST' });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            if ((window as any).showToast) {
+              (window as any).showToast(`Sincronización completada: ${data.totalCount} archivos disponibles`);
+            }
+            setTimeout(() => window.location.reload(), 1000);
+          } else {
+            alert(data.error || 'Error al sincronizar');
+          }
+        } catch (err: any) {
+          alert('Error de conexión al sincronizar: ' + err.message);
+        } finally {
+          if (btnSync) {
+            btnSync.removeAttribute('disabled');
+            btnSync.innerHTML = '<span>🔄</span> Sincronizar Almacenamiento';
+          }
+        }
+      });
+
+      // Delegación de clics: Copiar URL, Eliminar y Abrir Lightbox
+      document.addEventListener('click', async (e) => {
+        const target = e.target as HTMLElement;
+
+        // Abrir Lightbox al hacer click en la miniatura de la card
+        const thumbContainer = target.closest('.media-thumb-container');
+        if (thumbContainer) {
+          const img = thumbContainer.querySelector('img');
+          if (img && img.src) {
+            const card = target.closest('.media-card-item');
+            const name = card?.getAttribute('data-name') || 'Imagen';
+            openLightbox(img.src, name);
+            return;
+          }
+        }
+
+        // Abrir Lightbox al hacer click en la miniatura de la tabla
+        if (target.classList.contains('table-thumb-preview')) {
+          const url = target.getAttribute('data-url');
+          if (url) openLightbox(url, 'Imagen');
+          return;
+        }
+
+        // Copiar URL al portapapeles
+        const copyBtn = target.closest('.btn-copiar-url');
+        if (copyBtn) {
+          const url = copyBtn.getAttribute('data-url');
+          if (url) {
+            navigator.clipboard.writeText(url).then(() => {
+              if ((window as any).showToast) {
+                (window as any).showToast('URL copiada al portapapeles');
+              } else {
+                alert('URL copiada: ' + url);
+              }
+            });
+          }
+          return;
+        }
+
+        // Eliminar archivo
+        const deleteBtn = target.closest('.btn-eliminar-media');
+        if (deleteBtn) {
+          const id = deleteBtn.getAttribute('data-id');
+          const name = deleteBtn.getAttribute('data-name') || 'este archivo';
+          if (!id) return;
+
+          if (!confirm(`¿Está seguro de eliminar "${name}" de Supabase Storage y de la base de datos?`)) {
+            return;
+          }
+
+          try {
+            const adminFetch = (window as any).adminFetch || fetch;
+            const res = await adminFetch(`/api/admin/media/${id}`, {
+              method: 'DELETE'
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              if ((window as any).showToast) {
+                (window as any).showToast('Archivo eliminado exitosamente');
+              }
+              document.querySelector(`.media-card-item[data-id="${id}"]`)?.remove();
+              document.getElementById(`media-row-${id}`)?.remove();
+            } else {
+              alert(data.error || 'No se pudo eliminar el archivo');
+            }
+          } catch (err: any) {
+            alert('Error al intentar eliminar el archivo: ' + err.message);
+          }
+        }
+      });
+
+      // Envío de formulario de subida con optimización automática a WebP
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const rawFile = fileInput?.files?.[0];
+        const folder = folderSelect?.value || 'general';
+
+        if (!rawFile) {
+          alert('Por favor seleccione un archivo');
+          return;
+        }
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Procesando archivo...';
+        }
+
+        if (statusDiv) {
+          statusDiv.style.display = 'block';
+          statusDiv.style.background = '#eff6ff';
+          statusDiv.style.color = '#1d4ed8';
+          statusDiv.style.border = '1px solid #bfdbfe';
+          statusDiv.textContent = '⚡ Optimizando imagen y convirtiendo a WebP...';
+        }
+
+        try {
+          const optimizer = (window as any).optimizeImageToWebP;
+          let fileToUpload = rawFile;
+          let statsMsg = '';
+
+          if (optimizer && rawFile.type.startsWith('image/')) {
+            const { file: optFile, originalSize, optimizedSize, savedPercent } = await optimizer(rawFile, {
+              maxWidth: 1400,
+              maxHeight: 1400,
+              quality: 0.82
+            });
+            fileToUpload = optFile;
+            if (savedPercent > 0) {
+              statsMsg = ` (Ahorro: ${(originalSize/1024).toFixed(0)}KB ➔ ${(optimizedSize/1024).toFixed(0)}KB, -${savedPercent}%)`;
+            }
+          }
+
+          if (statusDiv) {
+            statusDiv.textContent = `⏳ Subiendo a Supabase Storage${statsMsg}...`;
+          }
+
+          const formData = new FormData();
+          formData.append('file', fileToUpload);
+          formData.append('folder', folder);
+
+          const adminFetch = (window as any).adminFetch || fetch;
+          const res = await adminFetch('/api/admin/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            if (statusDiv) {
+              statusDiv.style.background = '#f0fdf4';
+              statusDiv.style.color = '#15803d';
+              statusDiv.style.border = '1px solid #bbf7d0';
+              statusDiv.textContent = `✅ Archivo guardado con éxito: ${data.fileName}${statsMsg}`;
+            }
+            if ((window as any).showToast) {
+              (window as any).showToast('Archivo subido exitosamente');
+            }
+            setTimeout(() => window.location.reload(), 1100);
+          } else {
+            if (statusDiv) {
+              statusDiv.style.background = '#fef2f2';
+              statusDiv.style.color = '#b91c1c';
+              statusDiv.style.border = '1px solid #fecaca';
+              statusDiv.textContent = `❌ ${data.error || 'Ocurrió un error al subir el archivo'}`;
+            }
+          }
+        } catch (err: any) {
+          if (statusDiv) {
+            statusDiv.style.background = '#fef2f2';
+            statusDiv.style.color = '#b91c1c';
+            statusDiv.style.border = '1px solid #fecaca';
+            statusDiv.textContent = '❌ Error de conexión al subir el archivo: ' + err.message;
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Optimizar y Subir';
+          }
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMedia);
+    } else {
+      initMedia();
+    }
+  </script>
+</AdminLayout>

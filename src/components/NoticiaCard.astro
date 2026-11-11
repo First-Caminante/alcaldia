@@ -1,0 +1,388 @@
+---
+import type { Noticia } from '../types/database';
+
+interface Props {
+  noticia: Noticia;
+}
+
+const { noticia } = Astro.props;
+
+// Recopilar todas las fotografías de la noticia (portada + galería)
+const allImages: string[] = [
+  noticia.featured_image_url,
+  ...(Array.isArray(noticia.gallery_images) ? noticia.gallery_images : [])
+].filter((url): url is string => Boolean(url && typeof url === 'string' && url.trim()));
+
+const hasMultiple = allImages.length > 1;
+const hasVideo = Boolean(noticia.video_url && noticia.video_url.trim());
+
+function formatDate(dateStr: string) {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('es-BO', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  } catch {
+    return dateStr;
+  }
+}
+---
+
+<article class="noticia-card" data-slug={noticia.slug} data-category={noticia.category?.slug || 'obras'}>
+  <div class="noticia-card-img-wrap" style="position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#0f1824;">
+    {hasMultiple ? (
+      <div class="card-carousel-container" data-total={allImages.length}>
+        {allImages.map((imgUrl, idx) => (
+          <img
+            src={imgUrl}
+            alt={`${noticia.title} — Foto ${idx + 1}`}
+            loading="lazy"
+            class={`card-carousel-img ${idx === 0 ? 'active' : ''}`}
+            data-index={idx}
+            onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80';"
+          />
+        ))}
+
+        <!-- Controles de navegación de fotos -->
+        <button type="button" class="card-carousel-arrow prev" aria-label="Foto anterior" title="Foto anterior">
+          ‹
+        </button>
+        <button type="button" class="card-carousel-arrow next" aria-label="Siguiente foto" title="Siguiente foto">
+          ›
+        </button>
+
+        <!-- Indicador de puntos interactivo -->
+        <div class="card-carousel-dots" role="tablist" aria-label="Seleccionar fotografía">
+          {allImages.map((_, idx) => (
+            <button
+              type="button"
+              class={`card-carousel-dot ${idx === 0 ? 'active' : ''}`}
+              data-dot={idx}
+              aria-label={`Ver foto ${idx + 1}`}
+            ></button>
+          ))}
+        </div>
+
+        <!-- Contador de fotos -->
+        <span class="card-carousel-counter">
+          📸 <span class="counter-curr">1</span>/{allImages.length}
+        </span>
+      </div>
+    ) : (
+      <img
+        src={noticia.featured_image_url}
+        alt={noticia.featured_image_alt || noticia.title}
+        loading="lazy"
+        class="card-single-img"
+        onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80';"
+      />
+    )}
+
+    <!-- Insignia de categoría -->
+    {noticia.category && (
+      <span class="p02-tag card-category-badge">
+        {noticia.category.name}
+      </span>
+    )}
+
+    <!-- Indicador de que tiene video oficial (se verá al ingresar) -->
+    {hasVideo && (
+      <span class="card-video-badge" title="Incluye video oficial de YouTube disponible al ver la noticia">
+        🎬 Video
+      </span>
+    )}
+  </div>
+
+  <div style="padding:1.25rem;display:flex;flex-direction:column;flex-grow:1;">
+    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.4rem;display:flex;align-items:center;gap:0.4rem;">
+      <span>📅 {formatDate(noticia.published_at)}</span>
+    </div>
+
+    <h3 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem;line-height:1.35;">
+      <a href={`/noticias/${noticia.slug}`} style="color:inherit;text-decoration:none;">
+        {noticia.title}
+      </a>
+    </h3>
+
+    <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.55;margin-bottom:1rem;flex-grow:1;">
+      {noticia.summary}
+    </p>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;">
+      <a href={`/noticias/${noticia.slug}`} class="p02-btn-link" style="color:var(--primary);font-weight:700;text-decoration:none;font-size:0.875rem;display:inline-flex;align-items:center;gap:0.35rem;">
+        Leer comunicado completo →
+      </a>
+    </div>
+  </div>
+</article>
+
+<style>
+  .card-single-img {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .noticia-card:hover .card-single-img {
+    transform: scale(1.03);
+  }
+
+  /* Carrusel interno de fotos para la tarjeta */
+  .card-carousel-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
+  .card-carousel-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0;
+    transform: scale(1.05);
+    transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s ease-out;
+    pointer-events: none;
+    will-change: opacity, transform;
+  }
+
+  .card-carousel-img.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  .noticia-card:hover .card-carousel-img.active {
+    transform: scale(1.03);
+  }
+
+  /* Flechas de cambio de foto */
+  .card-carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(15, 23, 42, 0.72);
+    color: #FAF7F2;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.25s ease, background 0.2s ease, transform 0.15s ease;
+    z-index: 5;
+    user-select: none;
+    line-height: 1;
+    padding: 0;
+    padding-bottom: 2px;
+    backdrop-filter: blur(4px);
+  }
+
+  .noticia-card:hover .card-carousel-arrow,
+  .noticia-card:focus-within .card-carousel-arrow {
+    opacity: 1;
+  }
+
+  .card-carousel-arrow:hover {
+    background: rgba(45, 80, 22, 0.95);
+    border-color: rgba(255, 255, 255, 0.45);
+    transform: translateY(-50%) scale(1.12);
+  }
+
+  .card-carousel-arrow.prev { left: 0.6rem; }
+  .card-carousel-arrow.next { right: 0.6rem; }
+
+  /* Indicadores de puntos */
+  .card-carousel-dots {
+    position: absolute;
+    bottom: 0.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.35rem;
+    z-index: 5;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.45);
+    padding: 3px 7px;
+    border-radius: 9999px;
+    backdrop-filter: blur(4px);
+  }
+
+  .card-carousel-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease, width 0.3s ease;
+  }
+
+  .card-carousel-dot.active {
+    background: #FAF7F2;
+    width: 16px;
+    border-radius: 4px;
+    transform: scale(1);
+  }
+
+  /* Contador de fotos badge */
+  .card-carousel-counter {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background: rgba(15, 23, 42, 0.75);
+    color: #FAF7F2;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.2rem 0.45rem;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .card-category-badge {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background: rgba(45, 80, 22, 0.92);
+    color: #FAF7F2;
+    backdrop-filter: blur(4px);
+    z-index: 4;
+  }
+
+  .card-video-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: rgba(220, 38, 38, 0.92);
+    color: #FAF7F2;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.25rem 0.55rem;
+    border-radius: 9999px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+</style>
+
+<script>
+  // Control interactivo de rotación automática y suave de carruseles de fotos en tarjetas
+  function initNoticiasCarousels() {
+    const carousels = document.querySelectorAll<HTMLElement>('.card-carousel-container');
+
+    carousels.forEach((carousel, carouselIdx) => {
+      if (carousel.dataset.initialized === 'true') return;
+      carousel.dataset.initialized = 'true';
+
+      const slides = carousel.querySelectorAll<HTMLImageElement>('.card-carousel-img');
+      const dots = carousel.querySelectorAll<HTMLElement>('.card-carousel-dot');
+      const counterEl = carousel.querySelector<HTMLElement>('.counter-curr');
+      const prevBtn = carousel.querySelector<HTMLButtonElement>('.card-carousel-arrow.prev');
+      const nextBtn = carousel.querySelector<HTMLButtonElement>('.card-carousel-arrow.next');
+
+      const total = slides.length;
+      if (total <= 1) return;
+
+      let currentIndex = 0;
+      let autoTimer: any = null;
+      let startTimeout: any = null;
+
+      function goToSlide(index: number) {
+        currentIndex = (index + total) % total;
+        slides.forEach((s, idx) => {
+          s.classList.toggle('active', idx === currentIndex);
+        });
+        dots.forEach((d, idx) => {
+          d.classList.toggle('active', idx === currentIndex);
+        });
+        if (counterEl) {
+          counterEl.textContent = String(currentIndex + 1);
+        }
+      }
+
+      function nextSlide() {
+        goToSlide(currentIndex + 1);
+      }
+
+      function prevSlide() {
+        goToSlide(currentIndex - 1);
+      }
+
+      // Eventos de flechas con stopPropagation para no abrir el link de la noticia
+      prevBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        prevSlide();
+      });
+
+      nextBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        nextSlide();
+      });
+
+      // Clic en los puntos indicadores
+      dots.forEach((dot, dotIdx) => {
+        dot.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          goToSlide(dotIdx);
+        });
+      });
+
+      // Transición automática suave cada 4.5 segundos
+      function startAuto() {
+        if (!autoTimer) {
+          autoTimer = setInterval(nextSlide, 4500);
+        }
+      }
+
+      function stopAuto() {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+      }
+
+      // Iniciar automáticamente desde que carga la página con desfase para cada tarjeta
+      const initialDelay = 1200 + (carouselIdx * 1000);
+      startTimeout = setTimeout(() => {
+        startAuto();
+      }, initialDelay);
+
+      // Pausar en hover para examinar la fotografía, reanudar al salir el cursor
+      const card = carousel.closest('.noticia-card');
+      card?.addEventListener('mouseenter', () => {
+        if (startTimeout) clearTimeout(startTimeout);
+        stopAuto();
+      });
+      card?.addEventListener('mouseleave', () => {
+        startAuto();
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initNoticiasCarousels);
+  document.addEventListener('astro:page-load', initNoticiasCarousels);
+</script>

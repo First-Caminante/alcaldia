@@ -1,0 +1,1126 @@
+---
+import type { Tramite, TramiteCategoria } from '../types/database';
+
+interface Props {
+  tramites: Tramite[];
+  categorias?: TramiteCategoria[];
+}
+
+const { tramites = [], categorias = [] } = Astro.props;
+---
+
+<section id="tramites" aria-labelledby="tramites-titulo" class="p02-section-alt">
+  <div class="p02-section">
+    <p class="p02-section-label">Atención al ciudadano</p>
+    <h2 class="p02-section-title" id="tramites-titulo">Trámites y Servicios</h2>
+    <div class="p02-section-title-deco" aria-hidden="true"></div>
+
+    <p style="text-align:center;max-width:600px;margin:0 auto 1.75rem;color:var(--text-muted);font-size:0.95rem;line-height:1.6;">
+      Consulte los requisitos, costos y plazos de los servicios municipales de Pelechuco.
+    </p>
+
+    <!-- Buscador de trámites -->
+    <div class="busqueda-wrap" style="max-width:540px;margin:0 auto 1.5rem;">
+      <input
+        type="search"
+        id="busqueda-tramites"
+        class="busqueda-input"
+        placeholder="Buscar trámite por nombre o palabra clave..."
+        aria-label="Buscar trámites"
+      />
+    </div>
+
+    <!-- Filtros por categoría -->
+    <div class="filtros-wrap" id="filtros-tramites" role="group" aria-label="Filtrar por categoría" style="display:flex;justify-content:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+      <button class="filtro-btn active" data-category="todos">Todos los servicios</button>
+      {categorias.map(cat => (
+        <button class="filtro-btn" data-category={cat.slug}>{cat.icon} {cat.name}</button>
+      ))}
+    </div>
+
+    <!-- Barra de control: Contador y Selector de Vista (Cuadrícula / Lista) -->
+    <div class="tramites-toolbar">
+      <div class="tramites-count-badge" id="tramites-contador">
+        Mostrando {tramites.length} trámites disponibles
+      </div>
+
+      <div class="view-switcher" role="radiogroup" aria-label="Modo de visualización de trámites">
+        <button
+          type="button"
+          id="btn-vista-grid"
+          class="btn-vista active"
+          aria-pressed="true"
+          title="Vista en cuadrícula moderna"
+        >
+          <span>⊞</span> Cuadrícula
+        </button>
+        <button
+          type="button"
+          id="btn-vista-list"
+          class="btn-vista"
+          aria-pressed="false"
+          title="Vista en lista horizontal detallada"
+        >
+          <span>☰</span> Lista
+        </button>
+      </div>
+    </div>
+
+    <!-- Grilla Moderna de trámites (Cuadrícula por defecto, convertible a Lista) -->
+    <div id="lista-tramites" class="tramites-grid" aria-live="polite" aria-label="Catálogo de trámites y servicios municipales">
+      {tramites.map(t => {
+        const cat = categorias.find(c => c.id === t.category_id);
+        const reqs = Array.isArray(t.requirements) ? t.requirements : [];
+        const isWord = Boolean(t.document_name && (t.document_name.endsWith('.doc') || t.document_name.endsWith('.docx') || t.document_url?.includes('.doc')));
+
+        return (
+          <article class="tramite-card" data-category={cat?.slug || 'todos'}>
+            <!-- Cabecera Visual: Banner con Fotografía o Banner Institucional con Emblema -->
+            {t.image_url ? (
+              <div class="tramite-card-media">
+                <img
+                  src={t.image_url}
+                  alt={t.title}
+                  loading="lazy"
+                  class="tramite-card-img"
+                  onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+                />
+                <!-- Fallback si la imagen no carga -->
+                <div class="tramite-fallback-emblem" style="display:none;" aria-hidden="true">
+                  <span class="emblem-watermark">{cat?.icon || '🏛️'}</span>
+                  <div class="emblem-center-circle">{cat?.icon || '🏛️'}</div>
+                </div>
+
+                <!-- Insignia de categoría flotante -->
+                <span class="tramite-badge-cat">
+                  {cat ? `${cat.icon} ${cat.name}` : '🏛️ Trámite Municipal'}
+                </span>
+
+                <!-- Insignia de costo / arancel flotante -->
+                <span class="tramite-badge-cost">
+                  {t.cost}
+                </span>
+              </div>
+            ) : (
+              <div class="tramite-card-no-img-banner">
+                <span class="emblem-watermark" aria-hidden="true">{cat?.icon || '🏛️'}</span>
+                <div class="emblem-center-circle">{cat?.icon || '🏛️'}</div>
+
+                <!-- Insignia de categoría flotante -->
+                <span class="tramite-badge-cat">
+                  {cat ? `${cat.icon} ${cat.name}` : '🏛️ Trámite Municipal'}
+                </span>
+
+                <!-- Insignia de costo / arancel flotante -->
+                <span class="tramite-badge-cost">
+                  {t.cost}
+                </span>
+              </div>
+            )}
+
+            <!-- Contenido y Ficha del Trámite -->
+            <div class="tramite-card-body">
+              <div>
+                <!-- Etiquetas de Multimedia Disponibles -->
+                {(t.video_url || t.document_url) && (
+                  <div class="tramite-media-tags">
+                    {t.video_url && (
+                      <span class="pill-media video" title="Incluye tutorial en video explicativo">
+                        🎬 Video Guía
+                      </span>
+                    )}
+                    {t.document_url && (
+                      <span class="pill-media doc" title="Incluye formulario o documento oficial descargable">
+                        📥 {isWord ? 'Plantilla Word' : 'Formulario PDF'}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <h3 class="tramite-card-title">
+                  <a href={`/tramites/${t.slug}`}>
+                    {t.title}
+                  </a>
+                </h3>
+
+                <p class="tramite-card-desc">
+                  {t.description}
+                </p>
+              </div>
+
+              <!-- Bloque Técnico de Oficina y Tiempo -->
+              <div>
+                <div class="tramite-card-meta">
+                  <div class="meta-row">
+                    <span class="meta-icon">🏢</span>
+                    <span class="meta-text"><strong>Oficina:</strong> {t.office}</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-icon">⏱️</span>
+                    <span class="meta-text"><strong>Plazo:</strong> {t.processing_time}</span>
+                  </div>
+                </div>
+
+                <!-- Barra de Acciones: Pop-up Modal y Ficha Completa -->
+                <div class="tramite-card-actions">
+                  <button
+                    type="button"
+                    class="btn-ver-requisitos-popup"
+                    data-tramite={JSON.stringify({
+                      title: t.title,
+                      slug: t.slug,
+                      cost: t.cost,
+                      description: t.description,
+                      office: t.office,
+                      processing_time: t.processing_time,
+                      schedule: t.schedule,
+                      requirements: reqs,
+                      category_name: cat ? `${cat.icon} ${cat.name}` : 'Trámite Municipal',
+                      image_url: t.image_url || null,
+                      video_url: t.video_url || null,
+                      document_url: t.document_url || null,
+                      document_name: t.document_name || null
+                    })}
+                  >
+                    <span>📋</span> Ver Requisitos
+                  </button>
+                  <a
+                    href={`/tramites/${t.slug}`}
+                    class="btn-ficha-tramite"
+                    title="Ver página completa y detallada del trámite"
+                  >
+                    Ficha ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+
+    <!-- Estado vacío interactivo -->
+    <div id="tramites-vacio" style="display:none;text-align:center;padding:3rem 1rem;color:var(--text-muted);">
+      <p style="font-size:1.1rem;margin-bottom:0.5rem;">No se encontraron trámites con ese criterio.</p>
+    </div>
+  </div>
+
+  <!-- POP-UP MODAL NATIVO ACCESIBLE PARA REQUISITOS (Basado en <dialog>) -->
+  <dialog
+    id="dialog-requisitos-tramite"
+    closedby="any"
+    aria-labelledby="dialog-tramite-titulo"
+  >
+    <div class="dialog-inner-card">
+      <!-- Encabezado del Pop-up -->
+      <div class="dialog-header">
+        <div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.35rem;flex-wrap:wrap;">
+            <span class="p02-tag" id="dialog-tramite-categoria" style="font-size:0.75rem;">
+              Trámite Municipal
+            </span>
+            <span id="dialog-tramite-costo" style="font-size:0.8rem;font-weight:700;color:var(--primary);background:rgba(45,80,22,0.1);padding:0.2rem 0.6rem;border-radius:12px;">
+              Gratuito
+            </span>
+          </div>
+          <h2 id="dialog-tramite-titulo" style="font-size:1.35rem;font-weight:700;margin:0;line-height:1.3;color:var(--text);">
+            Título del Trámite
+          </h2>
+        </div>
+        <form method="dialog" style="margin:0;">
+          <button type="submit" class="dialog-btn-cerrar" aria-label="Cerrar ventana emergente">
+            ✕
+          </button>
+        </form>
+      </div>
+
+      <!-- Cuerpo del Pop-up con soporte Multimedia y Descarga -->
+      <div class="dialog-body">
+        <!-- 1. Imagen Ilustrativa (Opcional) -->
+        <div id="dialog-tramite-media-img-wrap" style="display:none;margin-bottom:1.25rem;border-radius:10px;overflow:hidden;max-height:240px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+          <img id="dialog-tramite-img" src="" alt="Fotografía del trámite" style="width:100%;height:100%;object-fit:cover;display:block;" />
+        </div>
+
+        <!-- 2. Video Guía de YouTube (Opcional) -->
+        <div id="dialog-tramite-media-video-wrap" style="display:none;margin-bottom:1.25rem;">
+          <div style="font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:0.45rem;display:flex;align-items:center;gap:0.4rem;">
+            <span>🎬</span> Video Guía y Tutorial del Trámite:
+          </div>
+          <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+            <iframe id="dialog-tramite-video-iframe" src="" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <!-- 3. Documento Descargable Oficial - PDF o Word (Opcional) -->
+        <div id="dialog-tramite-media-doc-wrap" style="display:none;background:rgba(45,80,22,0.06);border:1px solid rgba(45,80,22,0.22);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:0.75rem;overflow:hidden;">
+            <span id="dialog-tramite-doc-icon" style="font-size:2rem;line-height:1;">📄</span>
+            <div style="overflow:hidden;">
+              <div style="font-weight:700;font-size:0.95rem;color:var(--text);white-space:nowrap;text-overflow:ellipsis;overflow:hidden;" id="dialog-tramite-doc-title">
+                Formulario Oficial Descargable
+              </div>
+              <div style="font-size:0.78rem;color:var(--text-muted);" id="dialog-tramite-doc-sub">
+                Plantilla oficial disponible para el ciudadano
+              </div>
+            </div>
+          </div>
+          <a
+            id="dialog-tramite-doc-btn"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            download
+            style="background:var(--primary, #2D5016);color:#FAF7F2;padding:0.55rem 1.2rem;border-radius:6px;font-weight:700;font-size:0.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.45rem;box-shadow:0 2px 6px rgba(0,0,0,0.1);white-space:nowrap;"
+          >
+            <span>⬇</span> Descargar Documento
+          </a>
+        </div>
+
+        <p id="dialog-tramite-desc" style="font-size:0.92rem;color:var(--text-muted);line-height:1.55;margin:0 0 1.25rem 0;">
+          Descripción detallada del trámite.
+        </p>
+
+        <!-- Bloque de Requisitos Obligatorios -->
+        <div class="dialog-subbox" style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.25rem;margin-bottom:1.25rem;">
+          <div style="font-size:0.95rem;font-weight:700;color:var(--primary);margin-bottom:0.6rem;display:flex;align-items:center;gap:0.4rem;">
+            <span>📋</span> Requisitos Obligatorios para el Ciudadano:
+          </div>
+          <ul id="dialog-tramite-requisitos-lista" style="padding-left:1.25rem;margin:0;line-height:1.7;font-size:0.875rem;color:var(--text);">
+            <!-- Se llena dinámicamente con JS -->
+          </ul>
+        </div>
+
+        <!-- Ficha de Datos Administrativos -->
+        <div class="dialog-subbox" style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:0.75rem;font-size:0.825rem;color:var(--text);">
+          <div>
+            <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Oficina Responsable</div>
+            <div style="font-weight:700;margin-top:0.2rem;" id="dialog-tramite-oficina">🏢 Despacho Municipal</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Plazo Estimado</div>
+            <div style="font-weight:700;margin-top:0.2rem;" id="dialog-tramite-tiempo">⏱️ 24 a 48 horas</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Horario de Atención</div>
+            <div style="font-weight:700;margin-top:0.2rem;" id="dialog-tramite-horario">🕐 Lunes a Viernes 08:30 - 16:30</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Costo Oficial</div>
+            <div style="font-weight:700;margin-top:0.2rem;" id="dialog-tramite-arancel">💰 Gratuito</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie del Pop-up -->
+      <div class="dialog-footer">
+        <button
+          type="button"
+          id="dialog-btn-copiar-reqs"
+          style="background:none;border:1px solid var(--border);color:var(--text);padding:0.55rem 0.95rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;"
+          title="Copiar lista de requisitos al portapapeles"
+        >
+          <span>📑</span> Copiar Requisitos
+        </button>
+
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <form method="dialog" style="margin:0;">
+            <button
+              type="submit"
+              style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:0.55rem 1.1rem;border-radius:6px;font-weight:600;font-size:0.85rem;cursor:pointer;"
+            >
+              Cerrar
+            </button>
+          </form>
+          <a
+            id="dialog-tramite-enlace-ficha"
+            href="#"
+            style="background:var(--primary, #2D5016);color:#FAF7F2;padding:0.55rem 1.25rem;border-radius:6px;font-weight:600;font-size:0.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.35rem;"
+          >
+            Ver Ficha Completa ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</section>
+
+<style>
+  /* ============================================================
+     BARRA SUPERIOR Y CONTROLES DEL CATÁLOGO DE TRÁMITES
+     ============================================================ */
+  .tramites-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--border-light, #d8cdaf);
+  }
+
+  .tramites-count-badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .view-switcher {
+    display: inline-flex;
+    align-items: center;
+    background: var(--card-bg, #f4efe2);
+    border: 1px solid var(--border, #c2b496);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .btn-vista {
+    background: transparent;
+    border: none;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+  }
+
+  .btn-vista:hover {
+    color: var(--text);
+  }
+
+  .btn-vista.active {
+    background: var(--primary, #2D5016);
+    color: #FAF7F2;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  }
+
+  /* ============================================================
+     GRILLA PRINCIPAL DE TRÁMITES (MODERNA, FLUIDA Y EQUILIBRADA)
+     ============================================================ */
+  .tramites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.6rem;
+    align-items: stretch;
+  }
+
+  /* Tarjeta de Trámite */
+  .tramite-card {
+    background: var(--card-bg, #f4efe2);
+    border: 1px solid var(--border, #c2b496);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.28s cubic-bezier(0.2, 0, 0, 1), border-color 0.28s ease;
+  }
+
+  .tramite-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary, #2D5016);
+  }
+
+  /* 1. Header con Imagen Representativa */
+  .tramite-card-media {
+    position: relative;
+    width: 100%;
+    height: 195px;
+    overflow: hidden;
+    background: #0d160c;
+  }
+
+  .tramite-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.45s ease;
+  }
+
+  .tramite-card:hover .tramite-card-img {
+    transform: scale(1.05);
+  }
+
+  /* 2. Header Institucional cuando no hay imagen */
+  .tramite-card-no-img-banner,
+  .tramite-fallback-emblem {
+    position: relative;
+    width: 100%;
+    height: 155px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(45, 80, 22, 0.35) 0%, rgba(20, 45, 15, 0.65) 100%), radial-gradient(circle at 85% 30%, rgba(74, 127, 165, 0.25) 0%, transparent 65%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .emblem-watermark {
+    position: absolute;
+    right: 10px;
+    bottom: -15px;
+    font-size: 6rem;
+    opacity: 0.12;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .emblem-center-circle {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
+    transition: transform 0.3s ease;
+  }
+
+  .tramite-card:hover .emblem-center-circle {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  /* Insignias sobre la cabecera */
+  .tramite-badge-cat {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(14, 24, 12, 0.88);
+    backdrop-filter: blur(8px);
+    color: #FAF7F2;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+    z-index: 2;
+    letter-spacing: 0.2px;
+  }
+
+  .tramite-badge-cost {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(45, 80, 22, 0.95);
+    backdrop-filter: blur(8px);
+    color: #FAF7F2;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+    z-index: 2;
+  }
+
+  /* Cuerpo de la tarjeta */
+  .tramite-card-body {
+    padding: 1.35rem 1.45rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: space-between;
+  }
+
+  .tramite-media-tags {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+  }
+
+  .pill-media {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .pill-media.video {
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.28);
+  }
+
+  .pill-media.doc {
+    background: rgba(45, 80, 22, 0.12);
+    color: var(--primary, #2D5016);
+    border: 1px solid rgba(45, 80, 22, 0.28);
+  }
+
+  .tramite-card-title {
+    font-size: 1.18rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 0.55rem 0;
+    line-height: 1.35;
+  }
+
+  .tramite-card-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .tramite-card-title a:hover {
+    color: var(--primary, #2D5016);
+  }
+
+  .tramite-card-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+    margin: 0 0 1.15rem 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Ficha técnica compacta */
+  .tramite-card-meta {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--border-light, #d8cdaf);
+    border-radius: 8px;
+    padding: 0.7rem 0.85rem;
+    margin-bottom: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.35;
+  }
+
+  .meta-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .meta-text strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* Barra de acciones */
+  .tramite-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-top: auto;
+  }
+
+  .btn-ver-requisitos-popup {
+    flex: 1;
+    background: var(--primary, #2D5016);
+    color: #FAF7F2;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(45, 80, 22, 0.25);
+  }
+
+  .btn-ver-requisitos-popup:hover {
+    background: var(--primary-light, #3D6A20);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(45, 80, 22, 0.35);
+  }
+
+  .btn-ficha-tramite {
+    background: transparent;
+    border: 1px solid var(--border, #c2b496);
+    color: var(--text-muted);
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.825rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .btn-ficha-tramite:hover {
+    color: var(--text);
+    border-color: var(--primary, #2D5016);
+    background: rgba(45, 80, 22, 0.06);
+  }
+
+  /* =========================================================
+     MODO LISTA HORIZONTAL DETALLADA (CUANDO SE ACTIVA ☰)
+     ========================================================= */
+  .tramites-grid.view-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 820px) {
+    .tramites-grid.view-list .tramite-card {
+      display: grid;
+      grid-template-columns: 310px 1fr;
+      min-height: 230px;
+    }
+
+    .tramites-grid.view-list .tramite-card-media,
+    .tramites-grid.view-list .tramite-card-no-img-banner,
+    .tramites-grid.view-list .tramite-fallback-emblem {
+      height: 100%;
+      min-height: 230px;
+    }
+
+    .tramites-grid.view-list .tramite-card-desc {
+      -webkit-line-clamp: 2;
+    }
+
+    .tramites-grid.view-list .tramite-card-meta {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .tramites-grid.view-list .tramite-card-actions {
+      max-width: 380px;
+    }
+  }
+
+  /* =========================================================
+     ADAPTACIÓN AL MODO OSCURO
+     ========================================================= */
+  :global(html.dark) .tramite-card-meta {
+    background: rgba(0, 0, 0, 0.28) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  :global(html.dark) .tramite-card-no-img-banner,
+  :global(html.dark) .tramite-fallback-emblem {
+    background: linear-gradient(135deg, rgba(25, 45, 18, 0.7) 0%, rgba(12, 22, 10, 0.95) 100%), radial-gradient(circle at 85% 30%, rgba(96, 151, 194, 0.18) 0%, transparent 65%) !important;
+  }
+
+  :global(html.dark) .pill-media.video {
+    background: rgba(220, 38, 38, 0.2);
+    color: #f87171;
+    border-color: rgba(220, 38, 38, 0.4);
+  }
+
+  :global(html.dark) .pill-media.doc {
+    background: rgba(76, 130, 40, 0.2);
+    color: #86efac;
+    border-color: rgba(76, 130, 40, 0.4);
+  }
+
+  :global(html.dark) .btn-ficha-tramite:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Estilos del Pop-up Modal Nativo (<dialog>) */
+  dialog#dialog-requisitos-tramite {
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 14px;
+    background: var(--card-bg, #ffffff);
+    color: var(--text, #1e293b);
+    max-width: 680px;
+    width: 94vw;
+    max-height: 88vh;
+    padding: 0;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+  }
+
+  /* Prevenir scroll detrás del modal según modern-web-guidance */
+  dialog:modal {
+    overscroll-behavior: contain;
+  }
+
+  dialog#dialog-requisitos-tramite::backdrop {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(6px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+
+  .dialog-inner-card {
+    display: flex;
+    flex-direction: column;
+    max-height: 88vh;
+  }
+
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.35rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    gap: 1rem;
+    background: var(--card-bg);
+  }
+
+  .dialog-btn-cerrar {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .dialog-btn-cerrar:hover {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+  }
+
+  .dialog-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .dialog-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--card-bg);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* Soporte para modo oscuro */
+  :global(html.dark) .dialog-subbox {
+    background: #0f1824 !important;
+    border-color: #23364e !important;
+  }
+
+  :global(html.dark) #dialog-tramite-media-doc-wrap {
+    background: rgba(45, 80, 22, 0.15) !important;
+    border-color: rgba(45, 80, 22, 0.35) !important;
+  }
+
+  :global(html.dark) dialog#dialog-requisitos-tramite {
+    background: #131f2e;
+    color: #f8fafc;
+    border-color: #23364e;
+  }
+
+  :global(html.dark) .dialog-header,
+  :global(html.dark) .dialog-footer {
+    background: #131f2e;
+  }
+
+  :global(html.dark) .dialog-btn-cerrar {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+  }
+
+  /* Animación de entrada suave del modal */
+  @keyframes dialogScaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  dialog[open] {
+    animation: dialogScaleIn 0.2s ease-out;
+  }
+</style>
+
+<script>
+  function parseYouTubeEmbed(url: string | null | undefined): string | null {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    const match = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+    return match && match[1] ? `https://www.youtube-nocookie.com/embed/${match[1]}?rel=0` : null;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('busqueda-tramites') as HTMLInputElement | null;
+    const filterButtons = document.querySelectorAll<HTMLButtonElement>('#filtros-tramites .filtro-btn');
+    const cards = document.querySelectorAll<HTMLElement>('#lista-tramites .tramite-card');
+    const emptyState = document.getElementById('tramites-vacio');
+    const contadorLabel = document.getElementById('tramites-contador');
+    const gridContainer = document.getElementById('lista-tramites');
+    const btnVistaGrid = document.getElementById('btn-vista-grid');
+    const btnVistaList = document.getElementById('btn-vista-list');
+
+    let currentCategory = 'todos';
+    let searchQuery = '';
+
+    // Manejo del selector de vista: Cuadrícula (predeterminada) vs Lista
+    function setViewMode(mode: 'grid' | 'list') {
+      if (!gridContainer) return;
+      if (mode === 'list') {
+        gridContainer.classList.add('view-list');
+        btnVistaList?.classList.add('active');
+        btnVistaList?.setAttribute('aria-pressed', 'true');
+        btnVistaGrid?.classList.remove('active');
+        btnVistaGrid?.setAttribute('aria-pressed', 'false');
+      } else {
+        gridContainer.classList.remove('view-list');
+        btnVistaGrid?.classList.add('active');
+        btnVistaGrid?.setAttribute('aria-pressed', 'true');
+        btnVistaList?.classList.remove('active');
+        btnVistaList?.setAttribute('aria-pressed', 'false');
+      }
+      try {
+        localStorage.setItem('tramites_view_mode', mode);
+      } catch (e) {}
+    }
+
+    btnVistaGrid?.addEventListener('click', () => setViewMode('grid'));
+    btnVistaList?.addEventListener('click', () => setViewMode('list'));
+
+    try {
+      const savedMode = localStorage.getItem('tramites_view_mode');
+      if (savedMode === 'list') {
+        setViewMode('list');
+      }
+    } catch (e) {}
+
+    function filterItems() {
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const title = card.querySelector('h3')?.textContent?.toLowerCase() || '';
+        const desc = card.querySelector('p')?.textContent?.toLowerCase() || '';
+        const cardCat = card.getAttribute('data-category') || '';
+
+        const matchesCategory = currentCategory === 'todos' || cardCat === currentCategory;
+        const matchesSearch = !searchQuery || title.includes(searchQuery) || desc.includes(searchQuery);
+
+        if (matchesCategory && matchesSearch) {
+          card.style.display = '';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      if (contadorLabel) {
+        contadorLabel.textContent = `Mostrando ${visibleCount} trámite${visibleCount === 1 ? '' : 's'}${currentCategory !== 'todos' ? ' en esta categoría' : ''}`;
+      }
+
+      if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+    }
+
+    searchInput?.addEventListener('input', (e) => {
+      searchQuery = (e.target as HTMLInputElement).value.toLowerCase().trim();
+      filterItems();
+    });
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCategory = btn.getAttribute('data-category') || 'todos';
+        filterItems();
+      });
+    });
+
+    // ==============================================================
+    // CONTROL DEL POP-UP MODAL NATIVO (<dialog>) DE REQUISITOS
+    // ==============================================================
+    const dialog = document.getElementById('dialog-requisitos-tramite') as HTMLDialogElement | null;
+    const elCategoria = document.getElementById('dialog-tramite-categoria');
+    const elCosto = document.getElementById('dialog-tramite-costo');
+    const elTitulo = document.getElementById('dialog-tramite-titulo');
+    const elDesc = document.getElementById('dialog-tramite-desc');
+    const elListaReqs = document.getElementById('dialog-tramite-requisitos-lista');
+    const elOficina = document.getElementById('dialog-tramite-oficina');
+    const elTiempo = document.getElementById('dialog-tramite-tiempo');
+    const elHorario = document.getElementById('dialog-tramite-horario');
+    const elArancel = document.getElementById('dialog-tramite-arancel');
+    const elEnlaceFicha = document.getElementById('dialog-tramite-enlace-ficha') as HTMLAnchorElement | null;
+    const btnCopiarReqs = document.getElementById('dialog-btn-copiar-reqs');
+
+    // Elementos multimedia en el modal
+    const elImgWrap = document.getElementById('dialog-tramite-media-img-wrap');
+    const elImg = document.getElementById('dialog-tramite-img') as HTMLImageElement | null;
+
+    const elVideoWrap = document.getElementById('dialog-tramite-media-video-wrap');
+    const elVideoIframe = document.getElementById('dialog-tramite-video-iframe') as HTMLIFrameElement | null;
+
+    const elDocWrap = document.getElementById('dialog-tramite-media-doc-wrap');
+    const elDocIcon = document.getElementById('dialog-tramite-doc-icon');
+    const elDocTitle = document.getElementById('dialog-tramite-doc-title');
+    const elDocSub = document.getElementById('dialog-tramite-doc-sub');
+    const elDocBtn = document.getElementById('dialog-tramite-doc-btn') as HTMLAnchorElement | null;
+
+    let currentReqsArray: string[] = [];
+    let currentTramiteTitle = '';
+
+    // Detener reproducción del video al cerrar el modal
+    dialog?.addEventListener('close', () => {
+      if (elVideoIframe) elVideoIframe.src = '';
+    });
+
+    // Abrir Modal al hacer clic en "Ver Requisitos"
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const btn = target.closest('.btn-ver-requisitos-popup');
+      if (!btn || !dialog) return;
+
+      const rawData = btn.getAttribute('data-tramite');
+      if (!rawData) return;
+
+      try {
+        const tramite = JSON.parse(rawData);
+        currentTramiteTitle = tramite.title || '';
+
+        if (elCategoria) elCategoria.textContent = tramite.category_name || 'Trámite Municipal';
+        if (elCosto) elCosto.textContent = tramite.cost || 'Gratuito';
+        if (elTitulo) elTitulo.textContent = tramite.title || '';
+        if (elDesc) elDesc.textContent = tramite.description || '';
+        if (elOficina) elOficina.textContent = `🏢 ${tramite.office || 'Oficina Municipal'}`;
+        if (elTiempo) elTiempo.textContent = `⏱️ ${tramite.processing_time || 'Inmediato'}`;
+        if (elHorario) elHorario.textContent = `🕐 ${tramite.schedule || 'Lunes a Viernes 08:30 - 16:30'}`;
+        if (elArancel) elArancel.textContent = `💰 ${tramite.cost || 'Gratuito'}`;
+        if (elEnlaceFicha) elEnlaceFicha.href = `/tramites/${tramite.slug}`;
+
+        // 1. Imagen ilustrativa opcional
+        if (tramite.image_url && elImg && elImgWrap) {
+          elImg.src = tramite.image_url;
+          elImgWrap.style.display = 'block';
+        } else if (elImgWrap) {
+          elImgWrap.style.display = 'none';
+        }
+
+        // 2. Video de YouTube opcional
+        const embedUrl = parseYouTubeEmbed(tramite.video_url);
+        if (embedUrl && elVideoIframe && elVideoWrap) {
+          elVideoIframe.src = embedUrl;
+          elVideoWrap.style.display = 'block';
+        } else if (elVideoWrap) {
+          if (elVideoIframe) elVideoIframe.src = '';
+          elVideoWrap.style.display = 'none';
+        }
+
+        // 3. Documento oficial descargable opcional (PDF o Word)
+        if (tramite.document_url && elDocWrap && elDocBtn) {
+          const docName = tramite.document_name || (tramite.document_url.split('/').pop() || 'Formulario Oficial');
+          const isWord = docName.endsWith('.doc') || docName.endsWith('.docx') || tramite.document_url.includes('.doc');
+
+          if (elDocIcon) elDocIcon.textContent = isWord ? '📝' : '📄';
+          if (elDocTitle) elDocTitle.textContent = docName;
+          if (elDocSub) elDocSub.textContent = isWord ? 'Plantilla oficial de Word (.docx) descargable' : 'Documento oficial en formato PDF descargable';
+          elDocBtn.href = tramite.document_url;
+          elDocBtn.setAttribute('download', docName);
+          elDocWrap.style.display = 'flex';
+        } else if (elDocWrap) {
+          elDocWrap.style.display = 'none';
+        }
+
+        // Construir la lista de requisitos con check visual
+        if (elListaReqs) {
+          elListaReqs.innerHTML = '';
+          const reqs = Array.isArray(tramite.requirements) ? tramite.requirements : [];
+          currentReqsArray = [];
+
+          if (reqs.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = 'No se especifican requisitos adicionales previos. Acérquese a la oficina de atención.';
+            li.style.color = 'var(--text-muted)';
+            elListaReqs.appendChild(li);
+          } else {
+            reqs.forEach((r: any) => {
+              const texto = typeof r === 'string' ? r : (r.texto || String(r));
+              currentReqsArray.push(texto);
+
+              const li = document.createElement('li');
+              li.style.marginBottom = '0.4rem';
+              li.textContent = texto;
+              elListaReqs.appendChild(li);
+            });
+          }
+        }
+
+        // Abre el diálogo modal en el top-layer nativo
+        dialog.showModal();
+      } catch (err) {
+        console.error('Error al abrir modal de trámite:', err);
+      }
+    });
+
+    // Copiar Requisitos al Portapapeles
+    btnCopiarReqs?.addEventListener('click', () => {
+      if (!currentReqsArray.length) return;
+      const textToCopy = `📋 *Requisitos para ${currentTramiteTitle}* (GAM Pelechuco):\n` +
+        currentReqsArray.map((r, i) => `${i + 1}. ${r}`).join('\n');
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        if (btnCopiarReqs) {
+          const originalText = btnCopiarReqs.innerHTML;
+          btnCopiarReqs.innerHTML = '<span>✅</span> ¡Copiado!';
+          setTimeout(() => {
+            btnCopiarReqs.innerHTML = originalText;
+          }, 2000);
+        }
+      });
+    });
+
+    // Fallback de "light-dismiss" (clic fuera del contenido para cerrar) para navegadores sin closedby nativo
+    if (dialog && !('closedBy' in HTMLDialogElement.prototype)) {
+      dialog.addEventListener('click', (event) => {
+        if (event.target !== dialog) return;
+
+        const rect = dialog.getBoundingClientRect();
+        const isDialogContent = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
+
+        if (!isDialogContent) {
+          dialog.close();
+        }
+      });
+    }
+  });
+</script>

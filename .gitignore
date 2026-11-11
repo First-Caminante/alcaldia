@@ -1,0 +1,25 @@
+# Dependencias
+node_modules/
+
+# Compilación y caché
+dist/
+.astro/
+.wrangler/
+
+# Variables de entorno secretas (no subir a git)
+.env
+.env.production
+.env.local
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

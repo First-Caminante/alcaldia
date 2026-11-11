@@ -1,0 +1,262 @@
+---
+export const prerender = false;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acceso Administrativo — GAM Pelechuco</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #13202e 0%, #0d151c 60%, #172a15 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      color: #fff;
+    }
+    .login-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 2.75rem 2.25rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      text-align: center;
+    }
+    .login-logo {
+      width: 58px;
+      height: 68px;
+      margin: 0 auto 1.25rem;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4));
+    }
+    .login-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #FAF7F2;
+      margin-bottom: 0.35rem;
+    }
+    .login-subtitle {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.55);
+      margin-bottom: 1.75rem;
+      line-height: 1.45;
+    }
+    .credentials-box {
+      background: rgba(45, 80, 22, 0.25);
+      border: 1px solid rgba(196, 168, 130, 0.4);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.82rem;
+      text-align: left;
+      color: #e4dac3;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.65);
+      margin-bottom: 0.4rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.92rem;
+      transition: all 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #C4A882;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 0 3px rgba(196, 168, 130, 0.15);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 0.9rem;
+      background: #2D5016;
+      color: #FAF7F2;
+      border: 1px solid rgba(196, 168, 130, 0.4);
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+    .login-btn:hover {
+      background: #3D6A20;
+    }
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .alert-error {
+      display: none;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <img src="/assets/images/escudo-pelechuco.svg" alt="Escudo Oficial de Pelechuco" class="login-logo" />
+    <h1 class="login-title">Panel Administrativo</h1>
+    <p class="login-subtitle">
+      Gobierno Autónomo Municipal de Pelechuco<br />
+      Sistema de Gestión de Contenidos Oficial
+    </p>
+
+    <!-- Credenciales institucionales registradas en Supabase -->
+    <div class="credentials-box">
+      <div style="font-weight:700;color:#C4A882;margin-bottom:0.25rem;display:flex;align-items:center;gap:0.35rem;">
+        🔐 Cuenta de Administrador Oficial:
+      </div>
+      <div style="font-family:monospace;font-size:0.85rem;line-height:1.6;">
+        • Correo: <strong style="color:#FAF7F2;">admin@pelechuco.gob.bo</strong><br />
+        • Contraseña: <strong style="color:#FAF7F2;">Pelechuco2026*</strong>
+      </div>
+      <div style="font-size:0.75rem;opacity:0.8;margin-top:0.35rem;">
+        (Campos auto-completados para inicio de sesión inmediato).
+      </div>
+    </div>
+
+    <div id="login-error" class="alert-error"></div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email" class="form-label">Correo Institucional</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="form-input"
+          value="admin@pelechuco.gob.bo"
+          autocomplete="username"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-input"
+          value="Pelechuco2026*"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <button type="submit" id="submit-btn" class="login-btn">
+        Iniciar Sesión en el Panel →
+      </button>
+    </form>
+
+    <div style="margin-top: 1.5rem;">
+      <a href="/" style="color: rgba(255,255,255,0.45); font-size: 0.8rem; text-decoration: none;">
+        ← Volver al Portal Ciudadano
+      </a>
+    </div>
+  </div>
+
+  <script>
+    function initLogin() {
+      // Si ya tiene sesión activa válida, redirigir al panel
+      const existingToken = localStorage.getItem('gam_admin_token');
+      if (existingToken) {
+        fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${existingToken}` }
+        }).then(res => {
+          if (res.ok) window.location.href = '/admin';
+        }).catch(() => {});
+      }
+
+      const form = document.getElementById('login-form') as HTMLFormElement | null;
+      const errorDiv = document.getElementById('login-error');
+      const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (errorDiv) errorDiv.style.display = 'none';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Verificando con Supabase...';
+        }
+
+        const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+        const password = (document.getElementById('password') as HTMLInputElement).value;
+
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            localStorage.setItem('gam_admin_token', data.session.access_token);
+            localStorage.setItem('gam_admin_user', JSON.stringify(data.session.user));
+            // Guardar también cookie para SSR
+            document.cookie = `gam_admin_token=${data.session.access_token}; path=/; max-age=604800; SameSite=Lax`;
+            window.location.href = '/admin';
+          } else {
+            if (errorDiv) {
+              errorDiv.style.display = 'block';
+              const msg = typeof data.error === 'string' ? data.error : (data.error?.message || 'Credenciales no válidas.');
+              errorDiv.textContent = msg;
+            }
+          }
+        } catch {
+          if (errorDiv) {
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'Error de conexión con el servidor.';
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Iniciar Sesión en el Panel →';
+          }
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initLogin);
+    } else {
+      initLogin();
+    }
+  </script>
+</body>
+</html>

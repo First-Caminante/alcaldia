@@ -1,0 +1,736 @@
+---
+import type { Autoridad } from '../types/database';
+
+interface Props {
+  autoridades: Autoridad[];
+}
+
+const { autoridades = [] } = Astro.props;
+---
+
+<section id="autoridades" aria-labelledby="autoridades-titulo">
+  <div class="p02-section">
+    <p class="p02-section-label">Gobierno municipal</p>
+    <h2 class="p02-section-title" id="autoridades-titulo">Autoridades</h2>
+    <div class="p02-section-title-deco" aria-hidden="true"></div>
+
+    <p style="text-align:center;max-width:680px;margin:0 auto 2rem;color:var(--text-muted);font-size:0.95rem;line-height:1.6;">
+      Liderazgo institucional al servicio de las comunidades, ayllus y habitantes del municipio de Pelechuco. Haga clic en cualquier autoridad para ver su perfil y credencial oficial.
+    </p>
+
+    <!-- Grilla de Tarjetas de Autoridades -->
+    <div class="p02-autoridades-grid" id="lista-autoridades" aria-label="Lista de autoridades municipales">
+      {autoridades.map(a => (
+        <article
+          class="p02-autoridad-card clickable-autoridad"
+          tabindex="0"
+          role="button"
+          aria-haspopup="dialog"
+          aria-label={`Ver perfil y credencial oficial de ${a.name}, ${a.position}`}
+          data-autoridad={JSON.stringify(a)}
+        >
+          <!-- Marco de foto circular con halo andino -->
+          <div class="autoridad-avatar-wrap">
+            {a.photo_url ? (
+              <img
+                src={a.photo_url}
+                alt={`Retrato oficial de ${a.name}`}
+                loading="lazy"
+                onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+              />
+              <span class="autoridad-avatar-placeholder" style="display:none;">👤</span>
+            ) : (
+              <span class="autoridad-avatar-placeholder">👤</span>
+            )}
+          </div>
+
+          <!-- Datos de la autoridad -->
+          <h3 class="autoridad-card-name">
+            {a.name}
+          </h3>
+          <div class="autoridad-card-pos">
+            {a.position}
+          </div>
+          <div class="autoridad-card-area">
+            {a.area}
+          </div>
+
+          {a.institutional_contact && (
+            <div class="autoridad-card-contact">
+              ✉️ {a.institutional_contact}
+            </div>
+          )}
+
+          <!-- Indicador visual interactivo -->
+          <div class="autoridad-card-pill">
+            <span>Ver perfil institucional 👤</span>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <!-- POP-UP MODAL NATIVO ACCESIBLE: CREDENCIAL DE AUTORIDAD (<dialog>) -->
+  <dialog
+    id="dialog-autoridad"
+    closedby="any"
+    aria-labelledby="dialog-aut-nombre"
+  >
+    <div class="dialog-aut-container">
+      <!-- Encabezado de Gala Municipal / Portada -->
+      <div class="dialog-aut-banner">
+        <div class="dialog-aut-banner-content">
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <img
+              src="/assets/images/escudo-pelechuco.svg"
+              alt="Escudo oficial GAM Pelechuco"
+              style="width:22px;height:26px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));"
+            />
+            <span style="font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#FAF7F2;opacity:0.95;">
+              GAM Pelechuco · Perfil Institucional
+            </span>
+          </div>
+
+          <form method="dialog" style="margin:0;">
+            <button
+              type="submit"
+              class="dialog-aut-close-btn"
+              aria-label="Cerrar credencial"
+              title="Cerrar ventana"
+            >
+              ✕
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Retrato Oficial y Datos Principales -->
+      <div class="dialog-aut-profile">
+        <div class="dialog-aut-photo-frame">
+          <img
+            id="dialog-aut-foto"
+            src=""
+            alt=""
+            style="display:none;"
+            onerror="this.style.display='none'; const ph = document.getElementById('dialog-aut-foto-placeholder'); if (ph) ph.style.display='flex';"
+          />
+          <span id="dialog-aut-foto-placeholder" style="font-size:3rem;display:flex;align-items:center;justify-content:center;height:100%;">
+            👤
+          </span>
+        </div>
+
+        <div class="dialog-aut-badge-pill">
+          <span>🛡️ Autoridad Municipal Oficial</span>
+        </div>
+
+        <h2 id="dialog-aut-nombre" class="dialog-aut-title">
+          Nombre de la Autoridad
+        </h2>
+
+        <div id="dialog-aut-cargo" class="dialog-aut-cargo">
+          Cargo Institucional
+        </div>
+
+        <div id="dialog-aut-area" class="dialog-aut-area">
+          Dirección / Área Responsable
+        </div>
+      </div>
+
+      <!-- Contenido / Biografía y Compromiso Comunitario -->
+      <div class="dialog-aut-body">
+        <div class="dialog-aut-bio-box">
+          <div class="dialog-aut-section-label">
+            <span>📜</span> Perfil y Compromiso Institucional
+          </div>
+          <p id="dialog-aut-bio" class="dialog-aut-bio-text">
+            Descripción de la trayectoria y responsabilidades.
+          </p>
+        </div>
+
+        <!-- Ficha Técnica de Despacho -->
+        <div class="dialog-aut-info-grid">
+          <div class="dialog-aut-info-item">
+            <span class="info-label">🏛️ Entidad</span>
+            <span class="info-val">Gobierno Autónomo Municipal de Pelechuco</span>
+          </div>
+
+          <div class="dialog-aut-info-item">
+            <span class="info-label">📍 Sede de Despacho</span>
+            <span class="info-val">Plaza Principal 25 de Mayo, Casa Consistorial</span>
+          </div>
+
+          <div class="dialog-aut-info-item">
+            <span class="info-label">✉️ Correo Oficial</span>
+            <span class="info-val" id="dialog-aut-email-wrap">
+              <a id="dialog-aut-email-link" href="#" style="color:var(--primary);text-decoration:none;font-weight:600;">
+                contacto@pelechuco.gob.bo
+              </a>
+            </span>
+          </div>
+
+          <div class="dialog-aut-info-item">
+            <span class="info-label">🕐 Horario de Audiencias</span>
+            <span class="info-val">Lunes a Viernes de 08:30 a 16:30</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie de la Credencial / Botones de Acción -->
+      <div class="dialog-aut-footer">
+        <button
+          type="button"
+          id="dialog-aut-btn-copiar"
+          class="btn-aut-action secondary"
+          title="Copiar datos de contacto al portapapeles"
+        >
+          <span>📑</span> Copiar Contacto
+        </button>
+
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <form method="dialog" style="margin:0;">
+            <button type="submit" class="btn-aut-action cancel">
+              Cerrar
+            </button>
+          </form>
+          <a
+            id="dialog-aut-btn-mail"
+            href="#"
+            class="btn-aut-action primary"
+            style="text-decoration:none;"
+          >
+            <span>✉️</span> Escribir al Despacho
+          </a>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</section>
+
+<style>
+  /* ── Estilos de las Tarjetas de Autoridad en la Grilla ── */
+  .clickable-autoridad {
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+  }
+  .clickable-autoridad:hover,
+  .clickable-autoridad:focus-visible {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 32px rgba(45, 80, 22, 0.16) !important;
+    border-color: var(--primary) !important;
+    outline: none;
+  }
+
+  .autoridad-avatar-wrap {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--bg-alt, #f8fafc);
+    border: 3px solid #C4A882;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin: 0 auto 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+  }
+  .clickable-autoridad:hover .autoridad-avatar-wrap {
+    transform: scale(1.06);
+    border-color: var(--primary);
+  }
+  .autoridad-avatar-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .autoridad-avatar-placeholder {
+    font-size: 2.2rem;
+  }
+
+  .autoridad-card-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 0.35rem 0;
+    line-height: 1.3;
+  }
+  .autoridad-card-pos {
+    font-size: 0.825rem;
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .autoridad-card-area {
+    font-size: 0.775rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+  .autoridad-card-contact {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 1rem;
+    word-break: break-word;
+  }
+
+  .autoridad-card-pill {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border-light, #e2e8f0);
+  }
+  .autoridad-card-pill span {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: rgba(45, 80, 22, 0.08);
+    padding: 0.25rem 0.7rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  .clickable-autoridad:hover .autoridad-card-pill span {
+    background: var(--primary);
+    color: #FAF7F2;
+  }
+
+  /* ── Estilos del Pop-up Modal Nativo (<dialog>) ── */
+  dialog#dialog-autoridad {
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 18px;
+    background: var(--card-bg, #ffffff);
+    color: var(--text, #1e293b);
+    max-width: 580px;
+    width: 92vw;
+    padding: 0;
+    margin: auto;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+  }
+
+  dialog#dialog-autoridad:modal {
+    overscroll-behavior: contain;
+  }
+  dialog#dialog-autoridad::backdrop {
+    background-color: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(5px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+
+  .dialog-aut-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 88vh;
+  }
+
+  /* Banner de Gala Andina */
+  .dialog-aut-banner {
+    background: linear-gradient(135deg, #172a15 0%, #2D5016 55%, #1e3a10 100%);
+    padding: 1.1rem 1.5rem 3.8rem;
+    position: relative;
+    border-bottom: 3px solid #C4A882;
+  }
+  .dialog-aut-banner-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .dialog-aut-close-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #FAF7F2;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .dialog-aut-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.08);
+  }
+
+  /* Perfil y Avatar superpuesto */
+  .dialog-aut-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 1.5rem;
+    position: relative;
+  }
+  .dialog-aut-photo-frame {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 4px solid #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+    margin-top: -55px;
+    background: #0f172a;
+    overflow: hidden;
+    position: relative;
+    outline: 2px solid #C4A882;
+  }
+  .dialog-aut-photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .dialog-aut-badge-pill {
+    margin-top: 0.65rem;
+    margin-bottom: 0.4rem;
+  }
+  .dialog-aut-badge-pill span {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #2D5016;
+    background: rgba(45, 80, 22, 0.12);
+    padding: 0.2rem 0.65rem;
+    border-radius: 20px;
+  }
+
+  .dialog-aut-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0.25rem 0;
+    line-height: 1.25;
+  }
+  .dialog-aut-cargo {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.2rem;
+  }
+  .dialog-aut-area {
+    font-size: 0.825rem;
+    color: var(--text-muted);
+  }
+
+  /* Cuerpo de la credencial con scroll */
+  .dialog-aut-body {
+    padding: 1.25rem 1.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .dialog-aut-bio-box {
+    background: #f8fafc;
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.1rem;
+    border-left: 4px solid #2D5016;
+  }
+  .dialog-aut-section-label {
+    font-size: 0.825rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.45rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .dialog-aut-bio-text {
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  .dialog-aut-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.75rem;
+    background: #f8fafc;
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+  }
+  .dialog-aut-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .info-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
+  }
+  .info-val {
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  /* Pie de la credencial y botones */
+  .dialog-aut-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-light, #e2e8f0);
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .btn-aut-action {
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    font-size: 0.825rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    border: none;
+  }
+  .btn-aut-action.primary {
+    background: #2D5016;
+    color: #FAF7F2;
+  }
+  .btn-aut-action.primary:hover {
+    background: #1e3a10;
+    box-shadow: 0 4px 10px rgba(45, 80, 22, 0.25);
+  }
+  .btn-aut-action.secondary {
+    background: none;
+    border: 1px solid var(--border, #cbd5e1);
+    color: var(--text);
+  }
+  .btn-aut-action.secondary:hover {
+    background: rgba(0,0,0,0.05);
+  }
+  .btn-aut-action.cancel {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+  }
+  .btn-aut-action.cancel:hover {
+    background: #e2e8f0;
+  }
+
+  /* ── Adaptación a Modo Oscuro ── */
+  html.dark dialog#dialog-autoridad,
+  .dark dialog#dialog-autoridad {
+    background: #111c29 !important;
+    border-color: #23364e !important;
+    color: #f8fafc !important;
+  }
+  html.dark .dialog-aut-photo-frame,
+  .dark .dialog-aut-photo-frame {
+    border-color: #111c29 !important;
+    outline-color: #C4A882 !important;
+  }
+  html.dark .dialog-aut-badge-pill span,
+  .dark .dialog-aut-badge-pill span {
+    background: rgba(34, 197, 94, 0.16) !important;
+    color: #86efac !important;
+    border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  }
+  html.dark .dialog-aut-cargo,
+  .dark .dialog-aut-cargo {
+    color: #86efac !important;
+  }
+  html.dark .dialog-aut-bio-box,
+  .dark .dialog-aut-bio-box,
+  html.dark .dialog-aut-info-grid,
+  .dark .dialog-aut-info-grid {
+    background: #0d1520 !important;
+    border-color: #23364e !important;
+  }
+  html.dark .dialog-aut-bio-box {
+    border-left-color: #86efac !important;
+  }
+  html.dark .dialog-aut-section-label,
+  .dark .dialog-aut-section-label {
+    color: #86efac !important;
+  }
+  html.dark .dialog-aut-footer,
+  .dark .dialog-aut-footer {
+    border-color: #23364e !important;
+    background: #090f17 !important;
+  }
+  html.dark .btn-aut-action.primary,
+  .dark .btn-aut-action.primary {
+    background: #166534 !important;
+    color: #FAF7F2 !important;
+  }
+  html.dark .btn-aut-action.secondary,
+  .dark .btn-aut-action.secondary {
+    border-color: #334a66 !important;
+    color: #e2e8f0 !important;
+  }
+  html.dark .btn-aut-action.secondary:hover,
+  .dark .btn-aut-action.secondary:hover {
+    background: rgba(255,255,255,0.08) !important;
+  }
+  html.dark .btn-aut-action.cancel,
+  .dark .btn-aut-action.cancel {
+    background: #1b293a !important;
+    border-color: #334a66 !important;
+    color: #e2e8f0 !important;
+  }
+  html.dark .btn-aut-action.cancel:hover,
+  .dark .btn-aut-action.cancel:hover {
+    background: #24364c !important;
+  }
+  html.dark .clickable-autoridad:hover,
+  .dark .clickable-autoridad:hover {
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45) !important;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const dialog = document.getElementById('dialog-autoridad') as HTMLDialogElement | null;
+    const cards = document.querySelectorAll('.clickable-autoridad');
+
+    const elFoto = document.getElementById('dialog-aut-foto') as HTMLImageElement | null;
+    const elFotoPlaceholder = document.getElementById('dialog-aut-foto-placeholder');
+    const elNombre = document.getElementById('dialog-aut-nombre');
+    const elCargo = document.getElementById('dialog-aut-cargo');
+    const elArea = document.getElementById('dialog-aut-area');
+    const elBio = document.getElementById('dialog-aut-bio');
+    const elEmailLink = document.getElementById('dialog-aut-email-link') as HTMLAnchorElement | null;
+    const btnMail = document.getElementById('dialog-aut-btn-mail') as HTMLAnchorElement | null;
+    const btnCopiar = document.getElementById('dialog-aut-btn-copiar');
+
+    let currentEmail = '';
+    let currentName = '';
+    let currentCargo = '';
+
+    function openAutoridadModal(autData: any) {
+      if (!dialog) return;
+
+      currentName = autData.name || 'Autoridad Municipal';
+      currentCargo = autData.position || 'Servidor Público';
+      currentEmail = autData.institutional_contact || '';
+
+      // Foto / Retrato institucional
+      if (elFoto && elFotoPlaceholder) {
+        if (autData.photo_url && autData.photo_url.trim()) {
+          elFoto.src = autData.photo_url.trim();
+          elFoto.alt = `Retrato oficial de ${currentName}`;
+          elFoto.style.display = 'block';
+          elFotoPlaceholder.style.display = 'none';
+        } else {
+          elFoto.src = '';
+          elFoto.style.display = 'none';
+          elFotoPlaceholder.style.display = 'flex';
+        }
+      }
+
+      // Nombre, cargo y área
+      if (elNombre) elNombre.textContent = currentName;
+      if (elCargo) elCargo.textContent = currentCargo;
+      if (elArea) elArea.textContent = `🏛️ ${autData.area || 'Gobierno Autónomo Municipal de Pelechuco'}`;
+
+      // Biografía / Trayectoria
+      if (elBio) {
+        elBio.textContent = autData.biography?.trim()
+          ? autData.biography
+          : `Servidor público comprometido con el desarrollo integral, la transparencia y el bienestar de las comunidades y ayllus del municipio de Pelechuco. Ejerce sus funciones en el área de ${autData.area || 'gestión municipal'}.`;
+      }
+
+      // Correo y enlaces
+      if (currentEmail) {
+        if (elEmailLink) {
+          elEmailLink.href = `mailto:${currentEmail}`;
+          elEmailLink.textContent = currentEmail;
+          elEmailLink.style.display = 'inline';
+        }
+        if (btnMail) {
+          btnMail.href = `mailto:${currentEmail}?subject=Consulta%20Institucional%20-%20GAM%20Pelechuco`;
+          btnMail.style.display = 'inline-flex';
+        }
+      } else {
+        if (elEmailLink) {
+          elEmailLink.href = 'mailto:contacto@pelechuco.gob.bo';
+          elEmailLink.textContent = 'contacto@pelechuco.gob.bo (Mesa de Partes)';
+        }
+        if (btnMail) {
+          btnMail.href = 'mailto:contacto@pelechuco.gob.bo';
+          btnMail.style.display = 'inline-flex';
+        }
+      }
+
+      // Abre en top-layer nativo
+      dialog.showModal();
+    }
+
+    // Clic en tarjetas
+    cards.forEach((card) => {
+      card.addEventListener('click', () => {
+        const raw = card.getAttribute('data-autoridad');
+        if (raw) {
+          try {
+            const data = JSON.parse(raw);
+            openAutoridadModal(data);
+          } catch (e) {
+            console.error('Error al abrir autoridad:', e);
+          }
+        }
+      });
+
+      // Accesibilidad: Teclado Enter / Espacio
+      card.addEventListener('keydown', (e: any) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          (card as HTMLElement).click();
+        }
+      });
+    });
+
+    // Copiar datos de contacto al portapapeles
+    btnCopiar?.addEventListener('click', () => {
+      const infoToCopy = `👤 ${currentName}\n🏛️ ${currentCargo} — GAM Pelechuco\n✉️ ${currentEmail || 'contacto@pelechuco.gob.bo'}`;
+      navigator.clipboard.writeText(infoToCopy).then(() => {
+        if (btnCopiar) {
+          const original = btnCopiar.innerHTML;
+          btnCopiar.innerHTML = '<span>✅</span> ¡Copiado!';
+          setTimeout(() => {
+            btnCopiar.innerHTML = original;
+          }, 2000);
+        }
+      });
+    });
+
+    // Fallback de Light-Dismiss (cerrar al hacer clic en el backdrop)
+    if (dialog && !('closedBy' in HTMLDialogElement.prototype)) {
+      dialog.addEventListener('click', (event) => {
+        if (event.target !== dialog) return;
+
+        const rect = dialog.getBoundingClientRect();
+        const isDialogContent = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
+
+        if (!isDialogContent) {
+          dialog.close();
+        }
+      });
+    }
+  });
+</script>

@@ -1,0 +1,47 @@
+---
+import type { HeroSection } from '../types/database';
+
+interface Props {
+  data?: Partial<HeroSection>;
+}
+
+const { data = {} } = Astro.props;
+
+const badgeText = data.badge_text || 'Gobierno Autónomo Municipal · La Paz, Bolivia';
+const titleMain = data.title_main || 'Tierra de montañas';
+const titleHighlight = data.title_highlight || 'y comunidades';
+const subtitle = data.subtitle || 'Pelechuco, municipio de la provincia Franz Tamayo, departamento de La Paz, Bolivia.';
+const bgImageUrl = data.bg_image_url || 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=85';
+const ctaPrimaryText = data.cta_primary_text || 'Explorar el municipio';
+const ctaPrimaryLink = data.cta_primary_link || '#conoce';
+const ctaSecondaryText = data.cta_secondary_text || 'Ver comunicados';
+const ctaSecondaryLink = data.cta_secondary_link || '#noticias';
+---
+
+<section id="inicio" aria-label="Inicio">
+  <div class="p02-hero">
+    <img
+      class="p02-hero-img"
+      src={bgImageUrl}
+      alt="Cumbres andinas nevadas — Municipio de Pelechuco"
+      fetchpriority="high"
+    />
+    <div class="p02-hero-overlay" aria-hidden="true"></div>
+    <div class="p02-hero-content">
+      <p class="p02-hero-inst">{badgeText}</p>
+      <h1>{titleMain}<br /><em>{titleHighlight}</em></h1>
+      <p class="p02-hero-sub">{subtitle}</p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <a href={ctaPrimaryLink} class="p02-btn-primary">{ctaPrimaryText}</a>
+        <a href={ctaSecondaryLink} class="p02-btn-outline">{ctaSecondaryText}</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Banda introductoria editorial -->
+  <div class="p02-intro-band">
+    <p style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--primary);max-width:900px;margin:0 auto;line-height:1.7;">
+      Ubicado en el norte paceño, Pelechuco conjuga la majestuosidad de la Cordillera de Apolobamba, la vasta riqueza silvestre de la Reserva Nacional Ulla Ulla y la milenaria cultura textil de sus comunidades originarias.
+    </p>
+  </div>
+</section>

@@ -1,0 +1,109 @@
+---
+import type { ConoceIntro, ConoceSeccion } from '../types/database';
+
+interface Props {
+  intro?: Partial<ConoceIntro>;
+  secciones?: ConoceSeccion[];
+}
+
+const { intro = {}, secciones = [] } = Astro.props;
+
+const title = intro.title || 'Territorio andino y corazón de Apolobamba';
+const description = intro.description || 'Ubicado en la cordillera de Apolobamba, al norte del departamento de La Paz, Pelechuco es un municipio de riqueza biológica, cultural y geológica.';
+const introImage = intro.image_url || 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80';
+const altitud = intro.altitud || '3.600 m s. n. m.';
+const superficie = intro.superficie || '2.714 km²';
+const poblacion = intro.poblacion || '6.850 habitantes';
+
+// Buscar sección de Cultura y Comunidades (slug 'cultura' o 'cultura-comunidades')
+const culturaSeccion = secciones.find(s => s.slug === 'cultura' || s.slug === 'cultura-comunidades') || {
+  title: 'Cultura y Comunidades',
+  content: 'Pelechuco es tierra de artesanas y pastores que preservan técnicas ancestrales de hilado en lana virgen de vicuña y alpaca. Sus más de 40 comunidades articuladas en ayllus mantienen vivos los idiomas quechua y aymara, la música de lakitas y la devoción en la Festividad de la Virgen de la Asunción cada 15 de agosto.',
+  subtitle: 'Comunidades originarias, Patrimonio cultural, Textilería de alpaca',
+  image_url: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80',
+  image_alt: 'Comunidades andinas y textilería de Pelechuco'
+};
+
+const rawTags = culturaSeccion.subtitle || 'Comunidades originarias, Patrimonio cultural, Textilería de alpaca';
+const culturaTags = rawTags.includes(',') 
+  ? rawTags.split(',').map(t => t.trim()).filter(Boolean)
+  : rawTags.split('·').map(t => t.trim()).filter(Boolean);
+---
+
+<section id="conoce" aria-labelledby="conoce-titulo">
+  <div class="p02-section">
+    <p class="p02-section-label">El municipio</p>
+    <h2 class="p02-section-title" id="conoce-titulo">Conoce Pelechuco</h2>
+    <div class="p02-section-title-deco" aria-hidden="true"></div>
+
+    <!-- Bloque 1: Territorio y Geografía -->
+    <div class="p02-conoce-alternado impar">
+      <div class="p02-conoce-img">
+        <img
+          src={introImage}
+          alt="Paisaje andino — Cordillera de Apolobamba en Pelechuco"
+          loading="lazy"
+          onerror="this.src='https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80';"
+        />
+      </div>
+      <div class="p02-conoce-texto">
+        <h3>{title}</h3>
+        <p style="color:var(--text);line-height:1.7;">
+          {description}
+        </p>
+        <div class="p02-conoce-detalle" style="margin-top:1rem;">
+          <span class="p02-tag">Provincia Franz Tamayo</span>
+          <span class="p02-tag">Depto. La Paz</span>
+          <span class="p02-tag">Bolivia</span>
+        </div>
+        <p style="margin-top:1rem;font-size:0.875rem;color:var(--text-muted);line-height:1.6;">
+          <strong>Altitud:</strong> {altitud} · <strong>Superficie:</strong> {superficie} · <strong>Coordenadas:</strong> 14°48′55″ S, 69°03′02″ O · <strong>Población:</strong> {poblacion}
+        </p>
+      </div>
+    </div>
+
+    <!-- Bloque 2: Cultura y Comunidades (Totalmente Administrable) -->
+    <div class="p02-conoce-alternado par">
+      <div class="p02-conoce-img">
+        <img
+          src={culturaSeccion.image_url || 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80'}
+          alt={culturaSeccion.image_alt || culturaSeccion.title || 'Comunidades andinas y textilería de Pelechuco'}
+          loading="lazy"
+        />
+      </div>
+      <div class="p02-conoce-texto">
+        <h3>{culturaSeccion.title || 'Cultura y Comunidades'}</h3>
+        <p style="color:var(--text);line-height:1.7;">
+          {culturaSeccion.content}
+        </p>
+        <div class="p02-conoce-detalle" style="margin-top:1rem;">
+          {culturaTags.map(tag => (
+            <span class="p02-tag">{tag}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloques temáticos informativos -->
+    <div class="p02-conoce-cards-grid" style="margin-top:2.5rem;">
+      <div style="background:var(--bg-alt);border-radius:4px;padding:1.5rem;border:1px solid var(--border-light);">
+        <h4 style="font-family:'Playfair Display',serif;color:var(--primary);margin-bottom:0.75rem;">Historia</h4>
+        <p style="color:var(--text-muted);font-size:0.875rem;line-height:1.6;">
+          Fundado en la época virreinal como punto neurálgico en la ruta comercial y aurífera de Apolobamba. Conserva señoriales casonas de piedra y estrechas callejuelas que evocan su glorioso pasado andino.
+        </p>
+      </div>
+      <div style="background:var(--bg-alt);border-radius:4px;padding:1.5rem;border:1px solid var(--border-light);">
+        <h4 style="font-family:'Playfair Display',serif;color:var(--primary);margin-bottom:0.75rem;">Cultura y Tradiciones</h4>
+        <p style="color:var(--text-muted);font-size:0.875rem;line-height:1.6;">
+          Celebración patronal de la Virgen de la Asunción (15 de agosto), danzas autóctonas de sikuris y jach'a sikus, combinadas con una gastronomía tradicional a base de chuño, charque y trucha de río.
+        </p>
+      </div>
+      <div style="background:var(--bg-alt);border-radius:4px;padding:1.5rem;border:1px solid var(--border-light);">
+        <h4 style="font-family:'Playfair Display',serif;color:var(--primary);margin-bottom:0.75rem;">Comunidades</h4>
+        <p style="color:var(--text-muted);font-size:0.875rem;line-height:1.6;">
+          Estructurado en 9 cantones: Pelechuco Central, Ulla Ulla, Antaquilla, Hichocollo, Queara, Puina, Suches, Katantika y Agua Blanca, habitados por orgullosas familias alpaqueras.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

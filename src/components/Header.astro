@@ -1,0 +1,130 @@
+---
+---
+
+<header class="p02-header" id="site-header" role="banner">
+  <div class="p02-header-inner">
+    <!-- Logo Institucional con Escudo Oficial -->
+    <a href="/#inicio" class="p02-logo-text" aria-label="GAM Pelechuco — inicio" style="display:flex;align-items:center;gap:0.75rem;">
+      <img src="/assets/images/escudo-pelechuco.svg" alt="Escudo oficial de Pelechuco" style="width:36px;height:42px;object-fit:contain;" />
+      <span>GAM Pelechuco</span>
+    </a>
+
+    <!-- Navegación desktop -->
+    <nav class="p02-nav" aria-label="Navegación principal">
+      <a href="/#inicio">Inicio</a>
+      <a href="/#noticias">Noticias</a>
+      <a href="/#conoce">Conoce</a>
+      <a href="/#autoridades">Autoridades</a>
+      <a href="/#tramites">Trámites</a>
+      <a href="/#contacto">Contacto</a>
+      
+      <!-- Alternador Modo Claro / Modo Oscuro -->
+      <button
+        id="theme-toggle-desktop"
+        class="theme-toggle-btn"
+        aria-label="Cambiar entre modo claro y oscuro"
+        title="Cambiar apariencia (Modo claro / oscuro)"
+        type="button"
+      >
+        <span class="theme-icon-sun" aria-hidden="true">☀️</span>
+        <span class="theme-icon-moon" aria-hidden="true" style="display:none;">🌙</span>
+      </button>
+
+      <a href="/admin" class="p02-admin-tag" style="margin-left:0.5rem;font-size:0.75rem;padding:0.35rem 0.65rem;">⚙️ Admin</a>
+    </nav>
+
+    <!-- Botón móvil hamburguesa -->
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <button
+        id="theme-toggle-header-mobile"
+        class="theme-toggle-btn"
+        aria-label="Cambiar modo de tema"
+        title="Modo oscuro"
+        type="button"
+        style="display:none;"
+      >
+        <span class="theme-icon-sun" aria-hidden="true">☀️</span>
+        <span class="theme-icon-moon" aria-hidden="true" style="display:none;">🌙</span>
+      </button>
+
+      <button class="p02-menu-btn" id="mobile-menu-btn" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu">
+        ☰
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Menú móvil drawer -->
+<nav class="p02-mobile-nav" id="mobile-menu" aria-label="Menú móvil">
+  <a href="/#inicio">Inicio</a>
+  <a href="/#noticias">Noticias y Comunicados</a>
+  <a href="/#conoce">Conoce el Municipio</a>
+  <a href="/#autoridades">Autoridades</a>
+  <a href="/#tramites">Trámites y Servicios</a>
+  <a href="/#contacto">Contacto</a>
+  <a href="/admin" style="color:var(--accent);font-weight:700;">⚙️ Panel Administrativo</a>
+
+  <!-- Alternador de modo en el menú móvil -->
+  <div style="padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(196,168,130,0.25);margin-top:0.5rem;">
+    <span style="font-size:0.9rem;font-weight:600;color:#FAF7F2;">Modo Oscuro / Claro</span>
+    <button
+      id="theme-toggle-drawer"
+      class="theme-toggle-btn"
+      aria-label="Alternar tema"
+      type="button"
+    >
+      <span class="theme-icon-sun" aria-hidden="true">☀️</span>
+      <span class="theme-icon-moon" aria-hidden="true" style="display:none;">🌙</span>
+    </button>
+  </div>
+</nav>
+
+<script>
+  function setupThemeToggle() {
+    const sunIcons = document.querySelectorAll('.theme-icon-sun');
+    const moonIcons = document.querySelectorAll('.theme-icon-moon');
+    const metaScheme = document.querySelector('meta[name="color-scheme"]');
+
+    function syncUI(isDark: boolean) {
+      sunIcons.forEach(el => (el as HTMLElement).style.display = isDark ? 'none' : 'inline-block');
+      moonIcons.forEach(el => (el as HTMLElement).style.display = isDark ? 'inline-block' : 'none');
+    }
+
+    const isCurrentDark = document.documentElement.classList.contains('dark');
+    syncUI(isCurrentDark);
+
+    function toggleTheme() {
+      const willBeDark = !document.documentElement.classList.contains('dark');
+      if (willBeDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        if (metaScheme) (metaScheme as HTMLMetaElement).content = 'dark';
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        if (metaScheme) (metaScheme as HTMLMetaElement).content = 'light';
+      }
+      syncUI(willBeDark);
+    }
+
+    document.getElementById('theme-toggle-desktop')?.addEventListener('click', toggleTheme);
+    document.getElementById('theme-toggle-header-mobile')?.addEventListener('click', toggleTheme);
+    document.getElementById('theme-toggle-drawer')?.addEventListener('click', toggleTheme);
+
+    // Sincronizar cambios desde otras pestañas
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'theme') {
+        const isDark = e.newValue === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        if (metaScheme) (metaScheme as HTMLMetaElement).content = isDark ? 'dark' : 'light';
+        syncUI(isDark);
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+</script>
