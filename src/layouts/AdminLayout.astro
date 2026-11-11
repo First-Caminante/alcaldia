@@ -29,27 +29,6 @@ if (!sessionCookie) {
 
   <!-- Declaración de esquemas de color para evitar FOUC y adaptar scrollbars / UI nativa -->
   <meta name="color-scheme" content="light dark" />
-
-  <!-- Guardia instantáneo en HEAD para evitar cualquier parpadeo de contenido desprotegido -->
-  <style id="auth-guard-cloak">
-    body { visibility: hidden !important; }
-  </style>
-  <script is:inline>
-    (function() {
-      try {
-        var token = localStorage.getItem('gam_admin_token');
-        var hasCookie = document.cookie.indexOf('gam_admin_token=') !== -1;
-        if (!token && !hasCookie) {
-          window.location.replace('/admin/login');
-        } else {
-          var cloak = document.getElementById('auth-guard-cloak');
-          if (cloak) cloak.remove();
-        }
-      } catch (e) {
-        window.location.replace('/admin/login');
-      }
-    })();
-  </script>
   <script is:inline>
     (function() {
       try {
@@ -714,8 +693,13 @@ if (!sessionCookie) {
 
   <script>
     // ── Guardia de Autenticación en Cliente ──
-    const token = localStorage.getItem('gam_admin_token');
+    const cookieToken = document.cookie.split('; ').find(row => row.startsWith('gam_admin_token='))?.split('=')[1];
+    const token = localStorage.getItem('gam_admin_token') || cookieToken;
     const userStr = localStorage.getItem('gam_admin_user');
+
+    if (cookieToken && !localStorage.getItem('gam_admin_token')) {
+      localStorage.setItem('gam_admin_token', cookieToken);
+    }
 
     if (!token) {
       window.location.replace('/admin/login');
