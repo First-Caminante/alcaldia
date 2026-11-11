@@ -1,5 +1,11 @@
 ---
 export const prerender = false;
+
+// Si ya tiene sesión válida en cookie, redirigir directamente al panel
+const sessionCookie = Astro.cookies.get('gam_admin_token')?.value;
+if (sessionCookie) {
+  return Astro.redirect('/admin');
+}
 ---
 
 <!DOCTYPE html>
@@ -191,13 +197,14 @@ export const prerender = false;
 
   <script>
     function initLogin() {
-      // Si ya tiene sesión activa válida, redirigir al panel
+      // Si ya tiene sesión activa válida en localStorage, asegurar cookie y redirigir al panel
       const existingToken = localStorage.getItem('gam_admin_token');
       if (existingToken) {
+        document.cookie = `gam_admin_token=${existingToken}; path=/; max-age=604800; SameSite=Lax`;
         fetch('/api/auth/me', {
           headers: { 'Authorization': `Bearer ${existingToken}` }
         }).then(res => {
-          if (res.ok) window.location.href = '/admin';
+          if (res.ok) window.location.replace('/admin');
         }).catch(() => {});
       }
 
@@ -230,7 +237,7 @@ export const prerender = false;
             localStorage.setItem('gam_admin_user', JSON.stringify(data.session.user));
             // Guardar también cookie para SSR
             document.cookie = `gam_admin_token=${data.session.access_token}; path=/; max-age=604800; SameSite=Lax`;
-            window.location.href = '/admin';
+            window.location.replace('/admin');
           } else {
             if (errorDiv) {
               errorDiv.style.display = 'block';

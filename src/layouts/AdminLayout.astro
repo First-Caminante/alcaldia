@@ -9,6 +9,13 @@ interface Props {
 
 const { title = "Panel Administrativo — GAM Pelechuco", activeNav = "dashboard" } = Astro.props;
 const supabaseReady = isSupabaseConfigured();
+
+// ── SSR Auth Guard ──
+// Si no hay cookie de sesión activa, redirigir inmediatamente a login en el servidor sin renderizar dashboard
+const sessionCookie = Astro.cookies.get('gam_admin_token')?.value;
+if (!sessionCookie) {
+  return Astro.redirect('/admin/login');
+}
 ---
 
 <!DOCTYPE html>
@@ -20,7 +27,29 @@ const supabaseReady = isSupabaseConfigured();
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
+  <!-- Declaración de esquemas de color para evitar FOUC y adaptar scrollbars / UI nativa -->
   <meta name="color-scheme" content="light dark" />
+
+  <!-- Guardia instantáneo en HEAD para evitar cualquier parpadeo de contenido desprotegido -->
+  <style id="auth-guard-cloak">
+    body { visibility: hidden !important; }
+  </style>
+  <script is:inline>
+    (function() {
+      try {
+        var token = localStorage.getItem('gam_admin_token');
+        var hasCookie = document.cookie.indexOf('gam_admin_token=') !== -1;
+        if (!token && !hasCookie) {
+          window.location.replace('/admin/login');
+        } else {
+          var cloak = document.getElementById('auth-guard-cloak');
+          if (cloak) cloak.remove();
+        }
+      } catch (e) {
+        window.location.replace('/admin/login');
+      }
+    })();
+  </script>
   <script is:inline>
     (function() {
       try {
@@ -689,7 +718,7 @@ const supabaseReady = isSupabaseConfigured();
     const userStr = localStorage.getItem('gam_admin_user');
 
     if (!token) {
-      window.location.href = '/admin/login';
+      window.location.replace('/admin/login');
     } else {
       if (userStr) {
         try {
@@ -718,7 +747,8 @@ const supabaseReady = isSupabaseConfigured();
       if (res.status === 401) {
         localStorage.removeItem('gam_admin_token');
         localStorage.removeItem('gam_admin_user');
-        window.location.href = '/admin/login';
+        document.cookie = 'gam_admin_token=; path=/; max-age=0; SameSite=Lax';
+        window.location.replace('/admin/login');
         throw new Error('Sesión expirada');
       }
       return res;
@@ -825,8 +855,8 @@ const supabaseReady = isSupabaseConfigured();
     document.getElementById('btn-admin-logout')?.addEventListener('click', () => {
       localStorage.removeItem('gam_admin_token');
       localStorage.removeItem('gam_admin_user');
-      document.cookie = 'gam_admin_token=; path=/; max-age=0;';
-      window.location.href = '/admin/login';
+      document.cookie = 'gam_admin_token=; path=/; max-age=0; SameSite=Lax';
+      window.location.replace('/admin/login');
     });
 
     // Control táctil responsivo del menú lateral móvil

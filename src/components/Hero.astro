@@ -40,8 +40,26 @@ const ctaSecondaryLink = data.cta_secondary_link || '#noticias';
 
   <!-- Banda introductoria editorial -->
   <div class="p02-intro-band">
-    <p style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--primary);max-width:900px;margin:0 auto;line-height:1.7;">
+    <p class="p02-intro-band-text">
       Ubicado en el norte paceño, Pelechuco conjuga la majestuosidad de la Cordillera de Apolobamba, la vasta riqueza silvestre de la Reserva Nacional Ulla Ulla y la milenaria cultura textil de sus comunidades originarias.
     </p>
   </div>
 </section>
+
+<style>
+  .p02-intro-band-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.02rem;
+    color: var(--primary);
+    max-width: 820px;
+    margin: 0 auto;
+    line-height: 1.65;
+    text-align: center;
+  }
+  @media (max-width: 640px) {
+    .p02-intro-band-text {
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+  }
+</style>

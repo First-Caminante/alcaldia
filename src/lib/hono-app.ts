@@ -411,6 +411,8 @@ app.post('/auth/login', async (c) => {
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', data.user.id);
 
+    c.header('Set-Cookie', `gam_admin_token=${data.session.access_token}; Path=/; Max-Age=604800; SameSite=Lax`);
+
     return c.json({
       success: true,
       session: {

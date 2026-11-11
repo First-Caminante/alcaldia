@@ -95,23 +95,23 @@ function formatDate(dateStr: string) {
     )}
   </div>
 
-  <div style="padding:1.25rem;display:flex;flex-direction:column;flex-grow:1;">
-    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.4rem;display:flex;align-items:center;gap:0.4rem;">
+  <div style="padding:1rem 1.15rem;display:flex;flex-direction:column;flex-grow:1;">
+    <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.35rem;display:flex;align-items:center;gap:0.4rem;">
       <span>📅 {formatDate(noticia.published_at)}</span>
     </div>
 
-    <h3 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem;line-height:1.35;">
+    <h3 style="font-size:0.98rem;font-weight:700;color:var(--text);margin-bottom:0.45rem;line-height:1.32;">
       <a href={`/noticias/${noticia.slug}`} style="color:inherit;text-decoration:none;">
         {noticia.title}
       </a>
     </h3>
 
-    <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.55;margin-bottom:1rem;flex-grow:1;">
+    <p style="font-size:0.82rem;color:var(--text-muted);line-height:1.5;margin-bottom:0.85rem;flex-grow:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
       {noticia.summary}
     </p>
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;">
-      <a href={`/noticias/${noticia.slug}`} class="p02-btn-link" style="color:var(--primary);font-weight:700;text-decoration:none;font-size:0.875rem;display:inline-flex;align-items:center;gap:0.35rem;">
+      <a href={`/noticias/${noticia.slug}`} class="p02-btn-link" style="color:var(--primary);font-weight:700;text-decoration:none;font-size:0.82rem;display:inline-flex;align-items:center;gap:0.35rem;">
         Leer comunicado completo →
       </a>
     </div>

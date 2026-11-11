@@ -226,16 +226,16 @@ h1, h2, h3 {
   position: relative;
   z-index: 1;
   color: white;
-  padding: 8rem 2rem 4rem;
-  max-width: 800px;
+  padding: 5rem 1.5rem 3rem;
+  max-width: 760px;
 }
 
 .p02-hero h1 {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(1.85rem, 4vw, 3rem);
   font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
+  line-height: 1.15;
+  margin-bottom: 1rem;
 }
 
 .p02-hero h1 em {
@@ -244,19 +244,19 @@ h1, h2, h3 {
 }
 
 .p02-hero-sub {
-  font-size: 1.15rem;
-  color: rgba(255, 255, 255, 0.82);
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
   margin-bottom: 1rem;
   font-weight: 300;
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .p02-hero-inst {
-  font-size: 0.85rem;
+  font-size: 0.76rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.75rem;
 }
 
 /* ============================================================
@@ -313,9 +313,9 @@ h1, h2, h3 {
    ============================================================ */
 
 .p02-section {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: clamp(4rem, 8vw, 6rem) 1.5rem;
+  padding: clamp(3rem, 5vw, 4.25rem) 1.5rem;
 }
 
 .p02-section-alt {
@@ -323,28 +323,28 @@ h1, h2, h3 {
 }
 
 .p02-section-alt .p02-section {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .p02-section-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-size: clamp(1.4rem, 2.8vw, 2.15rem);
   color: var(--primary);
-  margin-bottom: 0.5rem;
-  line-height: 1.2;
+  margin-bottom: 0.4rem;
+  line-height: 1.25;
 }
 
 .p02-section-title-deco {
-  width: 60px;
-  height: 3px;
+  width: 48px;
+  height: 2.5px;
   background: var(--accent);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   border: none;
 }
 
 .p02-section-label {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -571,17 +571,17 @@ h1, h2, h3 {
 
 .p02-autoridades-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
 }
 
 .p02-autoridad-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-top: 4px solid var(--primary);
-  border-radius: 6px;
-  padding: 2rem;
-  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.25s ease;
+  border-top: 3.5px solid var(--primary);
+  border-radius: 8px;
+  padding: 1.35rem 1.15rem;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
 }
 
 .p02-autoridad-card:hover {
@@ -1208,7 +1208,7 @@ html, body {
 
 @media (max-width: 900px) {
   .p02-header {
-    height: 62px !important;
+    height: 54px !important;
     padding: 0 1rem !important;
   }
   .p02-nav {
@@ -1218,10 +1218,10 @@ html, body {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 44px !important;
-    height: 44px !important;
-    border-radius: 8px !important;
-    font-size: 1.35rem !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 7px !important;
+    font-size: 1.15rem !important;
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1.5px solid rgba(196, 168, 130, 0.4) !important;
     color: #ffffff !important;
@@ -1233,18 +1233,18 @@ html, body {
     color: #1A3008 !important;
   }
   .p02-logo-text {
-    font-size: 1rem !important;
-    gap: 0.5rem !important;
+    font-size: 0.95rem !important;
+    gap: 0.45rem !important;
   }
   .p02-logo-text img {
-    width: 32px !important;
-    height: 38px !important;
+    width: 28px !important;
+    height: 34px !important;
   }
 
   /* Menú desplegable móvil (tipo Drawer elegante) */
   .p02-mobile-nav {
     position: fixed !important;
-    top: 62px !important;
+    top: 54px !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
@@ -1252,9 +1252,9 @@ html, body {
     background: rgba(18, 34, 9, 0.98) !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
-    padding: 1.5rem 1.25rem 3rem !important;
+    padding: 1.25rem 1rem 2.5rem !important;
     flex-direction: column !important;
-    gap: 0.6rem !important;
+    gap: 0.5rem !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     border-top: 1px solid rgba(196, 168, 130, 0.3) !important;
@@ -1262,7 +1262,7 @@ html, body {
   }
   .p02-mobile-nav a {
     font-family: 'Playfair Display', serif !important;
-    font-size: 1.15rem !important;
+    font-size: 1.05rem !important;
     color: #FAF5ED !important;
     padding: 0.85rem 1rem !important;
     border-radius: 8px !important;
@@ -1295,31 +1295,31 @@ html, body {
 /* ── 4. SECCIÓN HERO Y CTA BUTTONS ── */
 @media (max-width: 768px) {
   .p02-hero {
-    min-height: 82svh !important;
-    min-height: 82vh !important;
+    min-height: 72svh !important;
+    min-height: 72vh !important;
   }
   .p02-hero-content {
-    padding: 3.5rem 1.25rem 2.5rem !important;
+    padding: 2.75rem 1rem 2rem !important;
   }
   .p02-hero h1 {
-    font-size: clamp(1.85rem, 6.5vw, 2.75rem) !important;
-    line-height: 1.18 !important;
-    margin-bottom: 1rem !important;
+    font-size: clamp(1.45rem, 5.2vw, 1.95rem) !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0.75rem !important;
   }
   .p02-hero-sub {
-    font-size: 0.95rem !important;
-    line-height: 1.6 !important;
-    margin-bottom: 1.5rem !important;
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 1.25rem !important;
   }
   .p02-hero-inst {
-    font-size: 0.72rem !important;
+    font-size: 0.68rem !important;
     letter-spacing: 0.08em !important;
-    margin-bottom: 1.5rem !important;
+    margin-bottom: 1.25rem !important;
   }
   .p02-hero-content > div {
     flex-direction: column !important;
     align-items: stretch !important;
-    max-width: 300px !important;
+    max-width: 280px !important;
     margin: 0 auto !important;
   }
   .p02-btn-primary,
@@ -1327,27 +1327,27 @@ html, body {
     width: 100% !important;
     justify-content: center !important;
     text-align: center !important;
-    padding: 0.85rem 1.5rem !important;
-    font-size: 0.88rem !important;
+    padding: 0.65rem 1.25rem !important;
+    font-size: 0.825rem !important;
   }
 }
 
 /* ── 5. SECCIÓN CONOCE PELECHUCO Y BLOQUES ALTERNADOS ── */
 .p02-section {
-  padding: clamp(3rem, 6vw, 5.5rem) 1.5rem;
+  padding: clamp(2.5rem, 4.5vw, 3.75rem) 1.5rem;
 }
 
 @media (max-width: 900px) {
   .p02-section {
-    padding: 3rem 1.25rem !important;
+    padding: 2.25rem 1rem !important;
   }
   .p02-section-title {
-    font-size: clamp(1.65rem, 4.5vw, 2.25rem) !important;
+    font-size: clamp(1.35rem, 3.8vw, 1.75rem) !important;
   }
   .p02-conoce-alternado {
     grid-template-columns: 1fr !important;
-    gap: 1.75rem !important;
-    margin-bottom: 3.5rem !important;
+    gap: 1.5rem !important;
+    margin-bottom: 2.5rem !important;
   }
   .p02-conoce-alternado.par .p02-conoce-img,
   .p02-conoce-alternado.impar .p02-conoce-img {
