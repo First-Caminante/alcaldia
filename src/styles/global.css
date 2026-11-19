@@ -188,14 +188,14 @@ html.dark .p02-footer {
 }
 
 html.dark .p02-social-btn {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #F3F1EC !important;
-  border-color: rgba(212, 186, 150, 0.3) !important;
+  background: rgba(255, 255, 255, 0.08);
+  color: #F3F1EC;
+  border-color: rgba(212, 186, 150, 0.3);
 }
 
-html.dark .p02-social-btn:hover {
-  background: var(--primary) !important;
-  color: #fff !important;
+html.dark .p02-social-btn:hover,
+html.dark .p02-social-btn:focus-visible {
+  color: #fff;
 }
 
 html.dark .p02-mobile-nav {

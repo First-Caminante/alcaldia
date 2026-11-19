@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { supabase, isSupabaseConfigured, getSupabaseAdmin, getAuthenticatedSupabaseClient } from './supabase';
-import { uploadToSupabaseStorage, deleteFromSupabaseStorage, syncStorageWithDatabase, STORAGE_CONFIG, type StorageFolder } from './storage';
+import { uploadToSupabaseStorage, deleteFromSupabaseStorage, syncStorageWithDatabase, normalizeStorageFolder, STORAGE_CONFIG } from './storage';
 import {
   getDefaultPortalData,
   DEFAULT_NOTICIAS,
@@ -992,6 +992,26 @@ app.delete('/admin/mensajes/:id', async (c) => {
   }
 });
 
+app.patch('/admin/mensajes/read-all', async (c) => {
+  if (!(await verifyAdmin(c))) return c.json({ error: 'No autorizado' }, 401);
+  const client = getSupabaseAdmin() || supabase;
+
+  try {
+    const { error } = await client
+      .from('mensajes_contacto')
+      .update({
+        is_read: true,
+        read_at: new Date().toISOString()
+      })
+      .eq('is_read', false);
+
+    if (error) return c.json({ error: error.message }, 500);
+    return c.json({ success: true });
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500);
+  }
+});
+
 app.patch('/admin/mensajes/:id/read', async (c) => {
   if (!(await verifyAdmin(c))) return c.json({ error: 'No autorizado' }, 401);
   const client = getSupabaseAdmin() || supabase;
@@ -1247,7 +1267,7 @@ app.post('/admin/upload', async (c) => {
   try {
     const formData = await c.req.formData();
     const file = formData.get('file');
-    const folder = (formData.get('folder') as StorageFolder) || 'general';
+    const folder = normalizeStorageFolder(formData.get('folder') as string | null);
 
     if (!file || !(file instanceof File)) {
       return c.json({ error: 'Debe seleccionar un archivo válido.' }, 400);
@@ -1264,10 +1284,10 @@ app.post('/admin/upload', async (c) => {
       folder
     );
 
-    // Registrar en tabla public.r2_media para indexación y catálogo del panel
+    // Registrar o actualizar en tabla public.r2_media para indexación y catálogo del panel
     const client = getSupabaseAdmin() || supabase;
     try {
-      await client.from('r2_media').insert([{
+      const { error: dbErr } = await client.from('r2_media').upsert([{
         file_key: uploadResult.fileKey,
         public_url: uploadResult.publicUrl,
         bucket_name: STORAGE_CONFIG.bucketName,
@@ -1275,7 +1295,10 @@ app.post('/admin/upload', async (c) => {
         mime_type: uploadResult.mimeType,
         file_size_bytes: uploadResult.fileSizeBytes,
         folder: folder
-      }]);
+      }], { onConflict: 'file_key' });
+      if (dbErr) {
+        console.warn('Aviso: Error al registrar en r2_media:', dbErr.message);
+      }
     } catch (dbErr) {
       console.warn('Aviso: No se pudo registrar en r2_media:', dbErr);
     }

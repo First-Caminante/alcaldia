@@ -1,38 +1,150 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '../../lib/supabase';
-import { STORAGE_CONFIG, syncStorageWithDatabase } from '../../lib/storage';
+import {
+  STORAGE_CONFIG,
+  syncStorageWithDatabase,
+  collectPortalMediaUsages,
+  computeStorageSummary,
+  formatStorageBytes,
+  normalizeStorageFolder,
+  type MediaUsageRef,
+  type StorageFolder,
+} from '../../lib/storage';
 import type { R2Media } from '../../types/database';
 
 export const prerender = false;
 
+interface CatalogMediaItem {
+  id: string;
+  source: 'storage' | 'external';
+  folder: StorageFolder;
+  allFolders: StorageFolder[];
+  fileName: string;
+  fileKey: string;
+  publicUrl: string;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: string;
+  createdTs: number;
+  usages: MediaUsageRef[];
+  isUsed: boolean;
+  editUrl: string | null;
+}
+
 let mediaFiles: R2Media[] = [];
-let totalBytesUsed = 0;
+let usageMap = new Map<string, MediaUsageRef[]>();
 const supabaseOnline = isSupabaseConfigured();
 
 if (supabaseOnline) {
   try {
     const client = getSupabaseAdmin() || supabase;
-    // Sincronizar para indexar archivos del bucket que falten
+    // Sincronizar recursivamente para mantener r2_media 100% congruente con el bucket
     await syncStorageWithDatabase();
 
-    const { data } = await client
-      .from('r2_media')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const [mediaRes, usages] = await Promise.all([
+      client.from('r2_media').select('*').order('created_at', { ascending: false }),
+      collectPortalMediaUsages(client),
+    ]);
 
-    if (data) {
-      mediaFiles = data as any;
-      totalBytesUsed = mediaFiles.reduce((acc, f) => acc + (f.file_size_bytes || 0), 0);
+    if (mediaRes.data) {
+      mediaFiles = mediaRes.data as any;
     }
+    usageMap = usages;
   } catch (err) {
     console.warn('Aviso cargando multimedia:', err);
   }
 }
 
-const kbUsed = (totalBytesUsed / 1024).toFixed(1);
-const mbUsed = (totalBytesUsed / (1024 * 1024)).toFixed(2);
-const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
+const storageSummary = computeStorageSummary(mediaFiles);
+const storageUrlSet = new Set(mediaFiles.map(f => (f.public_url || '').trim()));
+
+const storageItems: CatalogMediaItem[] = mediaFiles.map((file) => {
+  const url = (file.public_url || '').trim();
+  const usages = usageMap.get(url) || [];
+  const primaryFolder = normalizeStorageFolder(file.folder);
+  const allFolders = Array.from(new Set<StorageFolder>([primaryFolder, ...usages.map(u => u.folder)]));
+  return {
+    id: file.id,
+    source: 'storage',
+    folder: primaryFolder,
+    allFolders,
+    fileName: file.file_name,
+    fileKey: file.file_key,
+    publicUrl: url,
+    mimeType: file.mime_type || 'application/octet-stream',
+    sizeBytes: Number(file.file_size_bytes || 0),
+    createdAt: file.created_at || '',
+    createdTs: new Date(file.created_at || 0).getTime(),
+    usages,
+    isUsed: usages.length > 0,
+    editUrl: usages[0]?.editUrl || null,
+  };
+});
+
+const externalItems: CatalogMediaItem[] = [];
+let externalIdx = 0;
+for (const [url, usages] of usageMap.entries()) {
+  if (storageUrlSet.has(url)) continue;
+  externalIdx += 1;
+  const primary = usages[0];
+  const allFolders = Array.from(new Set<StorageFolder>(usages.map(u => u.folder)));
+  let derivedName = primary.label;
+  try {
+    const parsed = new URL(url);
+    const tail = parsed.pathname.split('/').filter(Boolean).pop();
+    if (tail && tail.length > 3 && !tail.startsWith('photo-')) {
+      derivedName = tail;
+    }
+  } catch {}
+  externalItems.push({
+    id: `ext-${externalIdx}`,
+    source: 'external',
+    folder: primary.folder,
+    allFolders,
+    fileName: derivedName,
+    fileKey: url,
+    publicUrl: url,
+    mimeType: url.toLowerCase().includes('.pdf') ? 'application/pdf' : 'image/external',
+    sizeBytes: 0,
+    createdAt: '',
+    createdTs: 0,
+    usages,
+    isUsed: true,
+    editUrl: primary.editUrl,
+  });
+}
+
+const folderOrderMap: Record<StorageFolder, number> = {
+  hero: 0,
+  conoce: 1,
+  galeria: 2,
+  noticias: 3,
+  autoridades: 4,
+  tramites: 5,
+  general: 6,
+};
+
+// Orden congruente por carpeta, luego en uso primero y más recientes
+const catalogItems: CatalogMediaItem[] = [...storageItems, ...externalItems].sort((a, b) => {
+  const fDiff = folderOrderMap[a.folder] - folderOrderMap[b.folder];
+  if (fDiff !== 0) return fDiff;
+  if (a.isUsed !== b.isUsed) return a.isUsed ? -1 : 1;
+  if (a.source !== b.source) return a.source === 'storage' ? -1 : 1;
+  return b.createdTs - a.createdTs;
+});
+
+const folderCounts = Object.fromEntries(
+  STORAGE_CONFIG.folders.map(f => [f, catalogItems.filter(i => i.allFolders.includes(f)).length])
+) as Record<StorageFolder, number>;
+
+const usedTotalCount = catalogItems.filter(i => i.isUsed).length;
+const unusedStorageCount = storageItems.filter(i => !i.isUsed).length;
+const mediaStorageColor =
+  storageSummary.percentNumber >= 85 ? '#ef4444' :
+  storageSummary.percentNumber >= 65 ? '#f59e0b' :
+  '#16a34a';
+const mediaProgressValue = storageSummary.totalBytes > 0 ? Math.max(1, storageSummary.percentNumber) : 0;
 ---
 
 <AdminLayout title="Multimedia y Fotos — Almacenamiento GAM Pelechuco" activeNav="media">
@@ -98,6 +210,25 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
       color: #86efac !important;
     }
 
+    .media-card-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    :global(html.dark) .media-card-item {
+      background: var(--admin-card-bg);
+      border-color: var(--admin-border);
+      color: var(--admin-text);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .is-hidden-media {
+      display: none !important;
+    }
     .media-card-item:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
@@ -132,9 +263,9 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
     </div>
   </div>
 
-  <!-- Tarjetas de estado y límites de almacenamiento -->
+  <!-- Panel integral de Almacenamiento Supabase Storage -->
   <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-bottom:1.5rem;">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));gap:1rem;font-size:0.85rem;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1rem;font-size:0.85rem;margin-bottom:1.15rem;">
       <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:8px;border:1px solid #e2e8f0;">
         <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Estado de Almacenamiento</div>
         <div style="font-weight:700;margin-top:0.35rem;display:flex;align-items:center;gap:0.4rem;font-size:1.05rem;">
@@ -144,97 +275,152 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
       </div>
 
       <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:8px;border:1px solid #e2e8f0;">
-        <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Archivos en Biblioteca</div>
+        <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Catálogo Congruente</div>
         <div style="font-weight:700;color:#0f172a;margin-top:0.35rem;font-size:1.35rem;" id="stat-total-archivos">
-          {mediaFiles.length}
+          {catalogItems.length}
         </div>
-        <div style="font-size:0.75rem;color:#15803d;margin-top:0.25rem;">Fotografías y recursos oficiales</div>
+        <div style="font-size:0.75rem;color:#15803d;margin-top:0.25rem;">
+          {storageItems.length} en Storage · {externalItems.length} URLs del portal
+        </div>
+      </div>
+
+      <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:8px;border:1px solid #e2e8f0;">
+        <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Uso Real en Portal</div>
+        <div style="font-weight:700;color:#0f172a;margin-top:0.35rem;font-size:1.35rem;">
+          {usedTotalCount} <span style="font-size:0.8rem;font-weight:500;color:#64748b;">en uso</span>
+        </div>
+        <div style="font-size:0.75rem;color:#b45309;margin-top:0.25rem;">
+          {unusedStorageCount} en Storage sin asignar
+        </div>
       </div>
 
       <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:8px;border:1px solid #e2e8f0;">
         <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Espacio Ocupado (1 GB Gratis)</div>
-        <div style="font-weight:700;color:#0f172a;margin-top:0.35rem;font-size:1.15rem;">
-          {mbUsed} MB <span style="font-size:0.8rem;font-weight:500;color:#64748b;">({kbUsed} KB)</span>
+        <div style="font-weight:700;color:#0f172a;margin-top:0.35rem;font-size:1.15rem;" id="stat-espacio-usado">
+          {formatStorageBytes(storageSummary.totalBytes)} <span style="font-size:0.78rem;font-weight:500;color:#64748b;">({storageSummary.percentUsed}%)</span>
         </div>
-        <div style="font-size:0.75rem;color:#64748b;margin-top:0.25rem;">Uso: {percentUsed}% del límite</div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:0.25rem;">
+          Libre: {formatStorageBytes(storageSummary.freeBytes)} · Límite 10 MB/arch.
+        </div>
       </div>
+    </div>
 
-      <div style="background:#f8fafc;padding:0.85rem 1rem;border-radius:8px;border:1px solid #e2e8f0;">
-        <div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;font-weight:600;">Compresión WebP Automática</div>
-        <div style="font-weight:700;color:#2D5016;margin-top:0.35rem;font-size:1.05rem;">
-          ⚡ Ahorro de ~85%
-        </div>
-        <div style="font-size:0.75rem;color:#15803d;margin-top:0.25rem;">Capacidad: ~8.000 imágenes</div>
+    <!-- Barra de progreso de Supabase Storage + desglose por carpeta -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.9rem 1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;margin-bottom:0.45rem;flex-wrap:wrap;gap:0.5rem;">
+        <span style="font-weight:700;color:#0f172a;">
+          ☁️ Cuota de Almacenamiento Supabase: {formatStorageBytes(storageSummary.totalBytes)} / 1.00 GB ({storageSummary.percentUsed}%)
+        </span>
+        <span style="font-size:0.76rem;color:#64748b;">
+          🖼️ {storageSummary.imageCount} imágenes · 📄 {storageSummary.docCount} documentos PDF · Compresión WebP activa
+        </span>
+      </div>
+      <progress
+        id="media-storage-progress"
+        class="supabase-storage-progress"
+        value={mediaProgressValue}
+        max="100"
+        style={`height:11px;--storage-track-bg:#e2e8f0;--storage-fill-color:${mediaStorageColor};`}
+        aria-label={`Espacio utilizado en Supabase Storage: ${storageSummary.percentUsed}%`}
+      ></progress>
+      <div style="display:flex;flex-wrap:wrap;gap:0.45rem;margin-top:0.75rem;">
+        {STORAGE_CONFIG.folders.map((folder) => {
+          const fStat = storageSummary.byFolder[folder];
+          return (
+            <button
+              type="button"
+              class="storage-folder-chip"
+              data-jump-folder={folder}
+              style="background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:0.25rem 0.6rem;font-size:0.73rem;color:#334155;cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;"
+              title={`Filtrar carpeta ${folder}/ (${fStat.count} en Storage, ${formatStorageBytes(fStat.bytes)})`}
+            >
+              <strong style="color:#0f172a;">{folder}/</strong>
+              <span>{fStat.count} arch.</span>
+              <span style="color:#64748b;">· {formatStorageBytes(fStat.bytes)}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   </div>
 
-  <!-- Barra de Filtros, Búsqueda y Selector de Vista -->
-  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
-    <!-- Filtros de Carpeta -->
+  <!-- Barra de Filtros, Orden, Búsqueda y Selector de Vista -->
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;flex-direction:column;gap:0.85rem;">
+    <!-- Fila 1: Filtros de Carpeta con conteos reales -->
     <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;" id="filter-folder-bar">
       <span style="font-size:0.8rem;font-weight:600;color:#64748b;margin-right:0.3rem;">Carpeta:</span>
       <button class="filter-btn active" data-folder="all">
-        Todas ({mediaFiles.length})
+        Todas ({catalogItems.length})
       </button>
-      <button class="filter-btn" data-folder="noticias">
-        noticias/
-      </button>
-      <button class="filter-btn" data-folder="galeria">
-        galeria/
-      </button>
-      <button class="filter-btn" data-folder="autoridades">
-        autoridades/
-      </button>
-      <button class="filter-btn" data-folder="hero">
-        hero/
-      </button>
-      <button class="filter-btn" data-folder="tramites">
-        tramites/
-      </button>
-      <button class="filter-btn" data-folder="conoce">
-        conoce/
-      </button>
-      <button class="filter-btn" data-folder="general">
-        general/
-      </button>
+      {STORAGE_CONFIG.folders.map((folder) => (
+        <button class="filter-btn" data-folder={folder}>
+          {folder}/ ({folderCounts[folder]})
+        </button>
+      ))}
     </div>
 
-    <!-- Búsqueda y Alternador de Vista (Cuadrícula / Tabla) -->
-    <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-      <div style="position:relative;">
-        <input
-          type="text"
-          id="search-media"
-          placeholder="🔍 Buscar por nombre..."
-          style="padding:0.45rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;width:200px;"
-        />
+    <!-- Fila 2: Filtro de Origen/Uso, Orden, Búsqueda y Vista -->
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+      <div style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
+        <select
+          id="filter-source-usage"
+          aria-label="Filtrar por origen o uso"
+          style="padding:0.45rem 0.75rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;background:#f8fafc;color:#1e293b;"
+        >
+          <option value="all">Todos los recursos ({catalogItems.length})</option>
+          <option value="storage">☁️ Solo Supabase Storage ({storageItems.length})</option>
+          <option value="external">🌐 Solo URLs externas del portal ({externalItems.length})</option>
+          <option value="used">✓ En uso en el portal ({usedTotalCount})</option>
+          <option value="unused">⚠️ Sin asignar en portal ({unusedStorageCount})</option>
+        </select>
+
+        <select
+          id="sort-media"
+          aria-label="Ordenar multimedia"
+          style="padding:0.45rem 0.75rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;background:#f8fafc;color:#1e293b;"
+        >
+          <option value="folder-usage">Orden: Por carpeta y uso</option>
+          <option value="recent">Orden: Más recientes primero</option>
+          <option value="name-asc">Orden: Nombre (A–Z)</option>
+          <option value="size-desc">Orden: Mayor tamaño</option>
+        </select>
       </div>
 
-      <div style="display:flex;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;">
-        <button
-          type="button"
-          id="btn-vista-grid"
-          class="btn-view-toggle active"
-          title="Vista Cuadrícula Visual"
-        >
-          <span>🖼️ Cuadrícula</span>
-        </button>
-        <button
-          type="button"
-          id="btn-vista-tabla"
-          class="btn-view-toggle"
-          title="Vista Tabla Detallada"
-        >
-          <span>📋 Tabla</span>
-        </button>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+        <div style="position:relative;">
+          <input
+            type="text"
+            id="search-media"
+            placeholder="🔍 Buscar nombre o sección..."
+            style="padding:0.45rem 0.8rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;width:220px;"
+          />
+        </div>
+
+        <div style="display:flex;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;">
+          <button
+            type="button"
+            id="btn-vista-grid"
+            class="btn-view-toggle active"
+            title="Vista Cuadrícula Visual"
+          >
+            <span>🖼️ Cuadrícula</span>
+          </button>
+          <button
+            type="button"
+            id="btn-vista-tabla"
+            class="btn-view-toggle"
+            title="Vista Tabla Detallada"
+          >
+            <span>📋 Tabla</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- VISTA 1: CUADRÍCULA DE FOTOS Y MULTIMEDIA (VISUAL) -->
   <div id="contenedor-vista-grid">
-    {mediaFiles.length === 0 ? (
+    {catalogItems.length === 0 ? (
       <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:3.5rem 1.5rem;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05);" id="empty-state-grid">
         <div style="font-size:3rem;margin-bottom:0.75rem;">📁</div>
         <h3 style="font-size:1.15rem;font-weight:700;color:#1e293b;margin:0 0 0.5rem 0;">No hay fotos registradas aún</h3>
@@ -250,100 +436,147 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
         id="media-grid"
         style="display:grid;grid-template-columns:repeat(auto-fill, minmax(min(100%, 260px), 1fr));gap:1.25rem;"
       >
-        {mediaFiles.map((file) => (
-          <div
-            class="media-card-item"
-            data-id={file.id}
-            data-folder={file.folder}
-            data-name={file.file_name.toLowerCase()}
-            data-url={file.public_url}
-            style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;flex-direction:column;transition:transform 0.2s, box-shadow 0.2s;"
-          >
-            <!-- Miniatura / Previsualización -->
+        {catalogItems.map((item) => {
+          const usageText = item.usages.map(u => `${u.section}: ${u.label}`).join(' · ');
+          const searchHaystack = `${item.fileName} ${item.fileKey} ${usageText}`.toLowerCase();
+          const isImage = item.mimeType.startsWith('image/');
+          return (
             <div
-              class="media-thumb-container"
-              style="position:relative;height:165px;background:#0d1723;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;"
-              title="Click para ver en tamaño grande"
+              class="media-card-item"
+              data-id={item.id}
+              data-source={item.source}
+              data-used={String(item.isUsed)}
+              data-folder={item.folder}
+              data-folders={item.allFolders.join(' ')}
+              data-folder-order={folderOrderMap[item.folder]}
+              data-name={item.fileName.toLowerCase()}
+              data-search={searchHaystack}
+              data-size={item.sizeBytes}
+              data-created={item.createdTs}
+              data-url={item.publicUrl}
+              data-usage={usageText}
             >
-              {file.mime_type?.startsWith('image/') ? (
-                <img
-                  src={file.public_url}
-                  alt={file.file_name}
-                  style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;"
-                  loading="lazy"
-                />
-              ) : (
-                <div style="text-align:center;color:#94a3b8;padding:1rem;">
-                  <div style="font-size:2.5rem;margin-bottom:0.25rem;">📄</div>
-                  <div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;">Documento PDF</div>
-                </div>
-              )}
-              <span
-                style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(15,23,42,0.85);backdrop-filter:blur(4px);color:#fff;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:10px;font-weight:600;"
+              <!-- Miniatura / Previsualización -->
+              <div
+                class="media-thumb-container"
+                style="position:relative;height:165px;background:#0d1723;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;"
+                title="Click para ver en tamaño grande"
               >
-                {file.folder}
-              </span>
-              <span
-                style="position:absolute;top:0.5rem;right:0.5rem;background:rgba(45,80,22,0.9);color:#FAF7F2;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:6px;font-weight:600;"
-              >
-                {(file.file_size_bytes / 1024).toFixed(0)} KB
-              </span>
-            </div>
-
-            <!-- Información del Archivo -->
-            <div style="padding:0.85rem 1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
-              <div>
-                <div
-                  style="font-size:0.85rem;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.25rem;"
-                  title={file.file_name}
+                {isImage ? (
+                  <img
+                    src={item.publicUrl}
+                    alt={item.fileName}
+                    style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div style="text-align:center;color:#94a3b8;padding:1rem;">
+                    <div style="font-size:2.5rem;margin-bottom:0.25rem;">📄</div>
+                    <div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;">Documento PDF</div>
+                  </div>
+                )}
+                <span
+                  style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(15,23,42,0.88);backdrop-filter:blur(4px);color:#fff;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:10px;font-weight:600;"
                 >
-                  {file.file_name}
-                </div>
-                <div
-                  style="font-size:0.7rem;color:#94a3b8;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.75rem;"
-                  title={file.file_key}
-                >
-                  {file.file_key}
-                </div>
+                  {item.folder}/
+                </span>
+                {item.source === 'storage' ? (
+                  <span
+                    style="position:absolute;top:0.5rem;right:0.5rem;background:rgba(45,80,22,0.92);color:#FAF7F2;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:6px;font-weight:600;"
+                  >
+                    {formatStorageBytes(item.sizeBytes)}
+                  </span>
+                ) : (
+                  <span
+                    style="position:absolute;top:0.5rem;right:0.5rem;background:rgba(2,132,199,0.92);color:#ffffff;font-size:0.68rem;padding:0.15rem 0.5rem;border-radius:6px;font-weight:700;"
+                  >
+                    🌐 Portal URL
+                  </span>
+                )}
               </div>
 
-              <!-- Acciones Rápidas -->
-              <div style="border-top:1px solid #f1f5f9;padding-top:0.6rem;display:flex;justify-content:space-between;align-items:center;">
-                <button
-                  type="button"
-                  class="btn-copiar-url"
-                  data-url={file.public_url}
-                  style="background:none;border:none;color:#4A7FA5;font-weight:600;font-size:0.78rem;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:0.25rem;"
-                  title="Copiar URL al portapapeles"
-                >
-                  📋 Copiar URL
-                </button>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                  <a
-                    href={file.public_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style="color:#64748b;font-weight:600;font-size:0.78rem;text-decoration:none;"
-                    title="Abrir imagen en pestaña nueva"
+              <!-- Información del Archivo -->
+              <div style="padding:0.85rem 1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+                <div>
+                  <div
+                    style="font-size:0.85rem;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.35rem;"
+                    title={item.fileName}
                   >
-                    Ver ↗
-                  </a>
-                  <span style="color:#cbd5e1;">·</span>
+                    {item.fileName}
+                  </div>
+                  <div style="display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;margin-bottom:0.45rem;">
+                    {item.isUsed ? (
+                      <span
+                        style="background:rgba(22,163,74,0.12);color:#15803d;font-size:0.68rem;padding:0.12rem 0.45rem;border-radius:999px;font-weight:700;"
+                        title={usageText}
+                      >
+                        ✓ En uso ({item.usages.length})
+                      </span>
+                    ) : (
+                      <span
+                        style="background:rgba(245,158,11,0.14);color:#b45309;font-size:0.68rem;padding:0.12rem 0.45rem;border-radius:999px;font-weight:700;"
+                      >
+                        ⚠️ Sin asignar
+                      </span>
+                    )}
+                    <span
+                      style="font-size:0.68rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:165px;"
+                      title={usageText || item.fileKey}
+                    >
+                      {item.isUsed ? `${item.usages[0].section}: ${item.usages[0].label}` : item.fileKey}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Acciones Rápidas -->
+                <div style="border-top:1px solid #f1f5f9;padding-top:0.6rem;display:flex;justify-content:space-between;align-items:center;">
                   <button
                     type="button"
-                    class="btn-eliminar-media"
-                    data-id={file.id}
-                    data-name={file.file_name}
-                    style="background:none;border:none;color:#ef4444;font-size:0.78rem;cursor:pointer;padding:0;font-weight:600;"
-                    title="Eliminar de Supabase Storage"
+                    class="btn-copiar-url"
+                    data-url={item.publicUrl}
+                    style="background:none;border:none;color:#4A7FA5;font-weight:600;font-size:0.78rem;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:0.25rem;"
+                    title="Copiar URL al portapapeles"
                   >
-                    Eliminar
+                    📋 Copiar URL
                   </button>
+                  <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <a
+                      href={item.publicUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style="color:#64748b;font-weight:600;font-size:0.78rem;text-decoration:none;"
+                      title="Abrir imagen en pestaña nueva"
+                    >
+                      Ver ↗
+                    </a>
+                    <span style="color:#cbd5e1;">·</span>
+                    {item.source === 'storage' ? (
+                      <button
+                        type="button"
+                        class="btn-eliminar-media"
+                        data-id={item.id}
+                        data-name={item.fileName}
+                        data-usage={usageText}
+                        style="background:none;border:none;color:#ef4444;font-size:0.78rem;cursor:pointer;padding:0;font-weight:600;"
+                        title="Eliminar de Supabase Storage"
+                      >
+                        Eliminar
+                      </button>
+                    ) : (
+                      <a
+                        href={item.editUrl || '/admin'}
+                        style="color:#2D5016;font-weight:600;font-size:0.78rem;text-decoration:none;"
+                        title="Ir a la sección donde se utiliza esta imagen"
+                      >
+                        Editar →
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     )}
   </div>
@@ -353,97 +586,128 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
     <table style="width:100%;border-collapse:collapse;text-align:left;font-size:0.875rem;">
       <thead style="background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:0.75rem;text-transform:uppercase;">
         <tr>
-          <th style="padding:0.75rem 1rem;">Archivo</th>
+          <th style="padding:0.75rem 1rem;">Archivo / Recurso</th>
           <th style="padding:0.75rem 1rem;">Carpeta</th>
-          <th style="padding:0.75rem 1rem;">Formato</th>
-          <th style="padding:0.75rem 1rem;">Tamaño</th>
+          <th style="padding:0.75rem 1rem;">Uso en Portal</th>
+          <th style="padding:0.75rem 1rem;">Origen / Tamaño</th>
           <th style="padding:0.75rem 1rem;text-align:right;">Acciones</th>
         </tr>
       </thead>
       <tbody id="tabla-media-body">
-        {mediaFiles.length === 0 ? (
+        {catalogItems.length === 0 ? (
           <tr>
             <td colspan="5" style="padding:3rem 1rem;text-align:center;color:#64748b;">
-              No hay archivos subidos en Supabase Storage todavía.
+              No hay archivos registrados todavía.
             </td>
           </tr>
         ) : (
-          mediaFiles.map((file) => (
-            <tr
-              style="border-bottom:1px solid #f1f5f9;"
-              class="media-table-row"
-              data-id={file.id}
-              data-folder={file.folder}
-              data-name={file.file_name.toLowerCase()}
-              id={`media-row-${file.id}`}
-            >
-              <td style="padding:0.75rem 1rem;font-weight:600;color:#0f172a;display:flex;align-items:center;gap:0.75rem;">
-                {file.mime_type?.startsWith('image/') ? (
-                  <img
-                    src={file.public_url}
-                    alt=""
-                    style="width:42px;height:42px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0;cursor:pointer;"
-                    class="table-thumb-preview"
-                    data-url={file.public_url}
-                  />
-                ) : (
-                  <span style="font-size:1.6rem;">📄</span>
-                )}
-                <div style="max-width:280px;">
+          catalogItems.map((item) => {
+            const usageText = item.usages.map(u => `${u.section}: ${u.label}`).join(' · ');
+            const searchHaystack = `${item.fileName} ${item.fileKey} ${usageText}`.toLowerCase();
+            return (
+              <tr
+                style="border-bottom:1px solid #f1f5f9;"
+                class="media-table-row"
+                data-id={item.id}
+                data-source={item.source}
+                data-used={String(item.isUsed)}
+                data-folder={item.folder}
+                data-folders={item.allFolders.join(' ')}
+                data-folder-order={folderOrderMap[item.folder]}
+                data-name={item.fileName.toLowerCase()}
+                data-search={searchHaystack}
+                data-size={item.sizeBytes}
+                data-created={item.createdTs}
+                id={`media-row-${item.id}`}
+              >
+                <td style="padding:0.75rem 1rem;font-weight:600;color:#0f172a;display:flex;align-items:center;gap:0.75rem;">
+                  {item.mimeType.startsWith('image/') ? (
+                    <img
+                      src={item.publicUrl}
+                      alt=""
+                      style="width:42px;height:42px;border-radius:6px;object-fit:cover;border:1px solid #e2e8f0;cursor:pointer;"
+                      class="table-thumb-preview"
+                      data-url={item.publicUrl}
+                    />
+                  ) : (
+                    <span style="font-size:1.6rem;">📄</span>
+                  )}
+                  <div style="max-width:260px;">
+                    <a
+                      href={item.publicUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style="color:inherit;text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                    >
+                      {item.fileName}
+                    </a>
+                    <div style="font-size:0.72rem;color:#94a3b8;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      {item.fileKey}
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:0.75rem 1rem;">
+                  <span style="background:rgba(45,80,22,0.1);color:#2D5016;padding:0.2rem 0.55rem;border-radius:12px;font-size:0.75rem;font-weight:600;">
+                    {item.folder}/
+                  </span>
+                </td>
+                <td style="padding:0.75rem 1rem;font-size:0.78rem;">
+                  {item.isUsed ? (
+                    <span style="color:#15803d;font-weight:600;" title={usageText}>
+                      ✓ {item.usages[0].section}: {item.usages[0].label}
+                    </span>
+                  ) : (
+                    <span style="color:#b45309;font-weight:600;">⚠️ Sin asignar</span>
+                  )}
+                </td>
+                <td style="padding:0.75rem 1rem;color:#64748b;font-size:0.8rem;font-weight:500;">
+                  {item.source === 'storage' ? (
+                    <span>☁️ {formatStorageBytes(item.sizeBytes)}</span>
+                  ) : (
+                    <span style="color:#0284c7;font-weight:600;">🌐 URL Externa</span>
+                  )}
+                </td>
+                <td style="padding:0.75rem 1rem;text-align:right;white-space:nowrap;">
+                  <button
+                    type="button"
+                    class="btn-copiar-url"
+                    data-url={item.publicUrl}
+                    style="background:none;border:none;color:#4A7FA5;font-weight:600;font-size:0.8rem;cursor:pointer;margin-right:0.75rem;"
+                    title="Copiar URL para usar en el portal"
+                  >
+                    Copiar URL
+                  </button>
                   <a
-                    href={file.public_url}
+                    href={item.publicUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style="color:inherit;text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                    style="color:#64748b;font-weight:600;font-size:0.8rem;text-decoration:none;margin-right:0.75rem;"
                   >
-                    {file.file_name}
+                    Ver ↗
                   </a>
-                  <div style="font-size:0.72rem;color:#94a3b8;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                    {file.file_key}
-                  </div>
-                </div>
-              </td>
-              <td style="padding:0.75rem 1rem;">
-                <span style="background:rgba(45,80,22,0.1);color:#2D5016;padding:0.2rem 0.55rem;border-radius:12px;font-size:0.75rem;font-weight:600;">
-                  {file.folder}
-                </span>
-              </td>
-              <td style="padding:0.75rem 1rem;color:#64748b;font-size:0.8rem;">
-                {file.mime_type}
-              </td>
-              <td style="padding:0.75rem 1rem;color:#64748b;font-size:0.8rem;font-weight:500;">
-                {(file.file_size_bytes / 1024).toFixed(1)} KB
-              </td>
-              <td style="padding:0.75rem 1rem;text-align:right;">
-                <button
-                  type="button"
-                  class="btn-copiar-url"
-                  data-url={file.public_url}
-                  style="background:none;border:none;color:#4A7FA5;font-weight:600;font-size:0.8rem;cursor:pointer;margin-right:0.75rem;"
-                  title="Copiar URL para usar en el portal"
-                >
-                  Copiar URL
-                </button>
-                <a
-                  href={file.public_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style="color:#64748b;font-weight:600;font-size:0.8rem;text-decoration:none;margin-right:0.75rem;"
-                >
-                  Ver ↗
-                </a>
-                <button
-                  type="button"
-                  class="btn-eliminar-media"
-                  data-id={file.id}
-                  data-name={file.file_name}
-                  style="background:none;border:none;color:#ef4444;font-size:0.8rem;cursor:pointer;font-weight:600;"
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))
+                  {item.source === 'storage' ? (
+                    <button
+                      type="button"
+                      class="btn-eliminar-media"
+                      data-id={item.id}
+                      data-name={item.fileName}
+                      data-usage={usageText}
+                      style="background:none;border:none;color:#ef4444;font-size:0.8rem;cursor:pointer;font-weight:600;"
+                    >
+                      Eliminar
+                    </button>
+                  ) : (
+                    <a
+                      href={item.editUrl || '/admin'}
+                      style="color:#2D5016;font-weight:600;font-size:0.8rem;text-decoration:none;"
+                    >
+                      Editar →
+                    </a>
+                  )}
+                </td>
+              </tr>
+            );
+          })
         )}
       </tbody>
     </table>
@@ -595,8 +859,13 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
       const btnVistaTabla = document.getElementById('btn-vista-tabla');
       const vistaGrid = document.getElementById('contenedor-vista-grid');
       const vistaTabla = document.getElementById('contenedor-vista-tabla');
+      const mediaGrid = document.getElementById('media-grid');
+      const tablaBody = document.getElementById('tabla-media-body');
       const searchInput = document.getElementById('search-media') as HTMLInputElement | null;
+      const sourceUsageSelect = document.getElementById('filter-source-usage') as HTMLSelectElement | null;
+      const sortSelect = document.getElementById('sort-media') as HTMLSelectElement | null;
       const filterBtns = document.querySelectorAll('.filter-btn');
+      const storageFolderChips = document.querySelectorAll('.storage-folder-chip');
 
       // Lightbox
       const lightboxModal = document.getElementById('modal-lightbox');
@@ -614,6 +883,9 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
         modal.style.display = 'flex';
         if (statusDiv) statusDiv.style.display = 'none';
         form?.reset();
+        if (folderSelect && activeFolder !== 'all') {
+          folderSelect.value = activeFolder;
+        }
       }
 
       function closeModal() {
@@ -649,44 +921,110 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
         btnVistaGrid.classList.remove('active');
       });
 
-      // Filtro de carpeta
+      // Filtro de carpeta, origen/uso, búsqueda y ordenamiento
       let activeFolder = 'all';
+      let activeSourceUsage = 'all';
       let searchTerm = '';
+
+      function setActiveFolder(folder: string) {
+        activeFolder = folder || 'all';
+        filterBtns.forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-folder') === activeFolder);
+        });
+        applyFilters();
+      }
 
       function applyFilters() {
         const gridItems = document.querySelectorAll('.media-card-item');
         const tableRows = document.querySelectorAll('.media-table-row');
 
+        const matchesItem = (el: Element) => {
+          const itemFolders = (el.getAttribute('data-folders') || el.getAttribute('data-folder') || '').split(' ').filter(Boolean);
+          const itemSource = el.getAttribute('data-source') || '';
+          const itemUsed = el.getAttribute('data-used') === 'true';
+          const itemSearch = el.getAttribute('data-search') || el.getAttribute('data-name') || '';
+
+          const matchFolder = activeFolder === 'all' || itemFolders.includes(activeFolder);
+          const matchSearch = !searchTerm || itemSearch.includes(searchTerm);
+          let matchSourceUsage = true;
+          if (activeSourceUsage === 'storage') matchSourceUsage = itemSource === 'storage';
+          else if (activeSourceUsage === 'external') matchSourceUsage = itemSource === 'external';
+          else if (activeSourceUsage === 'used') matchSourceUsage = itemUsed;
+          else if (activeSourceUsage === 'unused') matchSourceUsage = !itemUsed;
+
+          return matchFolder && matchSearch && matchSourceUsage;
+        };
+
         gridItems.forEach((el) => {
-          const itemFolder = el.getAttribute('data-folder') || '';
-          const itemName = el.getAttribute('data-name') || '';
-          const matchFolder = activeFolder === 'all' || itemFolder === activeFolder;
-          const matchSearch = !searchTerm || itemName.includes(searchTerm);
-          (el as HTMLElement).style.display = (matchFolder && matchSearch) ? 'flex' : 'none';
+          el.classList.toggle('is-hidden-media', !matchesItem(el));
         });
 
         tableRows.forEach((el) => {
-          const itemFolder = el.getAttribute('data-folder') || '';
-          const itemName = el.getAttribute('data-name') || '';
-          const matchFolder = activeFolder === 'all' || itemFolder === activeFolder;
-          const matchSearch = !searchTerm || itemName.includes(searchTerm);
-          (el as HTMLElement).style.display = (matchFolder && matchSearch) ? '' : 'none';
+          el.classList.toggle('is-hidden-media', !matchesItem(el));
         });
+      }
+
+      function applySort() {
+        const mode = sortSelect?.value || 'folder-usage';
+        const compareEls = (a: Element, b: Element) => {
+          if (mode === 'recent') {
+            const diff = Number(b.getAttribute('data-created') || '0') - Number(a.getAttribute('data-created') || '0');
+            if (diff !== 0) return diff;
+          } else if (mode === 'name-asc') {
+            return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
+          } else if (mode === 'size-desc') {
+            const diff = Number(b.getAttribute('data-size') || '0') - Number(a.getAttribute('data-size') || '0');
+            if (diff !== 0) return diff;
+          }
+          // Default: folder-usage
+          const fDiff = Number(a.getAttribute('data-folder-order') || '9') - Number(b.getAttribute('data-folder-order') || '9');
+          if (fDiff !== 0) return fDiff;
+          const uDiff = (b.getAttribute('data-used') === 'true' ? 1 : 0) - (a.getAttribute('data-used') === 'true' ? 1 : 0);
+          if (uDiff !== 0) return uDiff;
+          return Number(b.getAttribute('data-created') || '0') - Number(a.getAttribute('data-created') || '0');
+        };
+
+        if (mediaGrid) {
+          Array.from(mediaGrid.querySelectorAll('.media-card-item'))
+            .sort(compareEls)
+            .forEach(el => mediaGrid.appendChild(el));
+        }
+        if (tablaBody) {
+          Array.from(tablaBody.querySelectorAll('.media-table-row'))
+            .sort(compareEls)
+            .forEach(el => tablaBody.appendChild(el));
+        }
       }
 
       filterBtns.forEach((btn) => {
         btn.addEventListener('click', () => {
-          filterBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          activeFolder = btn.getAttribute('data-folder') || 'all';
-          applyFilters();
+          setActiveFolder(btn.getAttribute('data-folder') || 'all');
         });
       });
+
+      storageFolderChips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const targetFolder = chip.getAttribute('data-jump-folder') || 'all';
+          setActiveFolder(targetFolder);
+        });
+      });
+
+      sourceUsageSelect?.addEventListener('change', () => {
+        activeSourceUsage = sourceUsageSelect.value || 'all';
+        applyFilters();
+      });
+
+      sortSelect?.addEventListener('change', applySort);
 
       searchInput?.addEventListener('input', (e) => {
         searchTerm = (e.target as HTMLInputElement).value.toLowerCase().trim();
         applyFilters();
       });
+
+      const initialFolderParam = new URLSearchParams(window.location.search).get('folder');
+      if (initialFolderParam) {
+        setActiveFolder(initialFolderParam);
+      }
 
       // Lightbox preview
       function openLightbox(url: string, title: string) {
@@ -796,9 +1134,13 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
         if (deleteBtn) {
           const id = deleteBtn.getAttribute('data-id');
           const name = deleteBtn.getAttribute('data-name') || 'este archivo';
+          const usage = deleteBtn.getAttribute('data-usage') || '';
           if (!id) return;
 
-          if (!confirm(`¿Está seguro de eliminar "${name}" de Supabase Storage y de la base de datos?`)) {
+          const confirmMsg = usage
+            ? `⚠️ "${name}" se está usando actualmente en:\n${usage}\n\n¿Seguro que desea eliminarlo de Supabase Storage y de la base de datos?`
+            : `¿Está seguro de eliminar "${name}" de Supabase Storage y de la base de datos?`;
+          if (!confirm(confirmMsg)) {
             return;
           }
 
@@ -812,8 +1154,7 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
               if ((window as any).showToast) {
                 (window as any).showToast('Archivo eliminado exitosamente');
               }
-              document.querySelector(`.media-card-item[data-id="${id}"]`)?.remove();
-              document.getElementById(`media-row-${id}`)?.remove();
+              setTimeout(() => window.location.reload(), 550);
             } else {
               alert(data.error || 'No se pudo eliminar el archivo');
             }
@@ -889,7 +1230,9 @@ const percentUsed = ((totalBytesUsed / (1024 * 1024 * 1024)) * 100).toFixed(3);
             if ((window as any).showToast) {
               (window as any).showToast('Archivo subido exitosamente');
             }
-            setTimeout(() => window.location.reload(), 1100);
+            setTimeout(() => {
+              window.location.href = `/admin/media?folder=${encodeURIComponent(folder)}`;
+            }, 900);
           } else {
             if (statusDiv) {
               statusDiv.style.background = '#fef2f2';

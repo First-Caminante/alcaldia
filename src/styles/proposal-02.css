@@ -935,34 +935,76 @@ h1, h2, h3 {
 }
 
 /* Colores institucionales de red con suave aura */
-.p02-social-btn.social-fb:hover {
+.p02-social-btn.social-fb:hover,
+.p02-social-btn.social-facebook:hover,
+.p02-social-btn.social-fb:focus-visible,
+.p02-social-btn.social-facebook:focus-visible {
   background: #1877F2;
   border-color: #1877F2;
+  color: #ffffff;
   box-shadow: 0 8px 22px rgba(24, 119, 242, 0.45);
 }
 
-.p02-social-btn.social-wa:hover {
+.p02-social-btn.social-wa:hover,
+.p02-social-btn.social-whatsapp:hover,
+.p02-social-btn.social-wa:focus-visible,
+.p02-social-btn.social-whatsapp:focus-visible {
   background: #25D366;
   border-color: #25D366;
+  color: #ffffff;
   box-shadow: 0 8px 22px rgba(37, 211, 102, 0.45);
 }
 
-.p02-social-btn.social-yt:hover {
+.p02-social-btn.social-yt:hover,
+.p02-social-btn.social-youtube:hover,
+.p02-social-btn.social-yt:focus-visible,
+.p02-social-btn.social-youtube:focus-visible {
   background: #FF0000;
   border-color: #FF0000;
+  color: #ffffff;
   box-shadow: 0 8px 22px rgba(255, 0, 0, 0.45);
 }
 
-.p02-social-btn.social-tk:hover {
+.p02-social-btn.social-tk:hover,
+.p02-social-btn.social-tiktok:hover,
+.p02-social-btn.social-tk:focus-visible,
+.p02-social-btn.social-tiktok:focus-visible {
   background: #010101;
   border-color: #25F4EE;
-  box-shadow: 0 8px 22px rgba(37, 244, 238, 0.35);
+  color: #ffffff;
+  box-shadow: 0 8px 22px rgba(37, 244, 238, 0.35), 0 0 12px rgba(254, 44, 85, 0.35);
 }
 
-.p02-social-btn.social-tw:hover {
+.p02-social-btn.social-tw:hover,
+.p02-social-btn.social-twitter:hover,
+.p02-social-btn.social-twitter_x:hover,
+.p02-social-btn.social-x:hover,
+.p02-social-btn.social-tw:focus-visible,
+.p02-social-btn.social-twitter:focus-visible,
+.p02-social-btn.social-twitter_x:focus-visible,
+.p02-social-btn.social-x:focus-visible {
   background: #111111;
   border-color: #ffffff;
+  color: #ffffff;
   box-shadow: 0 8px 22px rgba(255, 255, 255, 0.3);
+}
+
+.p02-social-btn.social-ig:hover,
+.p02-social-btn.social-instagram:hover,
+.p02-social-btn.social-ig:focus-visible,
+.p02-social-btn.social-instagram:focus-visible {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  border-color: #dc2743;
+  color: #ffffff;
+  box-shadow: 0 8px 22px rgba(220, 39, 67, 0.45);
+}
+
+.p02-social-btn.social-web:hover,
+.p02-social-btn.social-web:focus-visible {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 8px 22px rgba(2, 132, 199, 0.45);
 }
 
 .p02-social-btn:focus-visible {

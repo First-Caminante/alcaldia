@@ -1,6 +1,7 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '../../lib/supabase';
+import { computeStorageSummary, formatStorageBytes, STORAGE_CONFIG } from '../../lib/storage';
 import { DEFAULT_NOTICIAS, DEFAULT_TRAMITES, DEFAULT_AUTORIDADES } from '../../lib/data-defaults';
 
 export const prerender = false;
@@ -12,24 +13,33 @@ let stats = {
   tramitesCount: DEFAULT_TRAMITES.length,
   autoridadesCount: DEFAULT_AUTORIDADES.length,
   mensajesCount: 0,
+  unreadMensajesCount: 0,
 };
+let storageSummary = computeStorageSummary([]);
 
 let ultimasNoticias = DEFAULT_NOTICIAS.slice(0, 5);
 let ultimosTramites = DEFAULT_TRAMITES.slice(0, 5);
 
 if (isConfigured) {
   try {
-    const [notRes, tramRes, autRes, msgRes] = await Promise.all([
+    const [notRes, tramRes, autRes, msgRes, mediaRes] = await Promise.all([
       adminClient.from('noticias').select('id, title, status, published_at, slug', { count: 'exact' }).order('published_at', { ascending: false }).limit(5),
       adminClient.from('tramites').select('id, title, cost, office', { count: 'exact' }).limit(5),
       adminClient.from('autoridades').select('id', { count: 'exact' }),
       adminClient.from('mensajes_contacto').select('id, is_read', { count: 'exact' }),
+      adminClient.from('r2_media').select('file_size_bytes, folder, mime_type'),
     ]);
 
     if (notRes.count !== null) stats.noticiasCount = notRes.count;
     if (tramRes.count !== null) stats.tramitesCount = tramRes.count;
     if (autRes.count !== null) stats.autoridadesCount = autRes.count;
     if (msgRes.count !== null) stats.mensajesCount = msgRes.count;
+    if (msgRes.data) {
+      stats.unreadMensajesCount = msgRes.data.filter((m: any) => !m.is_read).length;
+    }
+    if (mediaRes.data) {
+      storageSummary = computeStorageSummary(mediaRes.data);
+    }
 
     if (notRes.data && notRes.data.length > 0) {
       ultimasNoticias = notRes.data as any;
@@ -41,6 +51,12 @@ if (isConfigured) {
     console.warn('Error obteniendo estadísticas de Supabase:', err);
   }
 }
+
+const dashStorageColor =
+  storageSummary.percentNumber >= 85 ? '#ef4444' :
+  storageSummary.percentNumber >= 65 ? '#f59e0b' :
+  '#16a34a';
+const dashProgressValue = storageSummary.totalBytes > 0 ? Math.max(1, storageSummary.percentNumber) : 0;
 ---
 
 <AdminLayout title="Dashboard — Panel Administrativo GAM Pelechuco" activeNav="dashboard">
@@ -124,13 +140,75 @@ if (isConfigured) {
       <div style="font-size:0.75rem;color:#8b5cf6;margin-top:0.25rem;">Gabinete y Concejo</div>
     </div>
 
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+    <a href="/admin/mensajes" style={`background:#fff;border:1px solid ${stats.unreadMensajesCount > 0 ? '#fca5a5' : '#e2e8f0'};border-radius:10px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);text-decoration:none;display:block;transition:transform 0.15s ease;`}>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
         <span style="font-size:0.8rem;font-weight:600;color:#64748b;text-transform:uppercase;">Buzón Ciudadano</span>
         <span style="font-size:1.3rem;">📬</span>
       </div>
-      <div style="font-size:1.8rem;font-weight:700;color:#0f172a;">{stats.mensajesCount}</div>
-      <div style="font-size:0.75rem;color:#f59e0b;margin-top:0.25rem;">Mensajes recibidos</div>
+      <div style="display:flex;align-items:baseline;gap:0.6rem;flex-wrap:wrap;">
+        <span style="font-size:1.8rem;font-weight:700;color:#0f172a;">{stats.mensajesCount}</span>
+        {stats.unreadMensajesCount > 0 && (
+          <span style="background:#dc2626;color:#ffffff;font-size:0.72rem;font-weight:700;padding:0.15rem 0.55rem;border-radius:999px;">
+            {stats.unreadMensajesCount} {stats.unreadMensajesCount === 1 ? 'nuevo' : 'nuevos'}
+          </span>
+        )}
+      </div>
+      <div style={`font-size:0.75rem;margin-top:0.25rem;font-weight:600;color:${stats.unreadMensajesCount > 0 ? '#dc2626' : '#10b981'};`}>
+        {stats.unreadMensajesCount > 0 ? 'Pendientes por leer →' : 'Mensajes al día'}
+      </div>
+    </a>
+  </div>
+
+  <!-- Barra detallada de Almacenamiento Supabase -->
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-bottom:2rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.85rem;">
+      <div>
+        <h3 style="font-size:1.05rem;font-weight:700;color:#1e293b;margin:0;display:flex;align-items:center;gap:0.45rem;">
+          <span>☁️</span> Almacenamiento Supabase Storage
+          <span style="font-size:0.72rem;font-weight:600;background:rgba(16,185,129,0.12);color:#047857;padding:0.15rem 0.5rem;border-radius:999px;">
+            Bucket: {STORAGE_CONFIG.bucketName}
+          </span>
+        </h3>
+        <p style="font-size:0.8rem;color:#64748b;margin:0.2rem 0 0 0;">
+          Plan gratuito 1 GB (1,024 MB) · Límite por archivo: 10 MB · Optimización automática WebP
+        </p>
+      </div>
+      <a href="/admin/media" style="font-size:0.82rem;color:#2D5016;font-weight:600;text-decoration:none;">
+        Abrir Multimedia ({storageSummary.totalFiles} archivos) →
+      </a>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.84rem;margin-bottom:0.45rem;flex-wrap:wrap;gap:0.5rem;">
+      <span style="font-weight:700;color:#0f172a;">
+        {formatStorageBytes(storageSummary.totalBytes)} usados <span style="font-weight:500;color:#64748b;">de 1.00 GB ({storageSummary.percentUsed}%)</span>
+      </span>
+      <span style="color:#64748b;font-size:0.8rem;">
+        Disponible: <strong style="color:#0f172a;">{formatStorageBytes(storageSummary.freeBytes)}</strong> · 🖼️ {storageSummary.imageCount} imágenes · 📄 {storageSummary.docCount} PDFs
+      </span>
+    </div>
+
+    <progress
+      class="supabase-storage-progress"
+      value={dashProgressValue}
+      max="100"
+      style={`height:11px;--storage-track-bg:#e2e8f0;--storage-fill-color:${dashStorageColor};`}
+      aria-label={`Almacenamiento Supabase usado: ${storageSummary.percentUsed}%`}
+    ></progress>
+
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.9rem;">
+      {STORAGE_CONFIG.folders.map((folder) => {
+        const fStat = storageSummary.byFolder[folder];
+        return (
+          <a
+            href={`/admin/media?folder=${folder}`}
+            style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:0.35rem 0.65rem;font-size:0.75rem;color:#334155;text-decoration:none;display:inline-flex;align-items:center;gap:0.35rem;"
+          >
+            <strong style="color:#0f172a;">{folder}/</strong>
+            <span>{fStat.count}</span>
+            <span style="color:#64748b;">({formatStorageBytes(fStat.bytes)})</span>
+          </a>
+        );
+      })}
     </div>
   </div>
 

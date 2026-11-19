@@ -19,12 +19,35 @@ if (isSupabaseConfigured()) {
     console.warn(err);
   }
 }
+
+const unreadCount = mensajes.filter(m => !m.is_read).length;
+const readCount = mensajes.length - unreadCount;
 ---
 
 <AdminLayout title="Buzón Ciudadano — Panel GAM Pelechuco" activeNav="mensajes">
-  <div style="margin-bottom:1.5rem;">
-    <h1 style="font-size:1.6rem;font-weight:700;color:#1e293b;margin:0 0 0.25rem 0;">Buzón Ciudadano</h1>
-    <p style="color:#64748b;font-size:0.875rem;margin:0;">Mensajes, peticiones y consultas recibidas a través del portal municipal</p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+    <div>
+      <h1 style="font-size:1.6rem;font-weight:700;color:#1e293b;margin:0 0 0.25rem 0;">Buzón Ciudadano</h1>
+      <p style="color:#64748b;font-size:0.875rem;margin:0;">Mensajes, peticiones y consultas recibidas a través del portal municipal</p>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+      <span id="msg-stat-unread" style={`padding:0.35rem 0.75rem;border-radius:999px;font-size:0.78rem;font-weight:700;${unreadCount > 0 ? 'background:#dc2626;color:#ffffff;' : 'background:#f1f5f9;color:#475569;'}`}>
+        {unreadCount} sin leer
+      </span>
+      <span id="msg-stat-read" style="background:#f1f5f9;color:#475569;padding:0.35rem 0.75rem;border-radius:999px;font-size:0.78rem;font-weight:600;">
+        {readCount} leídos
+      </span>
+      {unreadCount > 0 && (
+        <button
+          type="button"
+          id="btn-marcar-todos-leidos"
+          style="background:#2D5016;color:#FAF7F2;border:none;padding:0.45rem 0.9rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;"
+        >
+          ✓ Marcar todos como leídos
+        </button>
+      )}
+    </div>
   </div>
 
   {mensajes.length === 0 ? (
@@ -36,24 +59,41 @@ if (isSupabaseConfigured()) {
       </p>
     </div>
   ) : (
-    <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div id="mensajes-lista" style="display:flex;flex-direction:column;gap:1rem;">
       {mensajes.map(m => (
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);" id={`msg-card-${m.id}`}>
+        <div
+          id={`msg-card-${m.id}`}
+          class="msg-card-item"
+          data-id={m.id}
+          data-read={String(Boolean(m.is_read))}
+          style={`background:#fff;border:1px solid #e2e8f0;${m.is_read ? '' : 'border-left:4px solid #dc2626;'}border-radius:10px;padding:1.25rem 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.05);`}
+        >
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:0.5rem;flex-wrap:wrap;">
             <div>
               <span style="font-weight:700;font-size:1rem;color:#0f172a;">{m.full_name}</span>
               <span style="font-size:0.8rem;color:#64748b;margin-left:0.5rem;">({m.email} {m.phone ? `· ${m.phone}` : ''})</span>
               {m.is_read ? (
-                <span style="background:#f1f5f9;color:#64748b;font-size:0.7rem;padding:0.15rem 0.4rem;border-radius:4px;margin-left:0.5rem;">Leído</span>
+                <span class="msg-status-pill" style="background:#f1f5f9;color:#64748b;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;margin-left:0.5rem;font-weight:600;">Leído</span>
               ) : (
-                <span style="background:#dbeafe;color:#1d4ed8;font-size:0.7rem;padding:0.15rem 0.4rem;border-radius:4px;margin-left:0.5rem;font-weight:700;">NUEVO</span>
+                <span class="msg-status-pill" style="background:#dc2626;color:#ffffff;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;margin-left:0.5rem;font-weight:700;">NUEVO</span>
               )}
             </div>
-            <div style="display:flex;align-items:center;gap:0.75rem;">
+            <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
               <span style="font-size:0.75rem;color:#94a3b8;">
                 {new Date(m.created_at).toLocaleString('es-BO')}
               </span>
+              {!m.is_read && (
+                <button
+                  type="button"
+                  class="btn-marcar-leido"
+                  data-id={m.id}
+                  style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:0.76rem;padding:0.25rem 0.6rem;border-radius:6px;cursor:pointer;font-weight:600;"
+                >
+                  ✓ Marcar leído
+                </button>
+              )}
               <button
+                type="button"
                 class="btn-eliminar-mensaje"
                 data-id={m.id}
                 style="background:none;border:none;color:#ef4444;font-size:0.8rem;cursor:pointer;font-weight:600;"
@@ -75,8 +115,93 @@ if (isSupabaseConfigured()) {
 
   <script>
     function initMensajes() {
+      const statUnread = document.getElementById('msg-stat-unread');
+      const statRead = document.getElementById('msg-stat-read');
+      const btnReadAll = document.getElementById('btn-marcar-todos-leidos');
+
+      function syncMessageCounts() {
+        const cards = Array.from(document.querySelectorAll('.msg-card-item'));
+        const unread = cards.filter(c => c.getAttribute('data-read') !== 'true').length;
+        const read = cards.length - unread;
+
+        if (statUnread) {
+          statUnread.textContent = `${unread} sin leer`;
+          statUnread.style.background = unread > 0 ? '#dc2626' : '#f1f5f9';
+          statUnread.style.color = unread > 0 ? '#ffffff' : '#475569';
+        }
+        if (statRead) {
+          statRead.textContent = `${read} leídos`;
+        }
+        if (btnReadAll) {
+          btnReadAll.style.display = unread > 0 ? 'inline-flex' : 'none';
+        }
+        if ((window as any).updateUnreadMessagesBadge) {
+          (window as any).updateUnreadMessagesBadge(unread);
+        }
+      }
+
+      function markCardAsReadUI(card: Element | null) {
+        if (!card) return;
+        card.setAttribute('data-read', 'true');
+        (card as HTMLElement).style.borderLeft = '';
+        const pill = card.querySelector('.msg-status-pill') as HTMLElement | null;
+        if (pill) {
+          pill.textContent = 'Leído';
+          pill.style.background = '#f1f5f9';
+          pill.style.color = '#64748b';
+          pill.style.fontWeight = '600';
+        }
+        card.querySelector('.btn-marcar-leido')?.remove();
+      }
+
+      btnReadAll?.addEventListener('click', async () => {
+        try {
+          const res = await (window as any).adminFetch('/api/admin/mensajes/read-all', {
+            method: 'PATCH'
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            document.querySelectorAll('.msg-card-item').forEach(markCardAsReadUI);
+            syncMessageCounts();
+            if ((window as any).showToast) {
+              (window as any).showToast('Todos los mensajes marcados como leídos');
+            }
+          } else {
+            alert(data.error || 'No se pudieron actualizar los mensajes');
+          }
+        } catch {
+          alert('Error de conexión con el servidor');
+        }
+      });
+
       document.addEventListener('click', async (e) => {
         const target = e.target as HTMLElement;
+
+        const readBtn = target.closest('.btn-marcar-leido');
+        if (readBtn) {
+          e.preventDefault();
+          const id = readBtn.getAttribute('data-id');
+          if (!id) return;
+          try {
+            const res = await (window as any).adminFetch(`/api/admin/mensajes/${id}/read`, {
+              method: 'PATCH'
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              markCardAsReadUI(document.getElementById(`msg-card-${id}`));
+              syncMessageCounts();
+              if ((window as any).showToast) {
+                (window as any).showToast('Mensaje marcado como leído');
+              }
+            } else {
+              alert(data.error || 'Error al marcar como leído');
+            }
+          } catch {
+            alert('Error de conexión con el servidor');
+          }
+          return;
+        }
+
         const btn = target.closest('.btn-eliminar-mensaje');
         if (!btn) return;
         e.preventDefault();
@@ -97,6 +222,7 @@ if (isSupabaseConfigured()) {
               alert('Mensaje eliminado');
             }
             document.getElementById(`msg-card-${id}`)?.remove();
+            syncMessageCounts();
           } else {
             alert(data.error || 'Error al eliminar mensaje');
           }

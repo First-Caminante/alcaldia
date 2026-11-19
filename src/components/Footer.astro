@@ -48,12 +48,20 @@ const redesActivas = (redes && redes.length > 0)
       <div style="display:flex;align-items:center;gap:0.6rem;margin-top:1.25rem;flex-wrap:wrap;">
         {redesActivas.map(r => {
           const plat = (r.platform || r.icon_name || '').toLowerCase();
+          const socialBrandClass =
+            plat.includes('face') ? 'social-facebook' :
+            plat.includes('what') ? 'social-whatsapp' :
+            plat.includes('yout') ? 'social-youtube' :
+            plat.includes('tik') ? 'social-tiktok' :
+            (plat.includes('twit') || plat === 'x' || plat.includes('_x')) ? 'social-twitter' :
+            plat.includes('insta') ? 'social-instagram' :
+            'social-web';
           return (
             <a
               href={r.url}
               target="_blank"
               rel="noopener noreferrer"
-              class={`p02-social-btn social-${plat}`}
+              class={`p02-social-btn ${socialBrandClass}`}
               title={r.name || r.platform}
               aria-label={r.name || r.platform}
             >
