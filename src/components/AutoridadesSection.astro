@@ -159,7 +159,7 @@ const { autoridades = [] } = Astro.props;
             <span class="info-val">Plaza Principal 25 de Mayo, Casa Consistorial</span>
           </div>
 
-          <div class="dialog-aut-info-item">
+          <div class="dialog-aut-info-item" id="dialog-aut-email-item">
             <span class="info-label">✉️ Correo Oficial</span>
             <span class="info-val" id="dialog-aut-email-wrap">
               <a id="dialog-aut-email-link" href="#" style="color:var(--primary);text-decoration:none;font-weight:600;">
@@ -610,6 +610,7 @@ const { autoridades = [] } = Astro.props;
     const elCargo = document.getElementById('dialog-aut-cargo');
     const elArea = document.getElementById('dialog-aut-area');
     const elBio = document.getElementById('dialog-aut-bio');
+    const elEmailItem = document.getElementById('dialog-aut-email-item');
     const elEmailLink = document.getElementById('dialog-aut-email-link') as HTMLAnchorElement | null;
     const btnMail = document.getElementById('dialog-aut-btn-mail') as HTMLAnchorElement | null;
     const btnCopiar = document.getElementById('dialog-aut-btn-copiar');
@@ -651,8 +652,9 @@ const { autoridades = [] } = Astro.props;
           : `Servidor público comprometido con el desarrollo integral, la transparencia y el bienestar de las comunidades y ayllus del municipio de Pelechuco. Ejerce sus funciones en el área de ${autData.area || 'gestión municipal'}.`;
       }
 
-      // Correo y enlaces
+      // Correo y enlaces (opcional)
       if (currentEmail) {
+        if (elEmailItem) elEmailItem.style.display = 'flex';
         if (elEmailLink) {
           elEmailLink.href = `mailto:${currentEmail}`;
           elEmailLink.textContent = currentEmail;
@@ -663,14 +665,8 @@ const { autoridades = [] } = Astro.props;
           btnMail.style.display = 'inline-flex';
         }
       } else {
-        if (elEmailLink) {
-          elEmailLink.href = 'mailto:contacto@pelechuco.gob.bo';
-          elEmailLink.textContent = 'contacto@pelechuco.gob.bo (Mesa de Partes)';
-        }
-        if (btnMail) {
-          btnMail.href = 'mailto:contacto@pelechuco.gob.bo';
-          btnMail.style.display = 'inline-flex';
-        }
+        if (elEmailItem) elEmailItem.style.display = 'none';
+        if (btnMail) btnMail.style.display = 'none';
       }
 
       // Abre en top-layer nativo
@@ -702,7 +698,9 @@ const { autoridades = [] } = Astro.props;
 
     // Copiar datos de contacto al portapapeles
     btnCopiar?.addEventListener('click', () => {
-      const infoToCopy = `👤 ${currentName}\n🏛️ ${currentCargo} — GAM Pelechuco\n✉️ ${currentEmail || 'contacto@pelechuco.gob.bo'}`;
+      const infoToCopy = currentEmail
+        ? `👤 ${currentName}\n🏛️ ${currentCargo} — GAM Pelechuco\n✉️ ${currentEmail}`
+        : `👤 ${currentName}\n🏛️ ${currentCargo} — GAM Pelechuco`;
       navigator.clipboard.writeText(infoToCopy).then(() => {
         if (btnCopiar) {
           const original = btnCopiar.innerHTML;

@@ -120,6 +120,7 @@ export const DEFAULT_CATEGORIAS_NOTICIAS: NoticiaCategoria[] = [
   { id: 'cat-2', name: 'Institucional', slug: 'institucional', color_hex: '#4A7FA5', display_order: 2, is_active: true, created_at: new Date().toISOString() },
   { id: 'cat-3', name: 'Salud y Desarrollo', slug: 'salud', color_hex: '#C4A882', display_order: 3, is_active: true, created_at: new Date().toISOString() },
   { id: 'cat-4', name: 'Cultura y Turismo', slug: 'cultura', color_hex: '#3D6A20', display_order: 4, is_active: true, created_at: new Date().toISOString() },
+  { id: 'cat-5', name: 'Otros', slug: 'otros', color_hex: '#64748B', display_order: 99, is_active: true, created_at: new Date().toISOString() },
 ];
 
 export const DEFAULT_NOTICIAS: Noticia[] = [
@@ -284,6 +285,17 @@ export const DEFAULT_TRAMITES_CATEGORIAS: TramiteCategoria[] = [
     description: 'Licencias de funcionamiento, certificados de residencia y trámites ciudadanos',
     icon: '📄',
     display_order: 3,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'tcat-4',
+    name: 'Otros',
+    slug: 'otros',
+    description: 'Otros trámites y solicitudes administrativas municipales',
+    icon: '📌',
+    display_order: 99,
     is_active: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),

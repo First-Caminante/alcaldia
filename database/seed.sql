@@ -171,7 +171,8 @@ INSERT INTO public.noticias_categorias (name, slug, color_hex, display_order, is
 ('Salud', 'salud', '#0D9488', 3, true),
 ('Cultura', 'cultura', '#7C3AED', 4, true),
 ('Educación', 'educacion', '#2563EB', 5, true),
-('Medio Ambiente', 'medio-ambiente', '#2D5016', 6, true)
+('Medio Ambiente', 'medio-ambiente', '#2D5016', 6, true),
+('Otros', 'otros', '#64748B', 99, true)
 ON CONFLICT (name) DO UPDATE SET color_hex = EXCLUDED.color_hex;
 
 -- 6. NOTICIAS Y COMUNICADOS
@@ -356,7 +357,8 @@ INSERT INTO public.tramites_categorias (name, slug, description, icon, display_o
 ('Registro Civil', 'registro-civil', 'Certificaciones comunales, actas y personerías originarias', '📜', 1, true),
 ('Urbanismo', 'urbanismo', 'Catastro, permisos de construcción y zonificación', '🏗️', 2, true),
 ('Actividad Económica', 'actividad-economica', 'Licencias de funcionamiento, patentes y microempresas', '💼', 3, true),
-('Tributos', 'tributos', 'Pago de impuestos sobre bienes inmuebles y automotores', '💰', 4, true)
+('Tributos', 'tributos', 'Pago de impuestos sobre bienes inmuebles y automotores', '💰', 4, true),
+('Otros', 'otros', 'Otros trámites y solicitudes administrativas municipales', '📌', 99, true)
 ON CONFLICT (name) DO UPDATE SET
   description = EXCLUDED.description,
   icon = EXCLUDED.icon;

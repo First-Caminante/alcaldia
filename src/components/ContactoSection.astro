@@ -12,8 +12,9 @@ const addressSecondary = contacto.address_secondary || 'Municipio de Pelechuco �
 const phone = contacto.phone_central || '(+591) 2 214-5890';
 const whatsapp = contacto.phone_whatsapp || '(+591) 715-84210';
 const emergency = contacto.emergency_line || 'Línea 114 Pelechuco (Atención 24 Horas)';
-const emailGeneral = contacto.email_general || 'contacto@pelechuco.gob.bo';
-const emailDispatch = contacto.email_dispatch || 'alcaldia@pelechuco.gob.bo';
+const emailGeneral = contacto.email_general !== undefined ? (contacto.email_general || '').trim() : 'contacto@pelechuco.gob.bo';
+const emailDispatch = contacto.email_dispatch !== undefined ? (contacto.email_dispatch || '').trim() : 'alcaldia@pelechuco.gob.bo';
+const emailList = [emailGeneral, emailDispatch].filter(Boolean).join(' · ');
 const schedule = contacto.schedule_weekdays || 'Lunes a Viernes de 08:30 a 16:30 (Horario continuo)';
 
 let mapAlcaldia = 'https://maps.google.com/maps?q=-14.816667,-69.050000&hl=es&z=17&output=embed';
@@ -165,13 +166,15 @@ if (contacto.map_embed_url) {
           </div>
         </div>
 
-        <div class="p02-info-item">
-          <div class="p02-info-icon" aria-hidden="true">📧</div>
-          <div>
-            <div class="p02-info-label">Correo electrónico</div>
-            <div class="p02-info-value">{emailGeneral} · {emailDispatch}</div>
+        {emailList && (
+          <div class="p02-info-item">
+            <div class="p02-info-icon" aria-hidden="true">📧</div>
+            <div>
+              <div class="p02-info-label">Correo electrónico</div>
+              <div class="p02-info-value">{emailList}</div>
+            </div>
           </div>
-        </div>
+        )}
 
         <div class="p02-info-item">
           <div class="p02-info-icon" aria-hidden="true">🕐</div>
@@ -201,15 +204,14 @@ if (contacto.map_embed_url) {
           </div>
 
           <div class="p02-form-group">
-            <label for="contacto-email">Correo electrónico *</label>
+            <label for="contacto-email">Correo electrónico (Opcional)</label>
             <input
               type="email"
               id="contacto-email"
               name="email"
               class="p02-form-input"
-              placeholder="su@correo.com"
+              placeholder="su@correo.com (si dispone)"
               autocomplete="email"
-              required
             />
           </div>
 
@@ -320,11 +322,11 @@ if (contacto.map_embed_url) {
         message: formData.get('message')?.toString().trim(),
       };
 
-      if (!payload.full_name || !payload.email || !payload.subject || !payload.message) {
+      if (!payload.full_name || !payload.subject || !payload.message) {
         feedback.style.display = 'block';
         feedback.style.background = '#fee2e2';
         feedback.style.color = '#991b1b';
-        feedback.textContent = 'Por favor complete todos los campos obligatorios (*).';
+        feedback.textContent = 'Por favor complete su nombre, asunto y mensaje (*).';
         return;
       }
 

@@ -309,34 +309,56 @@ app.post('/contacto', async (c) => {
     const body = await c.req.json();
     const { full_name, email, phone, subject, message } = body;
 
-    if (!full_name || !email || !subject || !message) {
-      return c.json({ error: 'Todos los campos obligatorios deben ser completados.' }, 400);
+    const cleanName = typeof full_name === 'string' ? full_name.trim() : '';
+    const cleanEmail = typeof email === 'string' ? email.trim() : '';
+    const cleanPhone = typeof phone === 'string' ? phone.trim() : '';
+    const cleanSubject = typeof subject === 'string' ? subject.trim() : '';
+    const cleanMessage = typeof message === 'string' ? message.trim() : '';
+
+    if (!cleanName || !cleanSubject || !cleanMessage) {
+      return c.json({ error: 'Complete su nombre, asunto y mensaje.' }, 400);
     }
 
-    // Validación básica de correo
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return c.json({ error: 'El correo electrónico proporcionado no es válido.' }, 400);
+    // Validación básica de correo únicamente si se proporcionó uno
+    if (cleanEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cleanEmail)) {
+        return c.json({ error: 'El correo electrónico proporcionado no es válido.' }, 400);
+      }
     }
 
     if (!isSupabaseConfigured()) {
       return c.json({
         success: true,
         message: 'Mensaje recibido exitosamente (Modo demostración). Gracias por comunicarse con el GAM Pelechuco.',
-        data: { full_name, email, subject },
+        data: { full_name: cleanName, email: cleanEmail || null, subject: cleanSubject },
       });
     }
 
     const client = getSupabaseAdmin() || supabase;
-    const { error } = await client.from('mensajes_contacto').insert([
+    let { error } = await client.from('mensajes_contacto').insert([
       {
-        full_name,
-        email,
-        phone: phone || null,
-        subject,
-        message,
+        full_name: cleanName,
+        email: cleanEmail || null,
+        phone: cleanPhone || null,
+        subject: cleanSubject,
+        message: cleanMessage,
       },
     ]);
+
+    // Respaldo si la columna mensajes_contacto.email aún conserva NOT NULL en BD
+    if (error && (error.code === '23502' || error.message?.includes('not-null'))) {
+      const retry = await client.from('mensajes_contacto').insert([
+        {
+          full_name: cleanName,
+          email: cleanEmail || '',
+          phone: cleanPhone || null,
+          subject: cleanSubject,
+          message: cleanMessage,
+        },
+      ]);
+      error = retry.error;
+    }
 
     if (error) {
       console.error('Error al registrar mensaje:', error);

@@ -1,6 +1,6 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '../../lib/supabase';
 import { DEFAULT_NOTICIAS, DEFAULT_CATEGORIAS_NOTICIAS } from '../../lib/data-defaults';
 import type { Noticia, NoticiaCategoria } from '../../types/database';
 
@@ -11,7 +11,8 @@ let categorias: NoticiaCategoria[] = DEFAULT_CATEGORIAS_NOTICIAS;
 
 if (isSupabaseConfigured()) {
   try {
-    const { data: nData } = await supabase
+    const client = getSupabaseAdmin() || supabase;
+    const { data: nData } = await client
       .from('noticias')
       .select('*, category:noticias_categorias(*)')
       .order('published_at', { ascending: false });
@@ -20,7 +21,7 @@ if (isSupabaseConfigured()) {
       noticias = nData;
     }
 
-    const { data: cData } = await supabase
+    const { data: cData } = await client
       .from('noticias_categorias')
       .select('*')
       .eq('is_active', true)

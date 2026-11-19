@@ -71,7 +71,9 @@ const readCount = mensajes.length - unreadCount;
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:0.5rem;flex-wrap:wrap;">
             <div>
               <span style="font-weight:700;font-size:1rem;color:#0f172a;">{m.full_name}</span>
-              <span style="font-size:0.8rem;color:#64748b;margin-left:0.5rem;">({m.email} {m.phone ? `· ${m.phone}` : ''})</span>
+              <span style="font-size:0.8rem;color:#64748b;margin-left:0.5rem;">
+                ({[m.email?.trim(), m.phone?.trim()].filter(Boolean).join(' · ') || 'Sin correo ni teléfono'})
+              </span>
               {m.is_read ? (
                 <span class="msg-status-pill" style="background:#f1f5f9;color:#64748b;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;margin-left:0.5rem;font-weight:600;">Leído</span>
               ) : (

@@ -12,7 +12,7 @@ const { contacto = {}, redes = [] } = Astro.props;
 const address = contacto.address_primary || 'Plaza Principal 25 de Mayo s/n · Acera Norte';
 const phone = contacto.phone_central || '(+591) 2 214-5890';
 const whatsapp = contacto.phone_whatsapp || '(+591) 715-84210';
-const emailGeneral = contacto.email_general || 'contacto@pelechuco.gob.bo';
+const emailGeneral = contacto.email_general !== undefined ? (contacto.email_general || '').trim() : 'contacto@pelechuco.gob.bo';
 const schedule = contacto.schedule_weekdays || 'Lun a Vie: 08:30 – 16:30 (Continuo)';
 const year = new Date().getFullYear();
 
@@ -118,7 +118,7 @@ const redesActivas = (redes && redes.length > 0)
         <li>📍 {address}</li>
         <li>📞 Central: {phone}</li>
         <li>📱 WhatsApp: {whatsapp}</li>
-        <li>✉️ {emailGeneral}</li>
+        {emailGeneral && <li>✉️ {emailGeneral}</li>}
         <li>🕐 {schedule}</li>
       </ul>
       <div style="margin-top:1.25rem;">

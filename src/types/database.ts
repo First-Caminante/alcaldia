@@ -211,8 +211,8 @@ export interface ContactoConfig {
   phone_central: string;
   phone_whatsapp: string;
   emergency_line: string;
-  email_general: string;
-  email_dispatch: string;
+  email_general?: string | null;
+  email_dispatch?: string | null;
   schedule_weekdays: string;
   map_latitude: number;
   map_longitude: number;
@@ -236,7 +236,7 @@ export interface RedSocial {
 export interface MensajeContacto {
   id: string;
   full_name: string;
-  email: string;
+  email?: string | null;
   phone?: string | null;
   subject: string;
   message: string;
