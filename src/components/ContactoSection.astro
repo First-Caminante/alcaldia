@@ -1,5 +1,6 @@
 ---
 import type { ContactoConfig } from '../types/database';
+import { convertGoogleMapsInputToEmbed, toGoogleMapsOpenUrl } from '../lib/maps';
 
 interface Props {
   contacto?: Partial<ContactoConfig>;
@@ -23,12 +24,15 @@ let mapComunidad = 'https://maps.google.com/maps?q=Pelechuco+Franz+Tamayo+Bolivi
 if (contacto.map_embed_url) {
   try {
     const parsed = JSON.parse(contacto.map_embed_url);
-    if (parsed.alcaldia) mapAlcaldia = parsed.alcaldia;
-    if (parsed.comunidad) mapComunidad = parsed.comunidad;
+    if (parsed.alcaldia) mapAlcaldia = convertGoogleMapsInputToEmbed(parsed.alcaldia, 17);
+    if (parsed.comunidad) mapComunidad = convertGoogleMapsInputToEmbed(parsed.comunidad, 11);
   } catch {
-    mapAlcaldia = contacto.map_embed_url;
+    mapAlcaldia = convertGoogleMapsInputToEmbed(contacto.map_embed_url, 17);
   }
 }
+
+const openUrlAlcaldia = toGoogleMapsOpenUrl(mapAlcaldia, addressPrimary);
+const openUrlComunidad = toGoogleMapsOpenUrl(mapComunidad, addressSecondary);
 ---
 
 <section id="contacto" aria-labelledby="contacto-titulo">
@@ -87,10 +91,10 @@ if (contacto.map_embed_url) {
             </div>
             <div class="mapa-card-footer" style="padding:0.75rem 1rem;background:var(--bg-alt);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
               <span style="font-size:0.775rem;color:var(--text-muted);">
-                Plaza Principal 25 de Mayo · Acera Norte
+                {addressPrimary}
               </span>
               <a
-                href="https://maps.google.com/?q=-14.816667,-69.050000"
+                href={openUrlAlcaldia}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="mapa-btn-link"
@@ -129,7 +133,7 @@ if (contacto.map_embed_url) {
                 9 Cantones y Parque Nacional Apolobamba
               </span>
               <a
-                href="https://maps.google.com/?q=Pelechuco+Bolivia"
+                href={openUrlComunidad}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="mapa-btn-link"

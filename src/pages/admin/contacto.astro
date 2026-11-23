@@ -79,43 +79,98 @@ if (isSupabaseConfigured()) {
         </div>
 
         <!-- Bloque de 2 Mapas Georreferenciados -->
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;">
-          <h3 style="font-size:0.95rem;font-weight:700;color:#1e293b;margin:0 0 0.75rem 0;display:flex;align-items:center;gap:0.4rem;">
+        <div id="mapas-config" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;">
+          <h3 style="font-size:0.95rem;font-weight:700;color:#1e293b;margin:0 0 0.5rem 0;display:flex;align-items:center;gap:0.4rem;">
             <span>📍</span> Doble Mapa Georreferenciado (Alcaldía y Comunidad)
           </h3>
-          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:0.65rem 0.85rem;margin-bottom:0.85rem;font-size:0.75rem;color:#166534;line-height:1.45;">
+            <strong>✨ ¡Súper sencillo!</strong> Ya no necesitas buscar códigos <code>&lt;iframe&gt;</code> ni <code>embed</code>. Puedes pegar cualquiera de estas opciones:
+            <ul style="margin:0.3rem 0 0 1.1rem;padding:0;">
+              <li>El enlace normal de Google Maps del navegador o celular (ej. <code>https://maps.app.goo.gl/...</code>)</li>
+              <li>Coordenadas directas (ej. <code>-16.492878, -68.138191</code>)</li>
+              <li>Nombre del lugar (ej. <code>Oficina Alcaldía de Pelechuco, La Paz</code>)</li>
+            </ul>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:1rem;">
             <div>
-              <label style="display:block;font-size:0.775rem;font-weight:600;color:#475569;margin-bottom:0.2rem;">
-                Mapa 1: Ubicación Exacta de la Alcaldía (Casa Consistorial)
-              </label>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.25rem;">
+                <label for="contacto-map-alcaldia" style="font-size:0.775rem;font-weight:600;color:#475569;margin:0;">
+                  Mapa 1: Ubicación Exacta de la Alcaldía (Casa Consistorial)
+                </label>
+                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                  <button
+                    type="button"
+                    id="btn-gps-alcaldia"
+                    style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;padding:0.22rem 0.55rem;border-radius:5px;font-size:0.72rem;font-weight:600;cursor:pointer;"
+                    title="Detectar mis coordenadas GPS actuales"
+                  >
+                    📍 Mi ubicación actual
+                  </button>
+                  <button
+                    type="button"
+                    id="btn-probar-map-alcaldia"
+                    style="background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;padding:0.22rem 0.55rem;border-radius:5px;font-size:0.72rem;font-weight:600;cursor:pointer;"
+                  >
+                    👁️ Probar mapa
+                  </button>
+                </div>
+              </div>
               <input
-                type="url"
+                type="text"
                 id="contacto-map-alcaldia"
                 value={mapAlcaldia}
                 required
-                placeholder="https://maps.google.com/maps?q=-14.816667,-69.050000&hl=es&z=17&output=embed"
-                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;"
+                placeholder="Pega enlace de Google Maps, coords (-16.49, -68.13) o nombre del lugar..."
+                style="width:100%;padding:0.55rem 0.75rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;"
               />
-              <small style="color:#64748b;font-size:0.7rem;display:block;margin-top:0.2rem;">
-                💡 Enlace Embed de Google Maps para el edificio municipal y plaza central.
-              </small>
+              <div id="map-alcaldia-status" style="font-size:0.72rem;color:#64748b;margin-top:0.25rem;"></div>
+              <div style="margin-top:0.45rem;height:150px;border-radius:6px;overflow:hidden;border:1px solid #cbd5e1;background:#0f172a;">
+                <iframe
+                  id="preview-map-alcaldia"
+                  src={mapAlcaldia}
+                  width="100%"
+                  height="100%"
+                  style="border:0;"
+                  loading="lazy"
+                  title="Vista previa Mapa Alcaldía"
+                ></iframe>
+              </div>
             </div>
 
             <div>
-              <label style="display:block;font-size:0.775rem;font-weight:600;color:#475569;margin-bottom:0.2rem;">
-                Mapa 2: Ubicación General de la Comunidad y Territorio Municipal
-              </label>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.25rem;">
+                <label for="contacto-map-comunidad" style="font-size:0.775rem;font-weight:600;color:#475569;margin:0;">
+                  Mapa 2: Ubicación General de la Comunidad y Territorio Municipal
+                </label>
+                <button
+                  type="button"
+                  id="btn-probar-map-comunidad"
+                  style="background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;padding:0.22rem 0.55rem;border-radius:5px;font-size:0.72rem;font-weight:600;cursor:pointer;"
+                >
+                  👁️ Probar mapa
+                </button>
+              </div>
               <input
-                type="url"
+                type="text"
                 id="contacto-map-comunidad"
                 value={mapComunidad}
                 required
-                placeholder="https://maps.google.com/maps?q=Pelechuco+Franz+Tamayo+Bolivia&hl=es&z=11&output=embed"
-                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;"
+                placeholder="Pega enlace de Google Maps, coords o nombre (ej. Pelechuco, Bolivia)..."
+                style="width:100%;padding:0.55rem 0.75rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;"
               />
-              <small style="color:#64748b;font-size:0.7rem;display:block;margin-top:0.2rem;">
-                💡 Enlace Embed de Google Maps para el territorio comunal de Pelechuco y Apolobamba.
-              </small>
+              <div id="map-comunidad-status" style="font-size:0.72rem;color:#64748b;margin-top:0.25rem;"></div>
+              <div style="margin-top:0.45rem;height:150px;border-radius:6px;overflow:hidden;border:1px solid #cbd5e1;background:#0f172a;">
+                <iframe
+                  id="preview-map-comunidad"
+                  src={mapComunidad}
+                  width="100%"
+                  height="100%"
+                  style="border:0;"
+                  loading="lazy"
+                  title="Vista previa Mapa Comunidad"
+                ></iframe>
+              </div>
             </div>
           </div>
         </div>
@@ -341,7 +396,98 @@ if (isSupabaseConfigured()) {
   </div>
 
   <script>
+    import { convertGoogleMapsInputToEmbed, isGoogleShortUrl } from '../../lib/maps';
+
     function initContacto() {
+      const inputMapAlcaldia = document.getElementById('contacto-map-alcaldia') as HTMLInputElement | null;
+      const inputMapComunidad = document.getElementById('contacto-map-comunidad') as HTMLInputElement | null;
+      const previewAlcaldia = document.getElementById('preview-map-alcaldia') as HTMLIFrameElement | null;
+      const previewComunidad = document.getElementById('preview-map-comunidad') as HTMLIFrameElement | null;
+      const statusAlcaldia = document.getElementById('map-alcaldia-status');
+      const statusComunidad = document.getElementById('map-comunidad-status');
+
+      async function resolveAndPreviewMap(
+        inputEl: HTMLInputElement | null,
+        previewEl: HTMLIFrameElement | null,
+        statusEl: HTMLElement | null,
+        zoom: number
+      ): Promise<string> {
+        if (!inputEl) return '';
+        const raw = inputEl.value.trim();
+        if (!raw) return '';
+
+        let embedUrl = convertGoogleMapsInputToEmbed(raw, zoom);
+
+        if (isGoogleShortUrl(raw)) {
+          if (statusEl) {
+            statusEl.style.color = '#2563eb';
+            statusEl.textContent = '⏳ Resolviendo enlace corto de Google Maps...';
+          }
+          try {
+            const res = await (window as any).adminFetch('/api/admin/maps/resolve', {
+              method: 'POST',
+              body: JSON.stringify({ input: raw, zoom })
+            });
+            const data = await res.json();
+            if (res.ok && data.success && data.embedUrl) {
+              embedUrl = data.embedUrl;
+            }
+          } catch {}
+        }
+
+        if (embedUrl) {
+          inputEl.value = embedUrl;
+          if (previewEl && previewEl.src !== embedUrl) {
+            previewEl.src = embedUrl;
+          }
+          if (statusEl) {
+            statusEl.style.color = '#15803d';
+            statusEl.textContent = '✅ Ubicación convertida y lista en la vista previa.';
+          }
+        }
+        return embedUrl;
+      }
+
+      document.getElementById('btn-probar-map-alcaldia')?.addEventListener('click', () => {
+        resolveAndPreviewMap(inputMapAlcaldia, previewAlcaldia, statusAlcaldia, 17);
+      });
+      document.getElementById('btn-probar-map-comunidad')?.addEventListener('click', () => {
+        resolveAndPreviewMap(inputMapComunidad, previewComunidad, statusComunidad, 11);
+      });
+
+      inputMapAlcaldia?.addEventListener('change', () => {
+        resolveAndPreviewMap(inputMapAlcaldia, previewAlcaldia, statusAlcaldia, 17);
+      });
+      inputMapComunidad?.addEventListener('change', () => {
+        resolveAndPreviewMap(inputMapComunidad, previewComunidad, statusComunidad, 11);
+      });
+
+      document.getElementById('btn-gps-alcaldia')?.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          alert('Tu navegador no soporta detección GPS.');
+          return;
+        }
+        if (statusAlcaldia) {
+          statusAlcaldia.style.color = '#2563eb';
+          statusAlcaldia.textContent = '📡 Obteniendo ubicación GPS actual...';
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            if (!inputMapAlcaldia) return;
+            const coords = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+            inputMapAlcaldia.value = coords;
+            resolveAndPreviewMap(inputMapAlcaldia, previewAlcaldia, statusAlcaldia, 17);
+          },
+          () => {
+            if (statusAlcaldia) {
+              statusAlcaldia.style.color = '#dc2626';
+              statusAlcaldia.textContent = '⚠️ No se pudo acceder al GPS. Puedes pegar el enlace de Google Maps.';
+            }
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      });
+
       // Formulario Contacto General
       const formContacto = document.getElementById('contacto-form') as HTMLFormElement;
       formContacto?.addEventListener('submit', async (e) => {
@@ -350,8 +496,10 @@ if (isSupabaseConfigured()) {
         btn.disabled = true;
         btn.textContent = 'Guardando en Supabase...';
 
-        const mapAlcaldiaVal = (document.getElementById('contacto-map-alcaldia') as HTMLInputElement).value.trim();
-        const mapComunidadVal = (document.getElementById('contacto-map-comunidad') as HTMLInputElement).value.trim();
+        const [mapAlcaldiaVal, mapComunidadVal] = await Promise.all([
+          resolveAndPreviewMap(inputMapAlcaldia, previewAlcaldia, statusAlcaldia, 17),
+          resolveAndPreviewMap(inputMapComunidad, previewComunidad, statusComunidad, 11),
+        ]);
 
         const payload = {
           address_primary: (document.getElementById('contacto-address') as HTMLInputElement).value.trim(),

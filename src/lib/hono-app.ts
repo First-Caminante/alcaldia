@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { supabase, isSupabaseConfigured, getSupabaseAdmin, getAuthenticatedSupabaseClient } from './supabase';
 import { verifyOrRefreshAdminSession } from './auth';
+import { resolveAndConvertMapInput } from './maps';
 import { uploadToSupabaseStorage, deleteFromSupabaseStorage, syncStorageWithDatabase, normalizeStorageFolder, STORAGE_CONFIG } from './storage';
 import {
   getDefaultPortalData,
@@ -1008,6 +1009,30 @@ app.put('/admin/conoce', async (c) => {
   }
 });
 
+// Resolver cualquier enlace de Google Maps (incluidos enlaces cortos maps.app.goo.gl)
+app.post('/admin/maps/resolve', async (c) => {
+  if (!(await verifyAdmin(c))) return c.json({ error: 'No autorizado' }, 401);
+
+  try {
+    const body = await c.req.json();
+    const rawInput = typeof body?.input === 'string' ? body.input.trim() : '';
+    const zoom = Number(body?.zoom) || 16;
+
+    if (!rawInput) {
+      return c.json({ error: 'Ingrese un enlace, coordenadas o nombre de lugar.' }, 400);
+    }
+
+    const result = await resolveAndConvertMapInput(rawInput, zoom);
+    return c.json({
+      success: true,
+      embedUrl: result.embedUrl,
+      resolvedUrl: result.resolvedUrl || result.embedUrl,
+    });
+  } catch (err: any) {
+    return c.json({ error: err.message || 'No se pudo procesar el enlace del mapa.' }, 500);
+  }
+});
+
 app.put('/admin/contacto', async (c) => {
   if (!(await verifyAdmin(c))) return c.json({ error: 'No autorizado' }, 401);
   const client = getSupabaseAdmin() || supabase;
@@ -1026,13 +1051,33 @@ app.put('/admin/contacto', async (c) => {
       schedule_weekdays
     } = body;
 
+    let normalizedMapEmbedUrl = map_embed_url;
+    if (typeof map_embed_url === 'string' && map_embed_url.trim()) {
+      try {
+        const parsed = JSON.parse(map_embed_url);
+        if (parsed && typeof parsed === 'object') {
+          const [alcRes, comRes] = await Promise.all([
+            parsed.alcaldia ? resolveAndConvertMapInput(String(parsed.alcaldia), 17) : Promise.resolve({ embedUrl: '' }),
+            parsed.comunidad ? resolveAndConvertMapInput(String(parsed.comunidad), 11) : Promise.resolve({ embedUrl: '' }),
+          ]);
+          normalizedMapEmbedUrl = JSON.stringify({
+            alcaldia: alcRes.embedUrl || parsed.alcaldia || '',
+            comunidad: comRes.embedUrl || parsed.comunidad || '',
+          });
+        }
+      } catch {
+        const singleRes = await resolveAndConvertMapInput(map_embed_url, 16);
+        normalizedMapEmbedUrl = singleRes.embedUrl;
+      }
+    }
+
     const updatePayload: Record<string, any> = {
       updated_at: new Date().toISOString()
     };
     if (address_primary !== undefined) updatePayload.address_primary = address_primary;
     if (address_secondary !== undefined) updatePayload.address_secondary = address_secondary;
     if (city_department !== undefined) updatePayload.city_department = city_department;
-    if (map_embed_url !== undefined) updatePayload.map_embed_url = map_embed_url;
+    if (normalizedMapEmbedUrl !== undefined) updatePayload.map_embed_url = normalizedMapEmbedUrl;
     if (phone_central !== undefined) updatePayload.phone_central = phone_central;
     if (phone_whatsapp !== undefined) updatePayload.phone_whatsapp = phone_whatsapp;
     if (email_general !== undefined) updatePayload.email_general = email_general;
