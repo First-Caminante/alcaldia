@@ -13,6 +13,16 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
   },
 });
 
+// Cliente efímero sin persistencia en memoria para flujos SSR/Edge (ej. refreshSession)
+export function createStatelessSupabaseClient(): SupabaseClient {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
+
 // Función para obtener cliente con token JWT de usuario autenticado
 export function getAuthenticatedSupabaseClient(accessToken: string): SupabaseClient {
   return createClient(supabaseUrl, supabaseAnonKey, {

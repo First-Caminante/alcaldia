@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { supabase, isSupabaseConfigured, getSupabaseAdmin, getAuthenticatedSupabaseClient } from './supabase';
+import { verifyOrRefreshAdminSession } from './auth';
 import { uploadToSupabaseStorage, deleteFromSupabaseStorage, syncStorageWithDatabase, normalizeStorageFolder, STORAGE_CONFIG } from './storage';
 import {
   getDefaultPortalData,
@@ -433,7 +434,10 @@ app.post('/auth/login', async (c) => {
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', data.user.id);
 
-    c.header('Set-Cookie', `gam_admin_token=${data.session.access_token}; Path=/; Max-Age=604800; SameSite=Lax`);
+    c.header('Set-Cookie', `gam_admin_token=${data.session.access_token}; Path=/; Max-Age=604800; SameSite=Lax`, { append: true });
+    if (data.session.refresh_token) {
+      c.header('Set-Cookie', `gam_admin_refresh=${data.session.refresh_token}; Path=/; Max-Age=2592000; SameSite=Lax`, { append: true });
+    }
 
     return c.json({
       success: true,
@@ -451,6 +455,56 @@ app.post('/auth/login', async (c) => {
   } catch (err: any) {
     return c.json({ error: err.message || 'Error en el servidor de autenticación' }, 500);
   }
+});
+
+// Renovación silenciosa de sesión usando refresh_token
+app.post('/auth/refresh', async (c) => {
+  try {
+    let bodyToken = '';
+    try {
+      const body = await c.req.json();
+      bodyToken = typeof body?.refresh_token === 'string' ? body.refresh_token.trim() : '';
+    } catch {}
+
+    const cookieHeader = c.req.header('Cookie') || '';
+    const cookieMatch = cookieHeader.split('; ').find(row => row.startsWith('gam_admin_refresh='));
+    const cookieToken = cookieMatch ? cookieMatch.substring('gam_admin_refresh='.length) : '';
+    const refreshToken = bodyToken || cookieToken;
+
+    if (!refreshToken) {
+      return c.json({ success: false, error: 'Refresh token no proporcionado' }, 401);
+    }
+
+    const refreshed = await verifyOrRefreshAdminSession(null, refreshToken);
+    if (!refreshed.valid || !refreshed.accessToken) {
+      c.header('Set-Cookie', 'gam_admin_token=; Path=/; Max-Age=0; SameSite=Lax', { append: true });
+      c.header('Set-Cookie', 'gam_admin_refresh=; Path=/; Max-Age=0; SameSite=Lax', { append: true });
+      return c.json({ success: false, error: 'Sesión expirada. Vuelva a iniciar sesión.' }, 401);
+    }
+
+    c.header('Set-Cookie', `gam_admin_token=${refreshed.accessToken}; Path=/; Max-Age=604800; SameSite=Lax`, { append: true });
+    if (refreshed.refreshToken) {
+      c.header('Set-Cookie', `gam_admin_refresh=${refreshed.refreshToken}; Path=/; Max-Age=2592000; SameSite=Lax`, { append: true });
+    }
+
+    return c.json({
+      success: true,
+      session: {
+        access_token: refreshed.accessToken,
+        refresh_token: refreshed.refreshToken,
+        expires_at: refreshed.expiresAt,
+        user: refreshed.user,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message || 'Error al renovar sesión' }, 500);
+  }
+});
+
+app.post('/auth/logout', (c) => {
+  c.header('Set-Cookie', 'gam_admin_token=; Path=/; Max-Age=0; SameSite=Lax', { append: true });
+  c.header('Set-Cookie', 'gam_admin_refresh=; Path=/; Max-Age=0; SameSite=Lax', { append: true });
+  return c.json({ success: true });
 });
 
 // Verificación de sesión de administrador
@@ -525,7 +579,7 @@ function slugify(text: string): string {
 async function verifyAdmin(c: any): Promise<boolean> {
   const token = getAuthToken(c);
   if (!token) return false;
-  if (token === 'demo-token-gam-pelechuco') return true;
+  if (token === 'demo-token-gam-pelechuco') return !isSupabaseConfigured();
 
   const adminClient = getSupabaseAdmin();
   if (!adminClient) return false;

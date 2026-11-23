@@ -618,12 +618,7 @@ if (isSupabaseConfigured()) {
         if (docUploadStatus) docUploadStatus.style.display = 'none';
       }
 
-      // Cerrar al hacer clic fuera
-      modal?.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-      });
-
-      // Delegación de eventos global a nivel documento
+      // Delegación de eventos global a nivel documento (solo se cierra con X o Cancelar)
       document.addEventListener('click', async (e) => {
         const target = e.target as HTMLElement;
 

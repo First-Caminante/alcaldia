@@ -603,12 +603,7 @@ if (isSupabaseConfigured()) {
         updateVideoPreview('');
       }
 
-      // Cerrar al hacer clic fuera
-      modal?.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-      });
-
-      // Delegación de eventos global
+      // Delegación de eventos global (solo se cierra con la X o Cancelar para no perder contenido)
       document.addEventListener('click', async (e) => {
         const target = e.target as HTMLElement;
 

@@ -541,7 +541,7 @@ INSERT INTO public.redes_sociales (
 ),
 (
   'whatsapp',
-  'WhatsApp Vecinal y Emergencias',
+  'WhatsApp Oficina de Alcaldía',
   'https://wa.me/59171584210',
   '+591 715-84210',
   'whatsapp',

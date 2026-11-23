@@ -413,7 +413,7 @@ export const DEFAULT_REDES: RedSocial[] = [
   {
     id: 'red-2',
     platform: 'WhatsApp',
-    name: 'Atención Ciudadana Pelechuco',
+    name: 'WhatsApp Oficina de Alcaldía',
     url: 'https://wa.me/59171584210',
     handle: '+591 715-84210',
     icon_name: 'whatsapp',

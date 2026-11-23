@@ -12,8 +12,10 @@ const { title = "Panel Administrativo — GAM Pelechuco", activeNav = "dashboard
 const supabaseReady = isSupabaseConfigured();
 
 // ── SSR Auth Guard ──
-// Si no hay cookie de sesión activa, redirigir inmediatamente a login en el servidor sin renderizar dashboard
-const sessionCookie = Astro.cookies.get('gam_admin_token')?.value;
+// El middleware valida/renueva la sesión; mantenemos respaldo SSR por seguridad
+const refreshedAccessToken = Astro.locals.adminAccessToken || '';
+const refreshedRefreshToken = Astro.locals.adminRefreshToken || '';
+const sessionCookie = refreshedAccessToken || Astro.cookies.get('gam_admin_token')?.value;
 if (!sessionCookie) {
   return Astro.redirect('/admin/login');
 }
@@ -865,49 +867,191 @@ const sidebarProgressDisplayValue =
 
   <!-- Toast de Notificaciones -->
   <div id="admin-toast"></div>
+  <div
+    id="admin-session-sync"
+    hidden
+    data-refreshed-token={refreshedAccessToken}
+    data-refreshed-refresh={refreshedRefreshToken}
+  ></div>
 
   <script>
-    // ── Guardia de Autenticación en Cliente ──
-    const cookieToken = document.cookie.split('; ').find(row => row.startsWith('gam_admin_token='))?.split('=')[1];
-    const token = localStorage.getItem('gam_admin_token') || cookieToken;
-    const userStr = localStorage.getItem('gam_admin_user');
+    // ── Guardia de Autenticación, Renovación Silenciosa y Expiración Temprana ──
+    function clearAdminSessionAndRedirect(expired = false) {
+      localStorage.removeItem('gam_admin_token');
+      localStorage.removeItem('gam_admin_refresh_token');
+      localStorage.removeItem('gam_admin_user');
+      document.cookie = 'gam_admin_token=; path=/; max-age=0; SameSite=Lax';
+      document.cookie = 'gam_admin_refresh=; path=/; max-age=0; SameSite=Lax';
+      window.location.replace(expired ? '/admin/login?expired=1' : '/admin/login');
+    }
 
+    function readCookieValue(name: string): string {
+      const prefix = `${name}=`;
+      const hit = document.cookie.split('; ').find(row => row.startsWith(prefix));
+      return hit ? hit.slice(prefix.length) : '';
+    }
+
+    function parseJwtExpMs(jwt: string): number | null {
+      try {
+        const parts = jwt.split('.');
+        if (parts.length !== 3) return null;
+        const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+        const payload = JSON.parse(atob(padded));
+        return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function isTokenExpiringSoon(jwt: string | null, bufferSeconds = 300): boolean {
+      if (!jwt) return true;
+      if (jwt === 'demo-token-gam-pelechuco') return false;
+      const expMs = parseJwtExpMs(jwt);
+      if (!expMs) return true;
+      return expMs <= Date.now() + bufferSeconds * 1000;
+    }
+
+    const syncEl = document.getElementById('admin-session-sync');
+    const ssrToken = syncEl?.getAttribute('data-refreshed-token') || '';
+    const ssrRefresh = syncEl?.getAttribute('data-refreshed-refresh') || '';
+    if (ssrToken) localStorage.setItem('gam_admin_token', ssrToken);
+    if (ssrRefresh) localStorage.setItem('gam_admin_refresh_token', ssrRefresh);
+
+    const cookieToken = readCookieValue('gam_admin_token');
+    const cookieRefresh = readCookieValue('gam_admin_refresh');
     if (cookieToken && !localStorage.getItem('gam_admin_token')) {
       localStorage.setItem('gam_admin_token', cookieToken);
     }
-
-    if (!token) {
-      window.location.replace('/admin/login');
-    } else {
-      if (userStr) {
-        try {
-          const userObj = JSON.parse(userStr);
-          const userDisplay = document.getElementById('admin-user-display');
-          if (userDisplay && userObj.full_name) {
-            userDisplay.textContent = `👤 ${userObj.full_name}`;
-          }
-        } catch {}
-      }
+    if (cookieRefresh && !localStorage.getItem('gam_admin_refresh_token')) {
+      localStorage.setItem('gam_admin_refresh_token', cookieRefresh);
     }
 
-    // Helper global para llamadas autenticadas a la API
-    (window as any).adminFetch = async (url: string, options: RequestInit = {}) => {
-      const currentToken = localStorage.getItem('gam_admin_token');
-      const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
-      const headers: Record<string, string> = {
-        'Authorization': `Bearer ${currentToken}`,
-        ...(options.headers as Record<string, string> || {})
-      };
-      if (!isFormData && !headers['Content-Type']) {
-        headers['Content-Type'] = 'application/json';
+    const initialToken = localStorage.getItem('gam_admin_token') || cookieToken;
+    const userStr = localStorage.getItem('gam_admin_user');
+
+    if (!initialToken) {
+      clearAdminSessionAndRedirect(false);
+    } else if (userStr) {
+      try {
+        const userObj = JSON.parse(userStr);
+        const userDisplay = document.getElementById('admin-user-display');
+        if (userDisplay && userObj.full_name) {
+          userDisplay.textContent = `👤 ${userObj.full_name}`;
+        }
+      } catch {}
+    }
+
+    let inFlightRefresh: Promise<string | null> | null = null;
+
+    async function refreshAdminSession(): Promise<string | null> {
+      if (inFlightRefresh) return inFlightRefresh;
+
+      inFlightRefresh = (async () => {
+        try {
+          const storedRefresh = localStorage.getItem('gam_admin_refresh_token') || readCookieValue('gam_admin_refresh');
+          const res = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(storedRefresh ? { refresh_token: storedRefresh } : {})
+          });
+          const data = await res.json().catch(() => null);
+          if (res.ok && data?.success && data?.session?.access_token) {
+            const nextToken = data.session.access_token as string;
+            localStorage.setItem('gam_admin_token', nextToken);
+            document.cookie = `gam_admin_token=${nextToken}; path=/; max-age=604800; SameSite=Lax`;
+            if (data.session.refresh_token) {
+              localStorage.setItem('gam_admin_refresh_token', data.session.refresh_token);
+              document.cookie = `gam_admin_refresh=${data.session.refresh_token}; path=/; max-age=2592000; SameSite=Lax`;
+            }
+            if (data.session.user) {
+              localStorage.setItem('gam_admin_user', JSON.stringify(data.session.user));
+            }
+            return nextToken;
+          }
+          return null;
+        } catch {
+          return null;
+        } finally {
+          inFlightRefresh = null;
+        }
+      })();
+
+      return inFlightRefresh;
+    }
+
+    async function ensureActiveAdminSession(redirectOnFail = true): Promise<string | null> {
+      const current = localStorage.getItem('gam_admin_token') || readCookieValue('gam_admin_token');
+      if (!current) {
+        if (redirectOnFail) clearAdminSessionAndRedirect(true);
+        return null;
       }
 
-      const res = await fetch(url, { ...options, headers });
+      if (!isTokenExpiringSoon(current, 300)) {
+        return current;
+      }
+
+      const renewed = await refreshAdminSession();
+      if (renewed) return renewed;
+
+      // Si el token aún no caducó del todo (< 5 min de vida), verificar con /api/auth/me antes de expulsar
+      if (!isTokenExpiringSoon(current, 5)) {
+        try {
+          const checkRes = await fetch('/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${current}` }
+          });
+          if (checkRes.ok) return current;
+        } catch {}
+      }
+
+      if (redirectOnFail) clearAdminSessionAndRedirect(true);
+      return null;
+    }
+
+    // Comprobar inmediatamente al cargar, al volver a la pestaña y cada 3 minutos
+    ensureActiveAdminSession(true);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        ensureActiveAdminSession(true);
+      }
+    });
+    window.addEventListener('focus', () => {
+      ensureActiveAdminSession(true);
+    });
+    setInterval(() => {
+      ensureActiveAdminSession(true);
+    }, 180000);
+
+    // Helper global para llamadas autenticadas a la API (con renovación automática ante 401)
+    (window as any).adminFetch = async (url: string, options: RequestInit = {}) => {
+      let currentToken = await ensureActiveAdminSession(false);
+      if (!currentToken) {
+        clearAdminSessionAndRedirect(true);
+        throw new Error('Sesión expirada');
+      }
+
+      const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+      const buildHeaders = (tok: string) => {
+        const h: Record<string, string> = {
+          ...(options.headers as Record<string, string> || {}),
+          'Authorization': `Bearer ${tok}`,
+        };
+        if (!isFormData && !h['Content-Type']) {
+          h['Content-Type'] = 'application/json';
+        }
+        return h;
+      };
+
+      let res = await fetch(url, { ...options, headers: buildHeaders(currentToken) });
       if (res.status === 401) {
-        localStorage.removeItem('gam_admin_token');
-        localStorage.removeItem('gam_admin_user');
-        document.cookie = 'gam_admin_token=; path=/; max-age=0; SameSite=Lax';
-        window.location.replace('/admin/login');
+        const renewed = await refreshAdminSession();
+        if (renewed) {
+          res = await fetch(url, { ...options, headers: buildHeaders(renewed) });
+        }
+      }
+
+      if (res.status === 401) {
+        clearAdminSessionAndRedirect(true);
         throw new Error('Sesión expirada');
       }
       return res;
@@ -1012,10 +1156,8 @@ const sidebarProgressDisplayValue =
 
     // Botón de cerrar sesión
     document.getElementById('btn-admin-logout')?.addEventListener('click', () => {
-      localStorage.removeItem('gam_admin_token');
-      localStorage.removeItem('gam_admin_user');
-      document.cookie = 'gam_admin_token=; path=/; max-age=0; SameSite=Lax';
-      window.location.replace('/admin/login');
+      fetch('/api/auth/logout', { method: 'POST', keepalive: true }).catch(() => {});
+      clearAdminSessionAndRedirect(false);
     });
 
     // Control táctil responsivo del menú lateral móvil

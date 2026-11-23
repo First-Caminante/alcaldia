@@ -900,10 +900,6 @@ const mediaProgressValue = storageSummary.totalBytes > 0 ? Math.max(1, storageSu
       btnCerrar?.addEventListener('click', closeModal);
       btnCancelar?.addEventListener('click', closeModal);
 
-      modal?.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-      });
-
       // Alternar vistas (Cuadrícula vs Tabla)
       btnVistaGrid?.addEventListener('click', () => {
         if (!vistaGrid || !vistaTabla || !btnVistaGrid || !btnVistaTabla) return;

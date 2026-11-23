@@ -1,10 +1,35 @@
 ---
+import { verifyOrRefreshAdminSession } from '../../lib/auth';
+
 export const prerender = false;
 
-// Si ya tiene sesión válida en cookie, redirigir directamente al panel
+// Solo redirigir al panel si la sesión actual sigue vigente (o puede renovarse); limpiar cookies expiradas
 const sessionCookie = Astro.cookies.get('gam_admin_token')?.value;
-if (sessionCookie) {
-  return Astro.redirect('/admin');
+const refreshCookie = Astro.cookies.get('gam_admin_refresh')?.value;
+let sessionExpiredNotice = Astro.url.searchParams.get('expired') === '1';
+
+if (sessionCookie || refreshCookie) {
+  const session = await verifyOrRefreshAdminSession(sessionCookie, refreshCookie);
+  if (session.valid && session.accessToken) {
+    if (session.refreshed) {
+      Astro.cookies.set('gam_admin_token', session.accessToken, {
+        path: '/',
+        maxAge: 604800,
+        sameSite: 'lax',
+      });
+      if (session.refreshToken) {
+        Astro.cookies.set('gam_admin_refresh', session.refreshToken, {
+          path: '/',
+          maxAge: 2592000,
+          sameSite: 'lax',
+        });
+      }
+    }
+    return Astro.redirect('/admin');
+  }
+  Astro.cookies.delete('gam_admin_token', { path: '/' });
+  Astro.cookies.delete('gam_admin_refresh', { path: '/' });
+  sessionExpiredNotice = true;
 }
 ---
 
@@ -154,6 +179,13 @@ if (sessionCookie) {
       </div>
     </div>
 
+    <div
+      id="login-expired-notice"
+      style={`display:${sessionExpiredNotice ? 'block' : 'none'};background:rgba(245,158,11,0.16);border:1px solid rgba(245,158,11,0.45);color:#fde68a;padding:0.75rem 0.9rem;border-radius:8px;font-size:0.83rem;margin-bottom:1.1rem;text-align:left;line-height:1.45;`}
+    >
+      ⏱️ <strong>Tu sesión anterior expiró por seguridad.</strong> Inicia sesión nuevamente para continuar trabajando sin perder cambios.
+    </div>
+
     <div id="login-error" class="alert-error"></div>
 
     <form id="login-form">
@@ -196,16 +228,52 @@ if (sessionCookie) {
   </div>
 
   <script>
+    function clearClientSession() {
+      localStorage.removeItem('gam_admin_token');
+      localStorage.removeItem('gam_admin_refresh_token');
+      localStorage.removeItem('gam_admin_user');
+      document.cookie = 'gam_admin_token=; path=/; max-age=0; SameSite=Lax';
+      document.cookie = 'gam_admin_refresh=; path=/; max-age=0; SameSite=Lax';
+    }
+
     function initLogin() {
-      // Si ya tiene sesión activa válida en localStorage, asegurar cookie y redirigir al panel
-      const existingToken = localStorage.getItem('gam_admin_token');
-      if (existingToken) {
-        document.cookie = `gam_admin_token=${existingToken}; path=/; max-age=604800; SameSite=Lax`;
-        fetch('/api/auth/me', {
-          headers: { 'Authorization': `Bearer ${existingToken}` }
-        }).then(res => {
-          if (res.ok) window.location.replace('/admin');
-        }).catch(() => {});
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('expired') === '1') {
+        clearClientSession();
+        const expiredNotice = document.getElementById('login-expired-notice');
+        if (expiredNotice) expiredNotice.style.display = 'block';
+      } else {
+        // Verificar que un token existente en localStorage siga siendo válido (o renovable) antes de entrar
+        const existingToken = localStorage.getItem('gam_admin_token');
+        const existingRefresh = localStorage.getItem('gam_admin_refresh_token');
+        if (existingToken) {
+          fetch('/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${existingToken}` }
+          }).then(async (res) => {
+            if (res.ok) {
+              document.cookie = `gam_admin_token=${existingToken}; path=/; max-age=604800; SameSite=Lax`;
+              window.location.replace('/admin');
+              return;
+            }
+            if (existingRefresh) {
+              const refRes = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refresh_token: existingRefresh })
+              });
+              const refData = await refRes.json().catch(() => null);
+              if (refRes.ok && refData?.success && refData?.session?.access_token) {
+                localStorage.setItem('gam_admin_token', refData.session.access_token);
+                if (refData.session.refresh_token) {
+                  localStorage.setItem('gam_admin_refresh_token', refData.session.refresh_token);
+                }
+                window.location.replace('/admin');
+                return;
+              }
+            }
+            clearClientSession();
+          }).catch(() => {});
+        }
       }
 
       const form = document.getElementById('login-form') as HTMLFormElement | null;
@@ -234,9 +302,15 @@ if (sessionCookie) {
 
           if (res.ok && data.success) {
             localStorage.setItem('gam_admin_token', data.session.access_token);
+            if (data.session.refresh_token) {
+              localStorage.setItem('gam_admin_refresh_token', data.session.refresh_token);
+            }
             localStorage.setItem('gam_admin_user', JSON.stringify(data.session.user));
-            // Guardar también cookie para SSR
+            // Guardar también cookies para SSR
             document.cookie = `gam_admin_token=${data.session.access_token}; path=/; max-age=604800; SameSite=Lax`;
+            if (data.session.refresh_token) {
+              document.cookie = `gam_admin_refresh=${data.session.refresh_token}; path=/; max-age=2592000; SameSite=Lax`;
+            }
             window.location.replace('/admin');
           } else {
             if (errorDiv) {
